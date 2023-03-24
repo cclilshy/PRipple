@@ -1,0 +1,20 @@
+{
+  "name": "cclilshy/p-ripple",
+  "description": "Pulse Ripple (脉冲涟漪)",
+  "autoload": {
+    "psr-4": {
+      "Cclilshy\\PRipple\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "cclilshy",
+      "email": "jingnigg@gmail.com"
+    }
+  ],
+  "require": {
+    "ext-sockets": "*",
+    "ext-pcntl": "*",
+    "ext-posix": "*"
+  }
+}
