@@ -8,7 +8,7 @@
 
 namespace Cclilshy\PRipple\Dispatch\EventTemplate;
 
-use Cclilshy\PRipple\Dispatch\standard\EventTemplateAbstract;
+use Cclilshy\PRipple\Dispatch\Standard\EventTemplateAbstract;
 
 class CommonTemplate extends EventTemplateAbstract
 {
