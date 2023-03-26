@@ -9,8 +9,8 @@
 
 namespace Cclilshy\PRipple\Communication\Aisle;
 
-use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 use Cclilshy\PRipple\File\Fifo;
+use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 
 class FifoAisle implements CommunicationInterface
 {

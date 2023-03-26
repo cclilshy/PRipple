@@ -6,9 +6,9 @@
  * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
  */
 
-namespace Cclilshy\PRipple\Dispatch\Standard;
+namespace Cclilshy\PRipple\Dispatch\DataStandard;
 
-abstract class EventTemplateAbstract implements EventTemplateInterface
+class Event
 {
     protected string $publisher;
     // 标识符，可以在创建事件时初始化否则自动生成
@@ -97,9 +97,9 @@ abstract class EventTemplateAbstract implements EventTemplateInterface
      * 设置身份标识符
      *
      * @param string $identifier @标识符
-     * @return \Cclilshy\PRipple\Dispatch\Standard\EventTemplateInterface
+     * @return \Cclilshy\PRipple\Dispatch\DataStandard\Event
      */
-    public function setIdentifier(string $identifier): EventTemplateInterface
+    public function setIdentifier(string $identifier): Event
     {
         $this->identifier = $identifier;
         return $this;
@@ -130,5 +130,10 @@ abstract class EventTemplateAbstract implements EventTemplateInterface
             'timestamp'  => $this->timestamp,
             'data'       => $this->data
         ];
+    }
+
+    public static function unSerialize(string $context): self|false
+    {
+        return unserialize($context);
     }
 }

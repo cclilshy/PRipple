@@ -1,12 +1,18 @@
 <?php
+/*
+ * @Author: cclilshy jingnigg@gmail.com
+ * @Date: 2023-03-25 21:59:06
+ * @LastEditors: cclilshy jingnigg@gmail.com
+ * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
+ */
 
 namespace Service;
 
-use Cclilshy\PRipple\Dispatch\Build;
 use Cclilshy\PRipple\Service\Service;
+use Cclilshy\PRipple\Dispatch\DataStandard\Build;
+use Cclilshy\PRipple\Dispatch\DataStandard\Event;
+use Cclilshy\PRipple\Communication\Socket\Client;
 use Cclilshy\PRipple\Communication\Socket\SocketInet;
-use Cclilshy\PRipple\Dispatch\EventTemplate\CommonTemplate;
-use Cclilshy\PRipple\Dispatch\Standard\EventTemplateAbstract;
 
 class TestCast extends Service
 {
@@ -18,7 +24,7 @@ class TestCast extends Service
     public function initialize(): void
     {
         while (true) {
-            $this->publish(new Build($this->publish, null, new CommonTemplate($this->publish, 'TEST', ''), '测试例子循环消息'));
+            $this->publish(new Build($this->publish, null, new Event($this->publish, 'TEST', ''), '测试例子循环消息'));
             sleep(1);
         }
     }
@@ -32,12 +38,12 @@ class TestCast extends Service
 
     }
 
-    public function execEvent(EventTemplateAbstract $event): void
+    public function execEvent(Event $event): void
     {
 
     }
 
-    public function execOriginalContext(string $context): void
+    public function execOriginalContext(string $context, Client $client): void
     {
 
     }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Cclilshy\PRipple\Dispatch;
+namespace Cclilshy\PRipple\Dispatch\DataStandard;
 /*
  * @Author: cclilshy jingnigg@gmail.com
  * @Date: 2023-03-21 20:46:42
@@ -9,27 +9,26 @@ namespace Cclilshy\PRipple\Dispatch;
  */
 
 // 消息包
-use Cclilshy\PRipple\Dispatch\Standard\EventTemplateInterface;
 use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 
 class Build
 {
-    public array                                 $signatures = array();     // 签名
-    private readonly string                      $publisher;                // 发布者名称
-    private readonly string|null                 $message;                  // 消息内容
-    private readonly string|null                 $uuid;                     // 包UUID
-    private readonly EventTemplateInterface|null $event;                    // 事件
-    private readonly string|null                 $targetHandlerName;        // 包目的地
+    public array                 $signatures = array();     // 签名
+    private readonly string      $publisher;                // 发布者名称
+    private readonly string|null $message;                  // 消息内容
+    private readonly string|null $uuid;                     // 包UUID
+    private readonly Event|null  $event;                    // 事件
+    private readonly string|null $targetHandlerName;        // 包目的地
 
     /**
      * 创建一个消息包
      *
-     * @param string                                                          $publisher         @发布者
-     * @param string|null                                                     $targetHandlerName @指定人（暂留待定）
-     * @param \Cclilshy\PRipple\Dispatch\standard\EventTemplateInterface|null $event             @事件包
-     * @param string|null                                                     $message           @消息
+     * @param string                                             $publisher         @发布者
+     * @param string|null                                        $targetHandlerName @指定人（暂留待定）
+     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Event|null $event             @事件包
+     * @param string|null                                        $message           @消息
      */
-    public function __construct(string $publisher, string|null $targetHandlerName = null, EventTemplateInterface|null $event = null, string|null $message = null)
+    public function __construct(string $publisher, string|null $targetHandlerName = null, Event|null $event = null, string|null $message = null)
     {
         $this->publisher         = $publisher;
         $this->message           = $message;
@@ -51,6 +50,11 @@ class Build
         } else {
             return false;
         }
+    }
+
+    public function serialize(): string
+    {
+        return $this->__toString();
     }
 
     public static function unSerialize(string $context): Build
@@ -108,9 +112,9 @@ class Build
     /**
      * 获取事件
      *
-     * @return EventTemplateInterface|null
+     * @return Event|null
      */
-    public function getEvent(): EventTemplateInterface|null
+    public function getEvent(): Event|null
     {
         return $this->event ?? null;
     }

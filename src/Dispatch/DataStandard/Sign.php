@@ -1,6 +1,6 @@
 <?php
 
-namespace Cclilshy\PRipple\Dispatch;
+namespace Cclilshy\PRipple\Dispatch\DataStandard;
 
 
 /**

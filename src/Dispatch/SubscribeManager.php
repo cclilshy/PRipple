@@ -6,7 +6,7 @@
  * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
  */
 
-namespace Cclilshy\PRipple\Service;
+namespace Cclilshy\PRipple\Dispatch;
 
 use Cclilshy\PRipple\Console;
 

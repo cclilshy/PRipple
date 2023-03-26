@@ -1,13 +1,20 @@
 <?php
+/*
+ * @Author: cclilshy jingnigg@gmail.com
+ * @Date: 2023-03-23 22:38:56
+ * @LastEditors: cclilshy jingnigg@gmail.com
+ * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
+ */
 
 namespace Service;
 
 use Cclilshy\PRipple\Console;
-use Cclilshy\PRipple\Dispatch\Build;
 use Cclilshy\PRipple\Service\Service;
 use Cclilshy\PRipple\Dispatch\Dispatcher;
+use Cclilshy\PRipple\Dispatch\DataStandard\Build;
+use Cclilshy\PRipple\Dispatch\DataStandard\Event;
+use Cclilshy\PRipple\Communication\Socket\Client;
 use Cclilshy\PRipple\Communication\Socket\SocketInet;
-use Cclilshy\PRipple\Dispatch\Standard\EventTemplateAbstract;
 
 class Http extends Service
 {
@@ -37,12 +44,12 @@ class Http extends Service
         Console::debug('收到订阅包 > ' . $package);
     }
 
-    public function execEvent(EventTemplateAbstract $event): void
+    public function execEvent(Event $event): void
     {
-        Console::debug('收到订阅事件 > ' ,$event);
+        Console::debug('收到订阅事件 > ', $event);
     }
 
-    public function execOriginalContext(string $context): void
+    public function execOriginalContext(string $context, Client $client): void
     {
 
     }

@@ -5,16 +5,17 @@
  * @LastEditors: cclilshy jingnigg@gmail.com
  * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
  */
+
 namespace Cclilshy\PRipple\Service;
 
 use Exception;
 use Cclilshy\PRipple\Console;
-use Cclilshy\PRipple\Dispatch\Build;
 use Cclilshy\PRipple\Dispatch\Dispatcher;
+use Cclilshy\PRipple\Dispatch\DataStandard\Build;
+use Cclilshy\PRipple\Dispatch\DataStandard\Event;
 use Cclilshy\PRipple\Communication\Socket\Manager;
-use Cclilshy\PRipple\Communication\Aisle\SocketAisle;
 use Cclilshy\PRipple\Communication\Socket\SocketUnix;
-use Cclilshy\PRipple\Dispatch\EventTemplate\CommonTemplate;
+use Cclilshy\PRipple\Communication\Aisle\SocketAisle;
 use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 
 /**
@@ -36,6 +37,7 @@ abstract class Service implements ServiceStandard
     protected int    $serverPort;
     protected array  $socketOptions;
     protected int    $selectBlockLine;
+    protected bool   $isServer = false;
 
     /**
      * 服务配置
@@ -49,10 +51,6 @@ abstract class Service implements ServiceStandard
     {
         $this->publish       = get_class($this);
         $this->publish       = str_replace('\\', '_', $this->publish);
-        $this->socketType    = $socketType;
-        $this->serverAddress = $address;
-        $this->serverPort    = $port;
-        $this->socketOptions = $options;
     }
 
     /**
@@ -64,9 +62,11 @@ abstract class Service implements ServiceStandard
     {
         $this->registerErrorHandler();
         try {
-            $this->serverSocketManager = Manager::createServer($this->socketType, $this->serverAddress, $this->serverPort, $this->socketOptions);
             if (!$this->reConnectDispatcher()) {
                 throw new Exception("无法连接调度器,请确认调度器正常启动");
+            }
+            if ($this->isServer) {
+                $this->serverSocketManager = Manager::createServer($this->socketType, $this->serverAddress, $this->serverPort, $this->socketOptions);
             }
         } catch (Exception $e) {
             Console::debug($e->getMessage());
@@ -74,13 +74,18 @@ abstract class Service implements ServiceStandard
         }
 
         while (true) {
-            $readList              = array_merge([
-                $this->serverSocketManager->getEntranceSocket(),
-                $this->dispatcherServer
-            ], $this->serverSocketManager->getClientSockets() ?? []);
+            $readList = array($this->dispatcherServer);
+            if ($this->isServer) {
+                $readList = array_merge($readList, [$this->serverSocketManager->getEntranceSocket()], $this->serverSocketManager->getClientSockets() ?? []);
+            }
+
             $this->selectBlockLine = __LINE__ + 1;
             if (socket_select($readList, $_, $_, null)) {
                 foreach ($readList as $readSocket) {
+                    if (!$this->isServer) {
+                        $this->handlerDispatcherMessage();
+                        continue;
+                    }
                     $socketName = Manager::getNameBySocket($readSocket);
                     switch ($readSocket) {
                         case $this->serverSocketManager->getEntranceSocket():
@@ -93,14 +98,24 @@ abstract class Service implements ServiceStandard
                             // TODO::调度器发来通知
                             break;
                         default:
-                            if ($this->serverSocketManager->getClientBySocket($readSocket)->read($context)) {
-                                $this->execOriginalContext($context);
+                            if ($client = $this->serverSocketManager->getClientBySocket($readSocket)) {
+                                $context = $client->read($context);
+                                $this->execOriginalContext($context, $client);
                             }
                         // TODO::客户端消息
                     }
                 }
             }
         }
+    }
+
+    protected function createServer(string $socketType, string $address, int|null $port = 0, array|null $options = [])
+    {
+        $this->socketType    = $socketType;
+        $this->serverAddress = $address;
+        $this->serverPort    = $port;
+        $this->socketOptions = $options;
+        $this->isServer      = true;
     }
 
     /**
@@ -140,7 +155,7 @@ abstract class Service implements ServiceStandard
     /**
      * 发布一个自定义的信息包
      *
-     * @param \Cclilshy\PRipple\Dispatch\Build $package
+     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Build $package
      * @return void
      */
     protected function publish(Build $package): void
@@ -158,7 +173,7 @@ abstract class Service implements ServiceStandard
      */
     protected function publishEvent(string $name, mixed $data, string|null $message = null): void
     {
-        $event = new CommonTemplate($this->publish, $name, $data);
+        $event = new Event($this->publish, $name, $data);
         $build = new Build($this->publish, null, $event, $message);
         $this->publish($build);
     }
@@ -239,7 +254,7 @@ abstract class Service implements ServiceStandard
     private function registerErrorHandler(): void
     {
         set_exception_handler(function (mixed $error) {
-            var_dump($error);
+            Console::debug($error->getMessage(), $error->getFile(), $error->getLine());
             if (property_exists($this, 'errorHandler')) {
                 return $this->errorHandler($error);
             }
@@ -251,7 +266,7 @@ abstract class Service implements ServiceStandard
                 Console::debug(PHP_EOL . 'Service [' . $this->publish . '] Close.');
                 die;
             } else {
-                Console::debug($errStr);
+                Console::debug($errStr, $errFile, $errLine);
             }
             if (property_exists($this, 'errorHandler')) {
                 return $this->errorHandler($errno, $errStr, $errFile, $errLine);
