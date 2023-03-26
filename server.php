@@ -7,11 +7,12 @@
  */
 
 namespace Cclilshy\PRipple;
-
-use Service\Http;
+shell_exec("rm -rf " . __DIR__ . '/runtime/pipe/*.*');
 
 include __DIR__ . '/vendor/autoload.php';
-
 Configure::init();
 
-$http = new Http();
+use Cclilshy\PRipple\Dispatch\Dispatcher;
+
+Dispatcher::launch();
+return;

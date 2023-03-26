@@ -8,7 +8,7 @@ namespace Cclilshy\PRipple\Communication\Socket;
  * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
  */
 
-class ServerSocketManager
+class Manager
 {
     private mixed $entranceSocket;
     private array $clientSockets;
@@ -21,13 +21,15 @@ class ServerSocketManager
     }
 
     /**
+     * 创建服务
+     *
      * @throws \Exception
      */
-    public static function createServer(string $type, string $address, int|null $port = 0, array|null $options = array()): ServerSocketManager|false
+    public static function createServer(string $type, string $address, int|null $port = 0, array|null $options = array()): Manager|false
     {
         switch ($type) {
             case SocketInet::class:
-                $server = SocketInet::create($address, $port, null, $options);
+                $server = SocketInet::create($address, $port, SOCK_STREAM, $options);
                 return new self($server);
             case SocketUnix::class:
                 $server = SocketUnix::create($address);
@@ -37,11 +39,22 @@ class ServerSocketManager
         }
     }
 
+    /**
+     * 获取入口套接字
+     *
+     * @return mixed
+     */
     public function getEntranceSocket(): mixed
     {
         return $this->entranceSocket;
     }
 
+    /**
+     * 同意一个连接
+     *
+     * @param mixed $socket
+     * @return string|false
+     */
     public function accept(mixed $socket): string|false
     {
         if ($client = socket_accept($socket)) {
@@ -50,14 +63,26 @@ class ServerSocketManager
         return false;
     }
 
+    /**
+     * 加入客户端
+     *
+     * @param mixed $clientSocket
+     * @return string
+     */
     public function addClient(mixed $clientSocket): string
     {
-        $name                       = ServerSocketManager::getNameBySocket($clientSocket);
+        $name                       = Manager::getNameBySocket($clientSocket);
         $this->clientSockets[$name] = $clientSocket;
-        $this->clientInfos[$name]   = new ClientIter($clientSocket);
+        $this->clientInfos[$name]   = new Client($clientSocket);
         return $name;
     }
 
+    /**
+     * 获取客户端HASH
+     *
+     * @param mixed $socket
+     * @return string
+     */
     public static function getNameBySocket(mixed $socket): string
     {
         return spl_object_hash($socket);
@@ -75,10 +100,18 @@ class ServerSocketManager
         if ($client = $this->getClientSocketByName($name)) {
             $client->setIdentity($identity);
             $this->identityHashMap[$identity] = $client;
+            return true;
         }
+        return false;
     }
 
 
+    /**
+     * 通过套接字名称获取客户端
+     *
+     * @param string $name
+     * @return mixed
+     */
     public function getClientSocketByName(string $name): mixed
     {
         return $this->clientSockets[$name] ?? null;
@@ -97,28 +130,54 @@ class ServerSocketManager
         if ($client = $this->getClientBySocket($socket)) {
             $client->setIdentity($identity);
             $this->identityHashMap[$identity] = $client;
+            return true;
         }
+        return false;
     }
 
-    public function getClientBySocket(mixed $clientSocket): ClientIter|null
+    /**
+     * 通过套接字获取客户端
+     *
+     * @param mixed $clientSocket
+     * @return \Cclilshy\PRipple\Communication\Socket\Client|null
+     */
+    public function getClientBySocket(mixed $clientSocket): Client|null
     {
-        $name = ServerSocketManager::getNameBySocket($clientSocket);
+        $name = Manager::getNameBySocket($clientSocket);
         return $this->getClientByName($name);
     }
 
-    public function getClientByName(string $name): ClientIter|null
+    /**
+     * 通过名称获取客户端
+     *
+     * @param string $name
+     * @return \Cclilshy\PRipple\Communication\Socket\Client|null
+     */
+    public function getClientByName(string $name): Client|null
     {
         return $this->clientInfos[$name] ?? null;
     }
 
-    public function getClientByIdentity(string $name): ClientIter|null
+    /**
+     * 通过身份标识获取客户端
+     *
+     * @param string $name
+     * @return \Cclilshy\PRipple\Communication\Socket\Client|null
+     */
+    public function getClientByIdentity(string $name): Client|null
     {
         return $this->identityHashMap[$name] ?? null;
     }
 
+    /**
+     * 移除某个客户端
+     *
+     * @param mixed $clientSocket
+     * @return void
+     */
     public function removeClient(mixed $clientSocket): void
     {
-        $name = ServerSocketManager::getNameBySocket($clientSocket);
+        $name = Manager::getNameBySocket($clientSocket);
         if ($clientSocket = $this->clientSockets[$name] ?? null) {
             socket_close($this->clientSockets[$name]);
             unset($this->clientSockets[$name]);
@@ -127,15 +186,20 @@ class ServerSocketManager
         /**
          * @var \Cclilshy\PRipple\Communication\Aisle\SocketAisle $clientAisle
          */
-        if($clientAisle = $this->clientInfos[$name] ?? null){
+        if ($clientAisle = $this->clientInfos[$name] ?? null) {
             $identity = $clientAisle->getIdentity();
-            if(isset($this->clientInfos[$identity])){
-                unset($this->clientInfos[$identity]);
+            if (isset($this->identityHashMap[$identity])) {
+                unset($this->identityHashMap[$identity]);
             }
             unset($this->clientInfos[$name]);
         }
     }
 
+    /**
+     * 获取所有客户端套接字列表
+     *
+     * @return array|null
+     */
     public function getClientSockets(): array|null
     {
         return $this->clientSockets ?? null;

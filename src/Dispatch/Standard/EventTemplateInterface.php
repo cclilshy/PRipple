@@ -18,6 +18,7 @@ interface EventTemplateInterface
      */
     public function getIdentifier(): string;
 
+
     /**
      * 设置事件标识符
      *
@@ -25,6 +26,7 @@ interface EventTemplateInterface
      * @return \Cclilshy\PRipple\Dispatch\Standard\EventTemplateInterface
      */
     public function setIdentifier(string $identifier): self;
+
 
     /**
      * 获取事件名称
@@ -40,12 +42,14 @@ interface EventTemplateInterface
      */
     public function getTimestamp(): int;
 
+
     /**
      * 获取事件数据
      *
      * @return mixed
      */
     public function getData(): mixed;
+
 
     /**
      * 将事件序列化
@@ -69,4 +73,5 @@ interface EventTemplateInterface
      * @return string
      */
     public function toJson(): string;
+
 }

@@ -10,6 +10,7 @@ namespace Cclilshy\PRipple\Dispatch\Standard;
 
 abstract class EventTemplateAbstract implements EventTemplateInterface
 {
+    protected string $publisher;
     // 标识符，可以在创建事件时初始化否则自动生成
     protected string $identifier;
     // 事件名称
@@ -20,17 +21,25 @@ abstract class EventTemplateAbstract implements EventTemplateInterface
     protected mixed $data;
 
     /**
+     * @param string   $publisher @ 发布者
      * @param string   $name      @ 事件名称
      * @param mixed    $data      @ 数据
      * @param int|null $timestamp @ 发生时间
      */
-    public function __construct(string $name, mixed $data, ?int $timestamp = null)
+    public function __construct(string $publisher, string $name, mixed $data, ?int $timestamp = null)
     {
+        $this->publisher  = $publisher;
         $this->identifier = md5(microtime(true) . mt_rand(1, 9999));
         $this->name       = $name;
         $this->data       = $data;
         $this->timestamp  = $timestamp ?? time();
     }
+
+    public function getPublisher(): string
+    {
+        return $this->publisher;
+    }
+
 
     /**
      * 事件反序化
@@ -62,6 +71,7 @@ abstract class EventTemplateAbstract implements EventTemplateInterface
         return $this->timestamp;
     }
 
+
     /**
      * 获取事件数据
      *
@@ -82,6 +92,7 @@ abstract class EventTemplateAbstract implements EventTemplateInterface
         return $this->identifier;
     }
 
+
     /**
      * 设置身份标识符
      *
@@ -94,6 +105,7 @@ abstract class EventTemplateAbstract implements EventTemplateInterface
         return $this;
     }
 
+
     /**
      * 事件格式化为json
      *
@@ -103,6 +115,7 @@ abstract class EventTemplateAbstract implements EventTemplateInterface
     {
         return json_encode($this->toArray());
     }
+
 
     /**
      * 事件格式化为数组

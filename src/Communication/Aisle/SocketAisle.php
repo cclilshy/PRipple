@@ -6,17 +6,11 @@
  * @Description: CCPHP
  * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
  */
-
 namespace Cclilshy\PRipple\Communication\Aisle;
 
-use Cclilshy\PRipple\Communication\Standard\AisleInterface;
+use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 
-/**
- * Socket原生套接字封装实现
- * Socket一般都是非堵塞模式
- * 封装套接字时应确保使用者数据完整否则切片可能会无限堵塞
- */
-class SocketAisle implements AisleInterface
+class SocketAisle implements CommunicationInterface
 {
     const EXT = '.aisle';
 
@@ -73,7 +67,6 @@ class SocketAisle implements AisleInterface
         return new self($base);
     }
 
-    // 获取连接相关信息
 
     /**
      * 不可以直接连接
@@ -86,68 +79,146 @@ class SocketAisle implements AisleInterface
         return false;
     }
 
+
+    /**
+     * 获取在管理器中的键名
+     *
+     * @return string
+     */
     public function getKeyName(): string
     {
         return $this->keyName;
     }
 
+
+    /**
+     * 获取客户端连接时间
+     *
+     * @return int
+     */
     public function getCreateTime(): int
     {
         return $this->createTime;
     }
 
+
+    /**
+     * 获取socket实体
+     *
+     * @return mixed
+     */
     public function getSocket(): mixed
     {
         return $this->socket;
     }
 
+    /**
+     * 获取客户端地址
+     *
+     * @return string
+     */
     public function getAddress(): string
     {
         return $this->address;
     }
 
-    // 设置和获取自定义信息
 
+    //     设置和获取自定义信息
+
+    /**
+     * 获取客户端端口
+     *
+     * @return int
+     */
     public function getPort(): int
     {
         return $this->port;
     }
 
+
+    /**
+     * 获取客户端名称
+     *
+     * @return string
+     */
     public function getName(): string
     {
         return $this->name;
     }
 
+
+    /**
+     * 设置客户端名称
+     *
+     * @param string $name
+     * @return void
+     */
     public function setName(string $name): void
     {
         $this->name = $name;
     }
 
+
+    /**
+     * 获取客户端身份标识
+     *
+     * @return string
+     */
     public function getIdentity(): string
     {
         return $this->identity ?? '';
     }
 
+    /**
+     * 设置客户端身份标识
+     *
+     * @param string $identity
+     * @return void
+     */
     public function setIdentity(string $identity): void
     {
         $this->identity = $identity;
     }
 
+    /**
+     * 获取发送总流量
+     *
+     * @return int
+     */
     public function getSendFlowCount(): int
     {
         return $this->sendFlowCount;
     }
 
+
+    /**
+     * 获取接收缓冲区大小
+     *
+     * @return int
+     */
     public function getReceiveFlowCount(): int
     {
         return $this->receiveFlowCount;
     }
 
+
+    /**
+     * 获取发送缓冲区大小
+     *
+     * @return int
+     */
     public function getSendBufferSize(): int
     {
         return $this->sendBufferSize;
     }
 
+
+    /**
+     * 设置发送缓冲区大小
+     *
+     * @param int $size
+     * @return bool
+     */
     public function setSendBufferSize(int $size): bool
     {
         if (socket_set_option($this->socket, SOL_SOCKET, SO_SNDBUF, $size)) {
@@ -157,11 +228,24 @@ class SocketAisle implements AisleInterface
         return false;
     }
 
+
+    /**
+     * 获取发送低水位大小
+     *
+     * @return int
+     */
     public function getSendLowWaterSize(): int
     {
         return $this->sendLowWaterSize;
     }
 
+
+    /**
+     * 设置发送低水位大小
+     *
+     * @param int $size
+     * @return bool
+     */
     public function setSendLowWaterSize(int $size): bool
     {
         if (socket_set_option($this->socket, SOL_SOCKET, SO_SNDLOWAT, $size)) {
@@ -171,11 +255,24 @@ class SocketAisle implements AisleInterface
         return false;
     }
 
+
+    /**
+     * 获取接收低水位大小
+     *
+     * @return int
+     */
     public function getReceiveLowWaterSize(): int
     {
         return $this->receiveLowWaterSize;
     }
 
+
+    /**
+     * 设置接收低水位大小
+     *
+     * @param int $size
+     * @return bool
+     */
     public function setReceiveLowWaterSize(int $size): bool
     {
         if (socket_set_option($this->socket, SOL_SOCKET, SO_RCVLOWAT, $size)) {
@@ -186,11 +283,23 @@ class SocketAisle implements AisleInterface
     }
 
 
+    /**
+     * 获取接收缓冲区大小
+     *
+     * @return int
+     */
     public function getReceiveBufferSize(): int
     {
         return $this->receiveBufferSize;
     }
 
+
+    /**
+     * 设置接收缓冲区大小
+     *
+     * @param int $size
+     * @return bool
+     */
     public function setReceiveBufferSize(int $size): bool
     {
         if (socket_set_option($this->socket, SOL_SOCKET, SO_RCVBUF, $size)) {
@@ -200,10 +309,17 @@ class SocketAisle implements AisleInterface
         return false;
     }
 
+
+    /**
+     * 获取上次活跃时间
+     *
+     * @return int
+     */
     public function getActiveTime(): int
     {
         return $this->activeTime;
     }
+
 
     /**
      * 读取数据
@@ -274,14 +390,19 @@ class SocketAisle implements AisleInterface
             $this->sendBuffer    = substr($_buffer, $writeLength);
             $this->sendFlowCount += $writeLength;
         } while (!empty($buffer) || count($tasks) > 0);
-
         return $writeLength === strlen($context);
     }
 
+    /**
+     * 关闭套接字连接
+     *
+     * @return bool
+     */
     public function release(): bool
     {
         return $this->close();
     }
+
 
     /**
      * 关闭连接

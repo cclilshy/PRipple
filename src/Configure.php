@@ -1,5 +1,4 @@
 <?php
-
 namespace Cclilshy\PRipple;
 
 class Configure
@@ -9,6 +8,9 @@ class Configure
         define('UL', '_');
         define('FS', DIRECTORY_SEPARATOR);
         define('BS', '\\');
-        define('PIPE_PATH', __DIR__ . FS . '../pipe');
+        define('RUNTIME_PATH', __DIR__ . FS . '../runtime');
+        define('PIPE_PATH', RUNTIME_PATH . '/pipe');
+        define('CACHE_PATH', RUNTIME_PATH . '/cache');
+        define('SOCK_PATH', RUNTIME_PATH . '/sock');
     }
 }

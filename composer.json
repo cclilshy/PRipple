@@ -3,7 +3,8 @@
   "description": "Pulse Ripple (脉冲涟漪)",
   "autoload": {
     "psr-4": {
-      "Cclilshy\\PRipple\\": "src/"
+      "Cclilshy\\PRipple\\": "src/",
+      "": "demo/"
     }
   },
   "authors": [

@@ -7,12 +7,11 @@ declare(strict_types=1);
  * @Description: CCPHP
  * Copyright (c) 2023 by user email: cclilshy, All Rights Reserved.
  */
-
 namespace Cclilshy\PRipple\File;
-
 
 class Fifo
 {
+    const EXT = '.fifo';
     private mixed  $stream;
     private string $name;
     private string $path;
@@ -23,7 +22,7 @@ class Fifo
     public function __construct(string $name)
     {
         $this->name   = $name;
-        $this->path   = CACHE_PATH . '/pipe/fifo_' . $name . '.fifo';
+        $this->path   = PIPE_PATH . '/fifo_' . $name . self::EXT;
         $this->stream = fopen($this->path, 'r+');
     }
 
@@ -33,40 +32,49 @@ class Fifo
      */
     public static function create(string $name): Fifo|false
     {
-        $path = CACHE_PATH . '/pipe/fifo_' . $name;
-        if (file_exists($path . '.fifo')) {
+        $path = PIPE_PATH . '/fifo_' . $name;
+        if (file_exists($path . self::EXT)) {
             return false;
-        } elseif (posix_mkfifo($path . '.fifo', 0666)) {
+        } elseif (posix_mkfifo($path . self::EXT, 0666)) {
             return new self($name);
         } else {
             return false;
         }
     }
 
+
     /**
+     * 创建管道
+     *
      * @param string $name
      * @return bool
      */
     public static function exists(string $name): bool
     {
-        return file_exists(CACHE_PATH . '/pipe/fifo_' . $name . '.fifo');
+        return file_exists(PIPE_PATH . '/fifo_' . $name . self::EXT);
     }
 
+
     /**
+     * 连接管道
+     *
      * @param string $name
      * @return Fifo|false
      */
     public static function link(string $name): Fifo|false
     {
-        $path = CACHE_PATH . '/pipe/fifo_' . $name;
-        if (!!file_exists($path . '.fifo')) {
+        $path = PIPE_PATH . '/fifo_' . $name;
+        if (!!file_exists($path . self::EXT)) {
             return new self($name);
         } else {
             return false;
         }
     }
 
+
     /**
+     * 向管道写入数据
+     *
      * @param string $context
      * @return int
      */
@@ -76,6 +84,8 @@ class Fifo
     }
 
     /**
+     * 读取一行内容
+     *
      * @return string
      */
     public function fgets(): string
@@ -83,7 +93,10 @@ class Fifo
         return fgets($this->stream);
     }
 
+
     /**
+     * 读指定长度内容
+     *
      * @param int $length
      * @return string
      */
@@ -93,6 +106,8 @@ class Fifo
     }
 
     /**
+     * 获取整个管道内容
+     *
      * @return string
      */
     public function full(): string
@@ -100,7 +115,10 @@ class Fifo
         return stream_get_contents($this->stream);
     }
 
+
     /**
+     * 销毁管道
+     *
      * @return void
      */
     public function release(): void
@@ -112,6 +130,8 @@ class Fifo
     }
 
     /**
+     * 关闭管道
+     *
      * @return void
      */
     public function close(): void
@@ -122,6 +142,8 @@ class Fifo
     }
 
     /**
+     * 设置堵塞模式
+     *
      * @param bool $bool
      * @return bool
      */
@@ -129,4 +151,16 @@ class Fifo
     {
         return stream_set_blocking($this->stream, $bool);
     }
+
+
+    /**
+     * 获取当前管道名称
+     *
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
 }

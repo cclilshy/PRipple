@@ -9,8 +9,8 @@ namespace Cclilshy\PRipple\Dispatch;
  */
 
 // 消息包
-use Cclilshy\PRipple\Communication\Standard\AisleInterface;
-use Cclilshy\PRipple\Dispatch\standard\EventTemplateInterface;
+use Cclilshy\PRipple\Dispatch\Standard\EventTemplateInterface;
+use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 
 class Build
 {
@@ -41,10 +41,10 @@ class Build
     /**
      * 通过协议切割获得包内容
      *
-     * @param string                                                  $agreement @ 协议类
-     * @param \Cclilshy\PRipple\Communication\Standard\AisleInterface $aisle     @ 通道实体
+     * @param string                                                          $agreement @ 协议类
+     * @param \Cclilshy\PRipple\Communication\Standard\CommunicationInterface $aisle     @ 通道实体
      */
-    public static function getBuildByAgreement(string $agreement, AisleInterface $aisle): Build|false
+    public static function getBuildByAgreement(string $agreement, CommunicationInterface $aisle): Build|false
     {
         if ($context = call_user_func([$agreement, 'cut'], $aisle)) {
             return self::unSerialize($context);
@@ -98,6 +98,7 @@ class Build
         return $this->uuid;
     }
 
+
     public function getTargetHandlerName(): string
     {
         return $this->targetHandlerName;
@@ -132,6 +133,7 @@ class Build
         }
         return $this;
     }
+
 
     /**
      * 可能会引起异常的参数过滤，引用传递

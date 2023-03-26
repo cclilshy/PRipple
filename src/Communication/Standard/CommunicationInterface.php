@@ -14,9 +14,9 @@ namespace Cclilshy\PRipple\Communication\Standard;
  * 如协议发送通用接口
  * 每个Aisle的实现都有不同的特征, 一对一/一对多/堵塞/非堵塞/内存缓冲/文件实体传输管道
  */
-interface AisleInterface
+interface CommunicationInterface
 {
-    public const EXT = '.aisle';
+    const EXT = '.switch';
 
     /**
      * 创建通道
@@ -26,6 +26,7 @@ interface AisleInterface
      */
     public static function create(mixed $base): self|false;
 
+
     /**
      * 连接通道
      *
@@ -33,6 +34,7 @@ interface AisleInterface
      * @return false|static
      */
     public static function link(string $name): self|false;
+
 
     /**
      * 读取数据

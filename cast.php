@@ -8,10 +8,11 @@
 
 namespace Cclilshy\PRipple;
 
-use Service\Http;
+use Service\TestCast;
 
 include __DIR__ . '/vendor/autoload.php';
 
 Configure::init();
 
-$http = new Http();
+$cast = new TestCast();
+$cast->launch();

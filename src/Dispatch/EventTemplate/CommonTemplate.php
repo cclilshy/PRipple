@@ -17,8 +17,8 @@ class CommonTemplate extends EventTemplateAbstract
      * @param mixed    $data      事件特定数据
      * @param int|null $timestamp 发生时间
      */
-    public function __construct(string $name, mixed $data, ?int $timestamp = null)
+    public function __construct(string $publisher, string $name, mixed $data, ?int $timestamp = null)
     {
-        parent::__construct($name, $data, $timestamp);
+        parent::__construct($publisher, $name, $data, $timestamp);
     }
 }

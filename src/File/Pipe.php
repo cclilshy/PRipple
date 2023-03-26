@@ -9,9 +9,7 @@ declare(strict_types=1);
  */
 
 namespace Cclilshy\PRipple\File;
-
 use Cclilshy\PRipple\File\Standard\File;
-
 
 class Pipe implements File
 {
@@ -47,6 +45,7 @@ class Pipe implements File
         return false;
     }
 
+
     /**
      * @param string|null $name
      * @return bool
@@ -68,6 +67,7 @@ class Pipe implements File
         return false;
     }
 
+
     /**
      * @param string $context
      * @param ?int   $start
@@ -86,6 +86,7 @@ class Pipe implements File
         $this->eof += strlen($context) - $start;
         return fwrite($this->resource, $context);
     }
+
 
     /**
      * @return bool
@@ -126,6 +127,7 @@ class Pipe implements File
     {
         return $this->section(0);
     }
+
 
     /**
      * @param int $start
@@ -180,10 +182,12 @@ class Pipe implements File
         return flock($this->resource, LOCK_UN);
     }
 
+
     public function clone(): Pipe
     {
         return new self($this->name, $this->eof);
     }
+
 
     /**
      * @return void
@@ -192,6 +196,7 @@ class Pipe implements File
     {
         fclose($this->resource);
     }
+
 
     /**
      * @return void
@@ -205,4 +210,5 @@ class Pipe implements File
         if (file_exists($this->path))
             unlink($this->path);
     }
+
 }

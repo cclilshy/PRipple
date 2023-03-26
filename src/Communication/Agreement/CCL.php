@@ -13,36 +13,32 @@ namespace Cclilshy\PRipple\Communication\Agreement;
 
 use stdClass;
 use Exception;
-use Cclilshy\PRipple\Communication\Standard\AisleInterface;
 use Cclilshy\PRipple\Communication\Standard\AgreementInterface;
+use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 
-/**
- * CCL协议初构
- * 经过测试可以使用
- */
 class CCL implements AgreementInterface
 {
     /**
      * 通过接口发送
      *
-     * @param AisleInterface $aisle
-     * @param string         $context
+     * @param CommunicationInterface $aisle
+     * @param string                 $context
      * @return bool
      */
-    public static function send(AisleInterface $aisle, string $context): bool
+    public static function send(CommunicationInterface $aisle, string $context): bool
     {
         $context = self::build($context);
         return self::sendOriginal($aisle, $context);
     }
 
+
     /**
      * 报文打包
      *
-     * @param string         $context  报文具体
-     * @param \stdClass|null $standard 附加参数....
+     * @param string $context 报文具体
      * @return string 包
      */
-    public static function build(string $context, stdClass|null $standard = null): string
+    public static function build(string $context): string
     {
         $contextLength = strlen($context);
         $pack          = pack('L', $contextLength);
@@ -50,7 +46,7 @@ class CCL implements AgreementInterface
         // 报文长度#正文长度PACK正文
     }
 
-    private static function sendOriginal(AisleInterface $aisle, string $context): bool
+    private static function sendOriginal(CommunicationInterface $aisle, string $context): bool
     {
         $fullContextLength = strlen($context);
         do {
@@ -65,26 +61,36 @@ class CCL implements AgreementInterface
     /**
      * 发送一条附加一个字节的整数的信息,最长4个字节
      *
-     * @param \Cclilshy\PRipple\Communication\Standard\AisleInterface $aisle
-     * @param string                                                  $context
-     * @param int                                                     $int
+     * @param \Cclilshy\PRipple\Communication\Standard\CommunicationInterface $aisle
+     * @param string                                                          $context
+     * @param int                                                             $int
      * @return bool
      */
-    public static function sendWithInt(AisleInterface $aisle, string $context, int $int): bool
+    public static function sendWithInt(CommunicationInterface $aisle, string $context, int $int): bool
     {
         $pack    = pack('L', $int);
         $context = $pack . $context;
-        $build   = self::build($context);
-        return self::sendOriginal($aisle, $build);
+        $package = self::build($context);
+        return self::sendOriginal($aisle, $package);
     }
 
-    public static function sendWithString(AisleInterface $aisle, string $context, string $param): bool
+
+    /**
+     * 发送一条附带一条文本的信息，最长64个字节
+     *
+     * @param \Cclilshy\PRipple\Communication\Standard\CommunicationInterface $aisle
+     * @param string                                                          $context
+     * @param string                                                          $param
+     * @return bool
+     */
+    public static function sendWithString(CommunicationInterface $aisle, string $context, string $param): bool
     {
         $pack    = pack('A64', $param);
         $context = $pack . $context;
-        $build   = self::build($context);
-        return self::sendOriginal($aisle, $build);
+        $package = self::build($context);
+        return self::sendOriginal($aisle, $package);
     }
+
 
     /**
      * 报文验证
@@ -99,15 +105,16 @@ class CCL implements AgreementInterface
         return false;
     }
 
+
     /**
      * 切断一条带整形参数的报文
      *
-     * @param \Cclilshy\PRipple\Communication\Standard\AisleInterface $aisle
-     * @param                                                         $int
+     * @param \Cclilshy\PRipple\Communication\Standard\CommunicationInterface $aisle
+     * @param                                                                 $int
      * @return string|false
      * @throws \Exception
      */
-    public static function cutWithInt(AisleInterface $aisle, &$int): string|false
+    public static function cutWithInt(CommunicationInterface $aisle, &$int): string|false
     {
         if ($context = self::cut($aisle)) {
             if ($intPack = substr($context, 0, 4)) {
@@ -115,19 +122,20 @@ class CCL implements AgreementInterface
                     $int = $pack[1];
                 }
             }
-            return $context;
+            return substr($context, 4);
         }
         return false;
     }
 
+
     /**
      * 报文切片
      *
-     * @param AisleInterface $aisle 任意通道
+     * @param CommunicationInterface $aisle 任意通道
      * @return string|false 切片结果
      * @throws \Exception
      */
-    public static function cut(AisleInterface $aisle): string|false
+    public static function cut(CommunicationInterface $aisle): string|false
     {
         $length = '';
         do {
@@ -135,6 +143,7 @@ class CCL implements AgreementInterface
                 throw new Exception("[CCL]无法解析空报文");
             }
             if ($symbol === '#') {
+
                 break;
             } else {
                 $length .= $symbol;
@@ -165,7 +174,7 @@ class CCL implements AgreementInterface
     /**
      * @throws \Exception
      */
-    public static function cutWithString(AisleInterface $aisle, &$string): string|false
+    public static function cutWithString(CommunicationInterface $aisle, &$string): string|false
     {
         if ($context = self::cut($aisle)) {
             if ($intPack = substr($context, 0, 64)) {
@@ -178,14 +187,16 @@ class CCL implements AgreementInterface
         return false;
     }
 
+
     /**
      * 不支持调整
      *
-     * @param \Cclilshy\PRipple\Communication\Standard\AisleInterface $aisle
+     * @param \Cclilshy\PRipple\Communication\Standard\CommunicationInterface $aisle
      * @return string|false
      */
-    public static function corrective(AisleInterface $aisle): string|false
+    public static function corrective(CommunicationInterface $aisle): string|false
     {
         return false;
     }
+
 }

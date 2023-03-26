@@ -10,7 +10,7 @@ namespace Cclilshy\PRipple\Communication\Socket;
 
 use Cclilshy\PRipple\Communication\Aisle\SocketAisle;
 
-class ClientIter extends SocketAisle
+class Client extends SocketAisle
 {
     public function __construct(mixed $socket)
     {
