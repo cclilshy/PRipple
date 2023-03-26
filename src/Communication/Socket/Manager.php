@@ -204,4 +204,16 @@ class Manager
     {
         return $this->clientSockets ?? null;
     }
+
+    public function waitReads(): array|false
+    {
+        $readSockets   = $this->clientSockets ?? [];
+        $readSockets[] = $this->entranceSocket;
+        $writeSockets  = null;
+        $exceptSockets = null;
+        if (socket_select($readSockets, $writeSockets, $exceptSockets, null) > 0) {
+            return $readSockets;
+        }
+        return false;
+    }
 }

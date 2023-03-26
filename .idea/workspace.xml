@@ -5,47 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4c50b6d3-7fcf-4749-b44d-410f1e10dfa0" name="变更" comment="">
-      <change afterPath="$PROJECT_DIR$/cast.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/Service/Http.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/Service/TestCast.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/runtime/cache/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/runtime/sock/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/server.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Communication/Aisle/FileAisle.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Console.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Dispatch/Service.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Dispatch/ServiceManager.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/File/File.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Service/SubscribeManager.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client.php" beforeDir="false" afterPath="$PROJECT_DIR$/client.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/composer.json" beforeDir="false" afterPath="$PROJECT_DIR$/composer.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/composer.lock" beforeDir="false" afterPath="$PROJECT_DIR$/composer.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/debug.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Communication/Agreement/CCL.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Communication/Agreement/CCL.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Communication/Aisle/SocketAisle.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Communication/Aisle/SocketAisle.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Communication/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/src/Communication/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Communication/Socket/ClientIter.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Communication/Socket/Client.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Communication/Socket/ServerSocketManager.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Communication/Socket/Manager.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Communication/Socket/SocketUnix.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Communication/Socket/SocketUnix.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Communication/Standard/AgreementInterface.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Communication/Standard/AgreementInterface.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Communication/Standard/AisleInterface.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Communication/Standard/CommunicationInterface.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Communication/Standard/PackageInterface.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Configure.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Configure.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Dispatch/Build.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Dispatch/Build.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cast.php" beforeDir="false" afterPath="$PROJECT_DIR$/notice.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Communication/Socket/Manager.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Communication/Socket/Manager.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Dispatch/Dispatcher.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Dispatch/Dispatcher.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Dispatch/EventTemplate/CommonTemplate.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Dispatch/EventTemplate/CommonTemplate.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Dispatch/Lister.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Dispatch/ServerManager.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Dispatch/Sign.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Dispatch/Sign.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Dispatch/Standard/EventTemplateAbstract.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Dispatch/Standard/EventTemplateAbstract.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Dispatch/Standard/EventTemplateInterface.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Dispatch/Standard/EventTemplateInterface.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Dispatch/Standard/ServiceAbstract.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Service/Service.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Dispatch/Standard/ServiceInterface.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Service/ServiceStandard.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/File/Fifo.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/File/Fifo.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/File/Pipe.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/File/Pipe.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/File/Standard/File.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/File/Standard/File.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Service/Http.php" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Dispatch/Service.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Dispatch/Service.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,22 +39,22 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "inlay.hints",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;inlay.hints&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/app" />
@@ -122,7 +87,8 @@
       <workItem from="1679802195378" duration="3304000" />
       <workItem from="1679814257987" duration="80000" />
       <workItem from="1679814564213" duration="9039000" />
-      <workItem from="1679830418291" duration="1322000" />
+      <workItem from="1679830418291" duration="1535000" />
+      <workItem from="1679838564144" duration="686000" />
     </task>
     <servers />
   </component>

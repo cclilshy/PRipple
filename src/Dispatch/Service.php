@@ -56,7 +56,7 @@ class Service
      * @param \Cclilshy\PRipple\Communication\Standard\CommunicationInterface $socket
      * @return void
      */
-    public function reConnect(CommunicationInterface $socket): void
+    public function handleServiceOnReconnect(CommunicationInterface $socket): void
     {
         $this->setState(self::STATE_START);
         $this->cacheFile->adjustPoint(0);
