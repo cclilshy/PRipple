@@ -21,7 +21,6 @@ class Http extends Service
     public function __construct()
     {
         parent::__construct(SocketInet::class, '0.0.0.0', 2222, [SO_REUSEADDR => 1]);
-        $this->launch();
     }
 
     public function initialize(): void

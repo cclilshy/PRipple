@@ -15,3 +15,4 @@ include __DIR__ . '/vendor/autoload.php';
 Configure::init();
 
 $http = new Http();
+$http->launch();
