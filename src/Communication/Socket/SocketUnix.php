@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Cclilshy\PRipple\Communication\Socket;
 
 use Exception;
+use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 
 class SocketUnix
 {
@@ -36,7 +37,7 @@ class SocketUnix
         if (file_exists($sockFile)) {
             throw new Exception('无法创建Unix套接字,可能进程被占用');
         }
-        @$sock = socket_create(AF_UNIX, SOCK_STREAM, 0);
+        $sock = socket_create(AF_UNIX, SOCK_STREAM, 0);
         if (!$sock) {
             throw new Exception('无法创建Unix套接字,可能进程被占用');
         }
