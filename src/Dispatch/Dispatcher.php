@@ -68,6 +68,9 @@ class Dispatcher
     private static function launchServer(): void
     {
         self::$servers                    = [];
+        if(file_exists(Dispatcher::UNIX_HANDLE)){
+            unlink(Dispatcher::UNIX_HANDLE);
+        }
         Dispatcher::$handlerSocketManager = SocketManager::createServer(Dispatcher::LOCAL_STREAM_TYPE, Dispatcher::UNIX_HANDLE);
     }
 

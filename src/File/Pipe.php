@@ -34,7 +34,7 @@ class Pipe implements File
 
     /**
      * @param ?string $name
-     * @return \core\File\Pipe|false
+     * @return Pipe|false
      */
     public static function create(?string $name): Pipe|false
     {
@@ -57,7 +57,7 @@ class Pipe implements File
 
     /**
      * @param string|null $name
-     * @return \core\File\Pipe|false
+     * @return Pipe|false
      */
     public static function link(string|null $name): Pipe|false
     {

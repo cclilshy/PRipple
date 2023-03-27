@@ -99,7 +99,7 @@ abstract class Service implements ServiceStandard
                             break;
                         default:
                             if ($client = $this->serverSocketManager->getClientBySocket($readSocket)) {
-                                $context = $client->read($context);
+                                $client->read($context);
                                 $this->execOriginalContext($context, $client);
                             }
                         // TODO::客户端消息

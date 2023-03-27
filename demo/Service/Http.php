@@ -27,6 +27,7 @@ class Http extends Service
     public function initialize(): void
     {
         $this->subscribe('Service_TestCast', 'DEFAULT', Dispatcher::FORMAT_BUILD);
+        $this->createServer(SocketInet::class,'127.0.0.1',2222, [SO_REUSEADDR => 1]);
         declare(ticks=1);
         pcntl_signal(SIGINT, function () {
             $this->noticeClose();
@@ -51,7 +52,9 @@ class Http extends Service
 
     public function execOriginalContext(string $context, Client $client): void
     {
-
+        Console::debug('服务入口有信息',$context);
+        $client->write("hello,i http server",$_);
+        var_dump($client);
     }
 
     public function exceptHandler(mixed $e)

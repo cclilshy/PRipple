@@ -7,7 +7,6 @@
  */
 
 namespace Cclilshy\PRipple;
-shell_exec("rm -rf " . __DIR__ . '/runtime/pipe/*.*');
 
 include __DIR__ . '/vendor/autoload.php';
 Configure::init();
