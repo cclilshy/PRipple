@@ -42,7 +42,9 @@ class SocketUnix
         }
         socket_set_option($sock, SOL_SOCKET, SO_SNDBUF, $bufferSize);
         socket_set_option($sock, SOL_SOCKET, SO_RCVBUF, $bufferSize);
-        socket_bind($sock, $sockFile);
+        if(!socket_bind($sock, $sockFile)){
+	    throw new Exception('无法绑定套接字,请查看目录权限:' . $sockFile);
+	}
         socket_listen($sock);
         return $sock;
     }
