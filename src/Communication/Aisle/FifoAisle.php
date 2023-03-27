@@ -66,9 +66,9 @@ class FifoAisle implements CommunicationInterface
      * @param        $handledLength
      * @return bool
      */
-    public function write(string $context, &$handledLength): bool
+    public function write(string $context): int|false
     {
-        return $this->file->write($context) > 0;
+        return $this->file->write($context);
     }
 
     public function release(): bool

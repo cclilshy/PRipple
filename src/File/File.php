@@ -44,7 +44,7 @@ class File
      */
     public static function exists(string $path): bool
     {
-        return is_file($path);
+        return file_exists($path);
     }
 
     /**
@@ -95,10 +95,10 @@ class File
      * @param int $location
      * @return int
      */
-    public function adjustPoint(int $location): int
+    public function adjustPoint(int $location, int|null $whence = SEEK_SET): int
     {
         $this->point = $location;
-        return fseek($this->file, $location);
+        return fseek($this->file, $location, $whence);
     }
 
     /**
@@ -116,5 +116,10 @@ class File
     {
         $this->adjustPoint(0);
         return ftruncate($this->file, 0);
+    }
+
+    public function getPoint(): int|bool
+    {
+        return ftell($this->file);
     }
 }

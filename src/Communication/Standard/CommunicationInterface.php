@@ -52,5 +52,5 @@ interface CommunicationInterface
      * @param        $handledLength
      * @return bool
      */
-    public function write(string $context, &$handledLength): bool;
+    public function write(string $context): int|false;
 }

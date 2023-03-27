@@ -27,7 +27,7 @@ abstract class Service implements ServiceStandard
     const PS_CLOSE = 'PS_CLOSE';
 
     protected Manager                $serverSocketManager;
-    protected CommunicationInterface $dispatcherServerAisle;
+    protected SocketAisle $dispatcherServerAisle;
     protected string                 $publish;
     protected mixed                  $dispatcherServer;
     protected array                  $socketTypeMap;

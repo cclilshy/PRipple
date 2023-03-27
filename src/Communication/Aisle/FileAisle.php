@@ -69,9 +69,9 @@ class FileAisle implements CommunicationInterface
      * @param        $handledLength
      * @return bool
      */
-    public function write(string $context, &$handledLength): bool
+    public function write(string $context): int|false
     {
-        return $this->file->write($context) > 0;
+        return $this->file->write($context);
     }
 
     public function release(): bool
@@ -93,13 +93,18 @@ class FileAisle implements CommunicationInterface
     }
 
 
-    public function adjustPoint(int $location): int
+    public function adjustPoint(int $location, int|null $whence = SEEK_SET): int
     {
-        return $this->file->adjustPoint($location);
+        return $this->file->adjustPoint($location, $whence);
     }
 
     public function flush()
     {
         $this->file->flush();
+    }
+
+    public function getPoint(): int|bool
+    {
+        return $this->file->getPoint();
     }
 }

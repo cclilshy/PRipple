@@ -250,6 +250,7 @@ class Dispatcher
 
     private static function handleServiceRegister(Event $event, Client $client): void
     {
+        $client->setNoBlock();
         if (!$service = self::getServiceByName($event->getPublisher())) {
             $service = new Service($event->getPublisher(), $client);
             Console::debug("[Dispatcher] " . $event->getPublisher() . ' 上线');

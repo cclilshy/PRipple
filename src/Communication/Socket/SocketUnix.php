@@ -5,34 +5,25 @@
  * @LastEditors: cclilshy jingnigg@gmail.com
  * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
  */
+
 declare(strict_types=1);
 
 namespace Cclilshy\PRipple\Communication\Socket;
 
 use Exception;
-use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 
 class SocketUnix
 {
     /**
-     * @throws \Exception
-     */
-    public static function createAisle(string $sockFile, int|null $bufferSize = 1024 * 1024): CommunicationInterface
-    {
-        $_connect = self::create($sockFile, $bufferSize);
-        return SocketAisle::create($_connect);
-    }
-
-
-    /**
      * 创建一个自定义缓冲区大小的UNIX套接字
      *
-     * @param string   $sockFile   套接字文件地址
-     * @param int|null $bufferSize 默认缓冲区大小为8M
+     * @param string    $sockFile   套接字文件地址
+     * @param bool|null $block
+     * @param int|null  $bufferSize 默认缓冲区大小为8M
      * @return mixed
-     * @throws Exception
+     * @throws \Exception
      */
-    public static function create(string $sockFile, int|null $bufferSize = 1024 * 1024): mixed
+    public static function create(string $sockFile, bool|null $block = true, int|null $bufferSize = 1024 * 1024): mixed
     {
         if (file_exists($sockFile)) {
             throw new Exception('无法创建Unix套接字,可能进程被占用');
@@ -43,22 +34,15 @@ class SocketUnix
         }
         socket_set_option($sock, SOL_SOCKET, SO_SNDBUF, $bufferSize);
         socket_set_option($sock, SOL_SOCKET, SO_RCVBUF, $bufferSize);
-        if(!socket_bind($sock, $sockFile)){
-	    throw new Exception('无法绑定套接字,请查看目录权限:' . $sockFile);
-	}
+        if (!socket_bind($sock, $sockFile)) {
+            throw new Exception('无法绑定套接字,请查看目录权限:' . $sockFile);
+        }
+        if ($block === false) {
+            socket_set_nonblock($sock);
+        }
         socket_listen($sock);
         return $sock;
     }
-
-    /**
-     * @throws \Exception
-     */
-    public static function connectAisle(string $sockFile, int|null $bufferSize = 1024 * 1024): CommunicationInterface
-    {
-        $_connect = self::connect($sockFile, $bufferSize);
-        return SocketAisle::create($_connect);
-    }
-
 
     /**
      * @param string   $sockFile

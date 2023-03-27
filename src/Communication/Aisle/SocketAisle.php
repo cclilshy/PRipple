@@ -6,14 +6,15 @@
  * @Description: CCPHP
  * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
  */
-namespace Cclilshy\PRipple\Communication\Aisle;
 
+namespace Cclilshy\PRipple\Communication\Aisle;
+use Exception;
+use Cclilshy\PRipple\File\File;
 use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 
 class SocketAisle implements CommunicationInterface
 {
     const EXT = '.aisle';
-
     private readonly string $address;    // 用户地址
     private readonly string $keyName;    // 在管理器中的键名
     private readonly int    $createTime; // 用户连接时
@@ -34,11 +35,22 @@ class SocketAisle implements CommunicationInterface
     // 总共发送流量
     private string $sendBuffer = '';
     // 发送丢包储存区
+    private FileAisle $cacheFile;
+    // 文件缓冲区
+    private string $cacheFilePath;
+    // 文件缓冲区文件路径
+    private int $cacheLength = 0;
+    // 文件缓冲长度
+    private int $cachePoint = 0;
+    // 缓存指针位置
 
     private string $name;        // 自定义的名称
     private string $identity;    // 自定义身份标识
     private int    $activeTime;  // 上次活跃时间
 
+    /**
+     * @throws \Exception
+     */
     public function __construct(mixed $socket)
     {
         socket_getsockname($socket, $address, $port);
@@ -54,6 +66,16 @@ class SocketAisle implements CommunicationInterface
         $this->receiveBufferSize   = socket_get_option($socket, SOL_SOCKET, SO_RCVBUF);
         $this->sendLowWaterSize    = socket_get_option($socket, SOL_SOCKET, SO_SNDLOWAT);
         $this->receiveLowWaterSize = socket_get_option($socket, SOL_SOCKET, SO_RCVLOWAT);
+        $this->cacheFilePath       = CACHE_PATH . '/socket_cache_' . $this->keyName . microtime(true) . mt_rand(1111, 9999) . self::EXT;
+        if (File::exists($this->cacheFilePath)) {
+            unlink($this->cacheFilePath);
+        }
+        if ($cacheFile = File::create($this->cacheFilePath, 'r+')) {
+            $this->cacheFile = FileAisle::create($cacheFile);
+        } else {
+            throw new Exception("无法创建套接字缓存缓冲文件,请检查目录权限 " . $this->cacheFilePath);
+
+        }
     }
 
     /**
@@ -61,6 +83,7 @@ class SocketAisle implements CommunicationInterface
      *
      * @param mixed $base
      * @return false|static
+     * @throws \Exception
      */
     public static function create(mixed $base): self|false
     {
@@ -320,9 +343,64 @@ class SocketAisle implements CommunicationInterface
         return $this->activeTime;
     }
 
+    public function write(string $context): int|false
+    {
+        $handledLengthCount = 0;
+        // 处理缓冲区数据
+        $list = str_split($this->sendBuffer, $this->sendBufferSize);
+        while ($item = array_shift($list)) {
+            if (!$handledLength = socket_send($this->socket, $item, strlen($item), 0)) {
+                $this->cacheFile->adjustPoint(0, SEEK_END);
+                $this->cacheFile->write($context);
+                $this->cacheLength += strlen($context);
+                return $handledLengthCount;
+            } else {
+                $this->sendBuffer   = substr($this->sendBuffer, $handledLength);
+                $handledLengthCount += $handledLength;
+            }
+        }
+
+        // 处理缓存文件数据
+        if ($this->cacheLength > 0) {
+            $this->cacheFile->adjustPoint($this->cachePoint);
+            $cacheContextFragment = '';
+            while ($this->cacheLength > 0 && $this->cacheFile->read($cacheContextFragment, min($this->sendBufferSize, $this->cacheLength))) {
+                if (!$handledLength = socket_send($this->socket, $cacheContextFragment, strlen($cacheContextFragment), 0)) {
+                    $this->cachePoint = $this->cacheFile->getPoint() - strlen($cacheContextFragment);
+                    $this->cacheFile->adjustPoint(0, SEEK_END);
+                    $this->cacheFile->write($context);
+                    $this->cacheLength += strlen($context);
+                    return $handledLengthCount;
+                } else {
+                    $this->cacheLength  -= $handledLength;
+                    $handledLengthCount += $handledLength;
+                }
+            }
+        }
+
+
+        // 处理用户文本
+        $list = str_split($context, $this->sendBufferSize);
+        $this->cacheFile->adjustPoint(0, SEEK_END);
+        while ($item = array_shift($list)) {
+            if (!$handledLength = socket_send($this->socket, $item, strlen($item), 0)) {
+                $this->cacheFile->write($item);
+                $this->cacheLength += strlen($item);
+                while ($item = array_shift($list)) {
+                    $this->cacheFile->write($item);
+                    $this->cacheLength += strlen($item);
+                }
+                return $handledLengthCount;
+            } else {
+                $handledLengthCount += $handledLength;
+            }
+        }
+        return $handledLengthCount;
+    }
+
 
     /**
-     * 读取数据
+     * 实时读取数据,数据完整但堵塞
      *
      * @param null     $data
      * @param int|null $length
@@ -342,7 +420,7 @@ class SocketAisle implements CommunicationInterface
         $handledLength = 0;
         do {
             $readList = [$this->socket];
-            if (!socket_select($readList, $_, $_, null)) {
+            if (!socket_select($readList, $_, $_, null, 1000)) {
                 break;
             }
             $recLength = socket_recv($this->socket, $_buffer, min($length, $this->receiveBufferSize), 0);
@@ -354,7 +432,6 @@ class SocketAisle implements CommunicationInterface
             $handledLength          += $recLength;
             $this->receiveFlowCount += $recLength;
         } while ($length > 0 && $target);
-
         if ($target) {
             return $length === 0;
         } else {
@@ -362,15 +439,13 @@ class SocketAisle implements CommunicationInterface
         }
     }
 
-
     /**
-     * 写入数据
+     * 实时写入数据,数据完整但堵塞
      *
      * @param string $context
-     * @param        $handledLength
-     * @return bool
+     * @return int|false
      */
-    public function write(string $context, &$handledLength): bool
+    public function send(string $context): int|false
     {
         $this->activeTime = time();
         $handledLength    = 0;
@@ -380,7 +455,7 @@ class SocketAisle implements CommunicationInterface
                 $this->sendBuffer .= $task;
             }
             $writeList = [$this->socket];   // 可写列表
-            socket_select($_, $writeList, $_, null);
+            socket_select($_, $writeList, $_, null, 1000);
             $_buffer     = substr($this->sendBuffer, 0, $this->sendBufferSize);
             $writeLength = socket_send($this->socket, $_buffer, strlen($_buffer), 0);
             if ($writeLength === false || $writeLength === 0 || $_buffer === null) {
@@ -390,7 +465,7 @@ class SocketAisle implements CommunicationInterface
             $this->sendBuffer    = substr($_buffer, $writeLength);
             $this->sendFlowCount += $writeLength;
         } while (!empty($buffer) || count($tasks) > 0);
-        return $writeLength === strlen($context);
+        return $handledLength;
     }
 
     /**
@@ -413,5 +488,35 @@ class SocketAisle implements CommunicationInterface
     {
         socket_close($this->socket);
         return true;
+    }
+
+    public function setBlock(): bool
+    {
+        return socket_set_block($this->socket);
+    }
+
+    public function setNoBlock(): bool
+    {
+        return socket_set_nonblock($this->socket);
+    }
+
+    public function truncate(): int|false
+    {
+        $handledLengthCount = 0;
+        // 处理缓冲区数据
+        $handledLengthCount += $this->send($this->sendBuffer);
+        
+        // 处理缓存文件数据
+        if ($this->cacheLength > 0) {
+            $this->cacheFile->adjustPoint($this->cachePoint);
+            $cacheContextFragment = '';
+            while ($this->cacheLength > 0 && $this->cacheFile->read($cacheContextFragment, min($this->sendBufferSize, $this->cacheLength))) {
+                $handledLength      = $this->send($cacheContextFragment);
+                $this->cacheLength  -= $handledLength;
+                $handledLengthCount += $handledLength;
+            }
+        }
+
+        return $handledLengthCount;
     }
 }

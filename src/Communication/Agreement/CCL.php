@@ -48,14 +48,8 @@ class CCL implements AgreementInterface
 
     private static function sendOriginal(CommunicationInterface $aisle, string $context): bool
     {
-        $fullContextLength = strlen($context);
-        do {
-            $writeResult = $aisle->write($context, $length);
-            if ($length !== false && $length > 0) {
-                $fullContextLength -= $length;
-            }
-        } while ($writeResult && $length > 0 && $fullContextLength > 0);
-        return $fullContextLength === 0;
+        $aisle->write($context);
+        return true;
     }
 
     /**
@@ -198,5 +192,4 @@ class CCL implements AgreementInterface
     {
         return false;
     }
-
 }

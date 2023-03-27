@@ -18,6 +18,7 @@ use Cclilshy\PRipple\Communication\Socket\SocketInet;
 
 class Http extends Service
 {
+    private int $int = 0;
     public function __construct()
     {
         parent::__construct(SocketInet::class, '0.0.0.0', 2222, [SO_REUSEADDR => 1]);
@@ -25,13 +26,10 @@ class Http extends Service
 
     public function initialize(): void
     {
+        
         $this->subscribe('Service_TestCast', 'DEFAULT', Dispatcher::FORMAT_BUILD);
         $this->createServer(SocketInet::class,'127.0.0.1',2222, [SO_REUSEADDR => 1]);
-        declare(ticks=1);
-        pcntl_signal(SIGINT, function () {
-            $this->noticeClose();
-            exit;
-        });
+        
     }
 
     public function execMessage(string $message): void
@@ -41,7 +39,10 @@ class Http extends Service
 
     public function execPackage(Build $package): void
     {
+        sleep(1);
         Console::debug('收到订阅包 > ' . $package);
+        $this->int++;
+        echo $this->int . PHP_EOL;
     }
 
     public function execEvent(Event $event): void
@@ -51,9 +52,8 @@ class Http extends Service
 
     public function execOriginalContext(string $context, Client $client): void
     {
-        Console::debug('服务入口有信息',$context);
-        $client->write("hello,i http server",$_);
-        var_dump($client);
+        Console::debug('服务入口有信息', $context);
+        $client->write("hello,i http server");
     }
 
     public function exceptHandler(mixed $e)
