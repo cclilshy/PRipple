@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
-namespace Cclilshy\PRipple\File\Standard;
+
+namespace Cclilshy\PRipple\FileSystem\Standard;
 
 interface File
 {

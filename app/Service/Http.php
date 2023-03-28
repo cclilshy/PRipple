@@ -18,7 +18,6 @@ use Cclilshy\PRipple\Communication\Socket\SocketInet;
 
 class Http extends Service
 {
-    private int $int = 0;
     public function __construct()
     {
         parent::__construct(SocketInet::class, '0.0.0.0', 2222, [SO_REUSEADDR => 1]);
@@ -26,28 +25,23 @@ class Http extends Service
 
     public function initialize(): void
     {
-        
         $this->subscribe('Service_TestCast', 'DEFAULT', Dispatcher::FORMAT_BUILD);
-        $this->createServer(SocketInet::class,'127.0.0.1',2222, [SO_REUSEADDR => 1]);
-        
+        $this->createServer(SocketInet::class, '127.0.0.1', 2222, [SO_REUSEADDR => 1]);
     }
 
     public function execMessage(string $message): void
     {
-        Console::debug('收到订阅消息 > ' . $message);
+        Console::debug('收到订阅消息->', $message);
     }
 
     public function execPackage(Build $package): void
     {
-        sleep(1);
-        Console::debug('收到订阅包 > ' . $package);
-        $this->int++;
-        echo $this->int . PHP_EOL;
+        Console::debug('收到订阅包->', $package->serialize());
     }
 
     public function execEvent(Event $event): void
     {
-        Console::debug('收到订阅事件 > ', $event);
+        Console::debug('收到订阅事件>', $event->serialize());
     }
 
     public function execOriginalContext(string $context, Client $client): void

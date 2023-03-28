@@ -29,7 +29,6 @@ class Dispatcher
     private static SubscribeManager $subscribeManager;
     private static SocketManager    $handlerSocketManager;
     private static array            $servers;
-    // 服务列表
 
     /**
      * 启动
@@ -42,7 +41,7 @@ class Dispatcher
             Dispatcher::initPublicEventList();
             Dispatcher::launchServer();
         } catch (Exception $e) {
-            Console::debug($e->getMessage());
+            Console::debug("[Dispatcher]", $e->getMessage());
             return;
         }
         self::listen();
@@ -67,8 +66,8 @@ class Dispatcher
      */
     private static function launchServer(): void
     {
-        self::$servers                    = [];
-        if(file_exists(Dispatcher::UNIX_HANDLE)){
+        self::$servers = [];
+        if (file_exists(Dispatcher::UNIX_HANDLE)) {
             unlink(Dispatcher::UNIX_HANDLE);
         }
         Dispatcher::$handlerSocketManager = SocketManager::createServer(Dispatcher::LOCAL_STREAM_TYPE, Dispatcher::UNIX_HANDLE);
@@ -82,7 +81,11 @@ class Dispatcher
     private static function listen(): void
     {
         while (true) {
-            if ($readList = self::$handlerSocketManager->waitReads()) {
+            if (!$readList = self::$handlerSocketManager->waitReads()) {
+                // TODO:处理缓冲数据
+                Console::debug("[Dispatcher]", '清理缓冲数据');
+                self::$handlerSocketManager->handleBufferContext();
+            } else {
                 foreach ($readList as $readSocket) {
                     switch ($readSocket) {
                         case Dispatcher::$handlerSocketManager->getEntranceSocket():
@@ -103,10 +106,21 @@ class Dispatcher
                             break;
                     }
                 }
-            } else {
-                Console::debug("[Dispatcher] 等待消息异常");
             }
         }
+    }
+
+    /**
+     * 有新的连接加入
+     *
+     * @param mixed $readSocket
+     * @return void
+     * @throws \Exception
+     */
+    private static function handleServiceOnline(mixed $readSocket): void
+    {
+        $name                             = self::$handlerSocketManager->accept($readSocket);
+        Dispatcher::$socketHashMap[$name] = Dispatcher::MSF_HANDLER;
     }
 
     /**
@@ -125,7 +139,7 @@ class Dispatcher
             $message   = $package->getMessage();
             $event     = $package->getEvent();
 
-            Console::debug("[Dispatcher]处理器消息 > " . $publisher);
+            Console::debug("[Dispatcher]", "处理器消息" . $publisher);
             if ($event) {
                 // 处理调度器内置事件
                 if (self::handleBuiltEvent($event, $client)) {
@@ -151,6 +165,65 @@ class Dispatcher
     }
 
     /**
+     * 处理内置事件
+     *
+     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Event $event 事件本身
+     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @return bool
+     */
+    private static function handleBuiltEvent(Event $event, Client $client): bool
+    {
+        switch ($event->getName()) {
+            case Dispatcher::PD_SUBSCRIBE:
+                //TODO::订阅事件
+                if (is_array($subscribeInfo = $event->getData())) {
+                    self::$subscribeManager->addSubscribes($subscribeInfo['publish'], $subscribeInfo['event'], $event->getPublisher(), $subscribeInfo['type']);
+                }
+                break;
+            case Dispatcher::PD_SUBSCRIBE_UN:
+                //TODO: 卸载订阅事件
+                if (is_array($subscribeInfo = $event->getData())) {
+                    self::$subscribeManager->unSubscribes($event->getPublisher(), $subscribeInfo['publish'], $subscribeInfo['event']);
+                }
+                break;
+            case ServiceHandler::PS_START:
+                //TODO 服务注册事件
+                self::handleServiceRegister($event, $client);
+                break;
+            case ServiceHandler::PS_CLOSE:
+                //TODO: 正常关闭服务事件
+                self::handleServiceOnclose($event, $client);
+                break;
+            default:
+                //TODO: 不是内置事件
+                return false;
+        }
+        return true;
+    }
+
+    /**
+     * 服务套接字声明注册
+     *
+     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Event $event
+     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @return void
+     */
+    private static function handleServiceRegister(Event $event, Client $client): void
+    {
+        $client->setNoBlock();
+        if (!$service = self::getServiceByName($event->getPublisher())) {
+            $service = new Service($event->getPublisher(), $client);
+            Console::debug("[Dispatcher]", $event->getPublisher() . ' 上线');
+            self::$servers[$event->getPublisher()] = $service;
+            $service->setState(Service::STATE_START);
+        } else {
+            Console::debug("[Dispatcher]", $event->getPublisher() . ' 重连');
+            $service->handleServiceOnReconnect($client);
+        }
+        self::$handlerSocketManager->setIdentityBySocket($client->getSocket(), $event->getPublisher());
+    }
+
+    /**
      * 获取一个服务实体
      *
      * @param string $name
@@ -159,6 +232,25 @@ class Dispatcher
     private static function getServiceByName(string $name): Service|null
     {
         return self::$servers[$name] ?? null;
+    }
+
+    /**
+     * 服务套接字声明关闭
+     *
+     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Event $event
+     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @return void
+     */
+    private static function handleServiceOnclose(Event $event, Client $client): void
+    {
+        // 删除所有订阅事件
+        self::$subscribeManager->unSubscriber($event->getPublisher());
+        // 移除服务套接字
+        if ($socketAisle = self::$handlerSocketManager->getClientSocketByName($event->getPublisher())) {
+            self::$handlerSocketManager->removeClient($socketAisle);
+        }
+        // 移除服务对象
+        self::removeServiceByName($event->getPublisher());
     }
 
     /**
@@ -205,83 +297,19 @@ class Dispatcher
     }
 
     /**
-     * 处理内置事件
+     * 服务套接字断开连接
      *
-     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Event $event 事件本身
      * @param \Cclilshy\PRipple\Communication\Socket\Client $client
-     * @return bool
+     * @param string                                        $message
+     * @return void
      */
-    private static function handleBuiltEvent(Event $event, Client $client): bool
-    {
-        switch ($event->getName()) {
-            case Dispatcher::PD_SUBSCRIBE:
-                //TODO::订阅事件
-                if (is_array($subscribeInfo = $event->getData())) {
-                    self::$subscribeManager->addSubscribes($subscribeInfo['publish'], $subscribeInfo['event'], $event->getPublisher(), $subscribeInfo['type']);
-                }
-                break;
-            case Dispatcher::PD_SUBSCRIBE_UN:
-                //TODO: 卸载订阅事件
-                if (is_array($subscribeInfo = $event->getData())) {
-                    self::$subscribeManager->unSubscribes($event->getPublisher(), $subscribeInfo['publish'], $subscribeInfo['event']);
-                }
-                break;
-            case ServiceHandler::PS_START:
-                //TODO 服务注册事件
-                self::handleServiceRegister($event, $client);
-                break;
-            case ServiceHandler::PS_CLOSE:
-                //TODO: 正常关闭服务事件
-                self::handleServiceOnclose($event, $client);
-                break;
-            default:
-                //TODO: 不是内置事件
-                return false;
-        }
-        return true;
-    }
-
-
-    private static function handleServiceOnline(mixed $readSocket): void
-    {
-        $name                             = self::$handlerSocketManager->accept($readSocket);
-        Dispatcher::$socketHashMap[$name] = Dispatcher::MSF_HANDLER;
-    }
-
-    private static function handleServiceRegister(Event $event, Client $client): void
-    {
-        $client->setNoBlock();
-        if (!$service = self::getServiceByName($event->getPublisher())) {
-            $service = new Service($event->getPublisher(), $client);
-            Console::debug("[Dispatcher] " . $event->getPublisher() . ' 上线');
-            self::$servers[$event->getPublisher()] = $service;
-            $service->setState(Service::STATE_START);
-        } else {
-            Console::debug("[Dispatcher] " . $event->getPublisher() . ' 重连');
-            $service->handleServiceOnReconnect($client);
-        }
-        self::$handlerSocketManager->setIdentityBySocket($client->getSocket(), $event->getPublisher());
-    }
-
-    private static function handleServiceOnclose(Event $event, Client $client): void
-    {
-        // 删除所有订阅事件
-        self::$subscribeManager->unSubscriber($event->getPublisher());
-        // 移除服务套接字
-        if ($socketAisle = self::$handlerSocketManager->getClientSocketByName($event->getPublisher())) {
-            self::$handlerSocketManager->removeClient($socketAisle);
-        }
-        // 移除服务对象
-        self::removeServiceByName($event->getPublisher());
-    }
-
     private static function handleServiceOnBlack(Client $client, string $message): void
     {
-        Console::debug('处理器断开连接:', $message);
+        Console::debug('[Dispatcher]', '断开链接<->', $message);
         if ($service = self::getServiceByName($client->getIdentity())) {
             if ($service->getState() !== Service::STATE_CLOSE) {
                 $service->setState(Service::STATE_EXPECT);
-                Console::debug('非正常退出:' . $client->getIdentity());
+                Console::debug("[Dispatcher]", '非正常退出<->' . $client->getIdentity());
             }
         }
         self::$handlerSocketManager->removeClient($client->getSocket());

@@ -8,13 +8,15 @@
  */
 
 namespace Cclilshy\PRipple\Communication\Aisle;
+
 use Exception;
-use Cclilshy\PRipple\File\File;
+use Cclilshy\PRipple\FileSystem\File;
+use Cclilshy\PRipple\Communication\Socket\Manager;
 use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 
 class SocketAisle implements CommunicationInterface
 {
-    const EXT = '.aisle';
+    const EXT = '.sock';
     private readonly string $address;    // 用户地址
     private readonly string $keyName;    // 在管理器中的键名
     private readonly int    $createTime; // 用户连接时
@@ -43,6 +45,7 @@ class SocketAisle implements CommunicationInterface
     // 文件缓冲长度
     private int $cachePoint = 0;
     // 缓存指针位置
+    private Manager $manager;
 
     private string $name;        // 自定义的名称
     private string $identity;    // 自定义身份标识
@@ -51,9 +54,12 @@ class SocketAisle implements CommunicationInterface
     /**
      * @throws \Exception
      */
-    public function __construct(mixed $socket)
+    public function __construct(mixed $socket, Manager|null $manager = null)
     {
         socket_getsockname($socket, $address, $port);
+        if ($manager) {
+            $this->manager = $manager;
+        }
         $this->address    = $address;
         $this->port       = $port ?? 0;
         $this->keyName    = spl_object_hash($socket);
@@ -74,7 +80,6 @@ class SocketAisle implements CommunicationInterface
             $this->cacheFile = FileAisle::create($cacheFile);
         } else {
             throw new Exception("无法创建套接字缓存缓冲文件,请检查目录权限 " . $this->cacheFilePath);
-
         }
     }
 
@@ -145,9 +150,6 @@ class SocketAisle implements CommunicationInterface
         return $this->address;
     }
 
-
-    //     设置和获取自定义信息
-
     /**
      * 获取客户端端口
      *
@@ -157,7 +159,6 @@ class SocketAisle implements CommunicationInterface
     {
         return $this->port;
     }
-
 
     /**
      * 获取客户端名称
@@ -343,16 +344,20 @@ class SocketAisle implements CommunicationInterface
         return $this->activeTime;
     }
 
-    public function write(string $context): int|false
+    /**
+     * 非堵塞型写
+     *
+     * @param string $context
+     * @return int|bool
+     */
+    public function write(string $context): int|bool
     {
         $handledLengthCount = 0;
         // 处理缓冲区数据
         $list = str_split($this->sendBuffer, $this->sendBufferSize);
         while ($item = array_shift($list)) {
             if (!$handledLength = socket_send($this->socket, $item, strlen($item), 0)) {
-                $this->cacheFile->adjustPoint(0, SEEK_END);
-                $this->cacheFile->write($context);
-                $this->cacheLength += strlen($context);
+                $this->cacheToFile($context);
                 return $handledLengthCount;
             } else {
                 $this->sendBuffer   = substr($this->sendBuffer, $handledLength);
@@ -363,32 +368,28 @@ class SocketAisle implements CommunicationInterface
         // 处理缓存文件数据
         if ($this->cacheLength > 0) {
             $this->cacheFile->adjustPoint($this->cachePoint);
-            $cacheContextFragment = '';
             while ($this->cacheLength > 0 && $this->cacheFile->read($cacheContextFragment, min($this->sendBufferSize, $this->cacheLength))) {
                 if (!$handledLength = socket_send($this->socket, $cacheContextFragment, strlen($cacheContextFragment), 0)) {
-                    $this->cachePoint = $this->cacheFile->getPoint() - strlen($cacheContextFragment);
-                    $this->cacheFile->adjustPoint(0, SEEK_END);
-                    $this->cacheFile->write($context);
-                    $this->cacheLength += strlen($context);
+                    $this->cacheToFile($context);
                     return $handledLengthCount;
                 } else {
+                    $this->cachePoint   += $handledLength;
                     $this->cacheLength  -= $handledLength;
                     $handledLengthCount += $handledLength;
                 }
             }
+            if (isset($this->manager)) {
+                $this->manager->removeClientWithBufferedData($this);
+            }
         }
 
-
-        // 处理用户文本
+        // 处理请求文本
         $list = str_split($context, $this->sendBufferSize);
-        $this->cacheFile->adjustPoint(0, SEEK_END);
         while ($item = array_shift($list)) {
             if (!$handledLength = socket_send($this->socket, $item, strlen($item), 0)) {
-                $this->cacheFile->write($item);
-                $this->cacheLength += strlen($item);
+                $this->cacheToFile($item);
                 while ($item = array_shift($list)) {
-                    $this->cacheFile->write($item);
-                    $this->cacheLength += strlen($item);
+                    $this->cacheToFile($item);
                 }
                 return $handledLengthCount;
             } else {
@@ -398,6 +399,21 @@ class SocketAisle implements CommunicationInterface
         return $handledLengthCount;
     }
 
+    /**
+     * 写缓冲到文件缓冲区
+     *
+     * @param string $context
+     * @return void
+     */
+    public function cacheToFile(string $context): void
+    {
+        $this->cacheFile->adjustPoint(0, SEEK_END);
+        $this->cacheFile->write($context);
+        $this->cacheLength += strlen($context);
+        if (isset($this->manager)) {
+            $this->manager->addClientWithBufferedData($this);
+        }
+    }
 
     /**
      * 实时读取数据,数据完整但堵塞
@@ -440,42 +456,17 @@ class SocketAisle implements CommunicationInterface
     }
 
     /**
-     * 实时写入数据,数据完整但堵塞
-     *
-     * @param string $context
-     * @return int|false
-     */
-    public function send(string $context): int|false
-    {
-        $this->activeTime = time();
-        $handledLength    = 0;
-        $tasks            = str_split($context, $this->sendBufferSize);    // 切片
-        do {
-            if ($task = array_shift($tasks)) {
-                $this->sendBuffer .= $task;
-            }
-            $writeList = [$this->socket];   // 可写列表
-            socket_select($_, $writeList, $_, null, 1000);
-            $_buffer     = substr($this->sendBuffer, 0, $this->sendBufferSize);
-            $writeLength = socket_send($this->socket, $_buffer, strlen($_buffer), 0);
-            if ($writeLength === false || $writeLength === 0 || $_buffer === null) {
-                return false;
-            }
-            $handledLength       += $writeLength;
-            $this->sendBuffer    = substr($_buffer, $writeLength);
-            $this->sendFlowCount += $writeLength;
-        } while (!empty($buffer) || count($tasks) > 0);
-        return $handledLength;
-    }
-
-    /**
      * 关闭套接字连接
      *
      * @return bool
      */
     public function release(): bool
     {
-        return $this->close();
+        $this->close();
+        $this->cacheFile->close();
+        $this->cacheFile->release();
+        unlink($this->cacheFilePath);
+        return true;
     }
 
 
@@ -490,22 +481,37 @@ class SocketAisle implements CommunicationInterface
         return true;
     }
 
+    /**
+     * 设置为堵塞模式
+     *
+     * @return bool
+     */
     public function setBlock(): bool
     {
         return socket_set_block($this->socket);
     }
 
+    /**
+     * 设置为非堵塞模式
+     *
+     * @return bool
+     */
     public function setNoBlock(): bool
     {
         return socket_set_nonblock($this->socket);
     }
 
+    /**
+     * 堵塞推送数据
+     *
+     * @return int|false
+     */
     public function truncate(): int|false
     {
         $handledLengthCount = 0;
         // 处理缓冲区数据
         $handledLengthCount += $this->send($this->sendBuffer);
-        
+
         // 处理缓存文件数据
         if ($this->cacheLength > 0) {
             $this->cacheFile->adjustPoint($this->cachePoint);
@@ -518,5 +524,57 @@ class SocketAisle implements CommunicationInterface
         }
 
         return $handledLengthCount;
+    }
+
+    /**
+     * 实时写入数据,数据完整但堵塞
+     *
+     * @param string $context
+     * @return int|false
+     */
+    public function send(string $context): int|false
+    {
+        $this->activeTime = time();
+        $handledLength    = 0;
+        $tasks            = str_split($context, $this->sendBufferSize);    // 切片
+        do {
+            if ($task = array_shift($tasks)) {
+                $this->sendBuffer .= $task;
+            }
+            $writeList = [$this->socket];
+            socket_select($_, $writeList, $_, null, 1000);
+            $_buffer     = substr($this->sendBuffer, 0, $this->sendBufferSize);
+            $writeLength = socket_send($this->socket, $_buffer, strlen($_buffer), 0);
+            if ($writeLength === false || $writeLength === 0 || $_buffer === null) {
+                return false;
+            }
+            $handledLength       += $writeLength;
+            $this->sendBuffer    = substr($_buffer, $writeLength);
+            $this->sendFlowCount += $writeLength;
+        } while (!empty($buffer) || count($tasks) > 0);
+        return $handledLength;
+    }
+
+    /**
+     * 通过协议发送数据
+     *
+     * @param string $agree
+     * @param string $method
+     * @param array  $options
+     * @return mixed
+     */
+    public function sendByAgree(string $agree, string $method, array $options): mixed
+    {
+        return call_user_func_array([$agree, $method], array_merge([$this], $options));
+    }
+
+    /**
+     * 获取文件缓冲区长度
+     *
+     * @return int
+     */
+    public function getCacheLength(): int
+    {
+        return $this->cacheLength;
     }
 }

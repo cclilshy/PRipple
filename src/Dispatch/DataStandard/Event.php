@@ -35,11 +35,15 @@ class Event
         $this->timestamp  = $timestamp ?? time();
     }
 
+    public static function unSerialize(string $context): self|false
+    {
+        return unserialize($context);
+    }
+
     public function getPublisher(): string
     {
         return $this->publisher;
     }
-
 
     /**
      * 事件反序化
@@ -71,7 +75,6 @@ class Event
         return $this->timestamp;
     }
 
-
     /**
      * 获取事件数据
      *
@@ -92,7 +95,6 @@ class Event
         return $this->identifier;
     }
 
-
     /**
      * 设置身份标识符
      *
@@ -105,7 +107,6 @@ class Event
         return $this;
     }
 
-
     /**
      * 事件格式化为json
      *
@@ -115,7 +116,6 @@ class Event
     {
         return json_encode($this->toArray());
     }
-
 
     /**
      * 事件格式化为数组
@@ -130,10 +130,5 @@ class Event
             'timestamp'  => $this->timestamp,
             'data'       => $this->data
         ];
-    }
-
-    public static function unSerialize(string $context): self|false
-    {
-        return unserialize($context);
     }
 }

@@ -12,8 +12,8 @@ use Cclilshy\PRipple\Communication\Aisle\SocketAisle;
 
 class Client extends SocketAisle
 {
-    public function __construct(mixed $socket)
+    public function __construct(mixed $socket, Manager $manager)
     {
-        parent::__construct($socket);
+        parent::__construct($socket, $manager);
     }
 }

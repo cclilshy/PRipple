@@ -9,13 +9,12 @@
 
 namespace Cclilshy\PRipple\Communication\Aisle;
 
-use Cclilshy\PRipple\File\Fifo;
+use Cclilshy\PRipple\FileSystem\Fifo;
 use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 
 class FifoAisle implements CommunicationInterface
 {
-    const EXT = '.aisle';
-
+    const EXT = '.pipe';
     private Fifo $file;
 
     public function __construct(mixed $file)
@@ -63,10 +62,9 @@ class FifoAisle implements CommunicationInterface
      * 写入数据
      *
      * @param string $context
-     * @param        $handledLength
-     * @return bool
+     * @return int|bool
      */
-    public function write(string $context): int|false
+    public function write(string $context): int|bool
     {
         return $this->file->write($context);
     }

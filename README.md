@@ -5,9 +5,9 @@
 - OS Linux
 - PHP 8.2+
 - 扩展
-  - posix
-  - pcntl
-  - socket
+    - posix
+    - pcntl
+    - socket
 
 ```php
 php server.php // 启用调度器

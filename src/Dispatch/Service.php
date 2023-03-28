@@ -8,9 +8,9 @@
 
 namespace Cclilshy\PRipple\Dispatch;
 
-use Cclilshy\PRipple\File\File;
+use Cclilshy\PRipple\FileSystem\File;
+use Cclilshy\PRipple\Communication\Socket\Client;
 use Cclilshy\PRipple\Communication\Aisle\FileAisle;
-use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 
 class Service
 {
@@ -33,11 +33,11 @@ class Service
     private FileAisle $cacheFile;
     // 长缓存文件
 
-    private CommunicationInterface $socket;
+    private Client $socket;
 
     // 标准套接字
 
-    public function __construct(string $publish, CommunicationInterface $socket)
+    public function __construct(string $publish, Client $socket)
     {
         $this->name          = $publish;
         $this->cacheFilePath = CACHE_PATH . '/server_cache_' . $publish . File::EXT;
@@ -53,10 +53,10 @@ class Service
     /**
      * 重新连接触发
      *
-     * @param \Cclilshy\PRipple\Communication\Standard\CommunicationInterface $socket
+     * @param \Cclilshy\PRipple\Communication\Socket\Client $socket
      * @return void
      */
-    public function handleServiceOnReconnect(CommunicationInterface $socket): void
+    public function handleServiceOnReconnect(Client $socket): void
     {
         $this->setState(self::STATE_START);
         $this->cacheFile->adjustPoint(0);
@@ -73,16 +73,16 @@ class Service
     /**
      * 发送数据
      *
-     * @param string $package
+     * @param string $context
      * @param int    $type
      * @return void
      */
-    public function sendWithInt(string $package, int $type): void
+    public function sendWithInt(string $context, int $type): void
     {
         if ($this->state === self::STATE_START) {
-            Dispatcher::AGREE::sendWithInt($this->socket, $package, $type);
+            $this->socket->sendByAgree(Dispatcher::AGREE, 'sendWithInt', [$context, $type]);
         } else {
-            $this->cache($package, $type);
+            $this->cache($context, $type);
         }
     }
 

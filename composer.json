@@ -4,7 +4,7 @@
   "autoload": {
     "psr-4": {
       "Cclilshy\\PRipple\\": "src/",
-      "": "demo/"
+      "": "app/"
     }
   },
   "authors": [

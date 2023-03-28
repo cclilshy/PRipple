@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 /*
  * @Author: cclilshy cclilshy@163.com
  * @Date: 2023-03-02 00:17:47
@@ -7,7 +6,9 @@ declare(strict_types=1);
  * @Description: CCPHP
  * Copyright (c) 2023 by user email: cclilshy, All Rights Reserved.
  */
-namespace Cclilshy\PRipple\File;
+declare(strict_types=1);
+
+namespace Cclilshy\PRipple\FileSystem;
 
 class Fifo
 {

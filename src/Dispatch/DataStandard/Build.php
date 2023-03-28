@@ -1,12 +1,12 @@
 <?php
-
-namespace Cclilshy\PRipple\Dispatch\DataStandard;
 /*
  * @Author: cclilshy jingnigg@gmail.com
  * @Date: 2023-03-21 20:46:42
  * @LastEditors: cclilshy jingnigg@gmail.com
  * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
  */
+
+namespace Cclilshy\PRipple\Dispatch\DataStandard;
 
 // 消息包
 use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
@@ -52,14 +52,19 @@ class Build
         }
     }
 
+    public static function unSerialize(string $context): Build
+    {
+        @$res = unserialize($context);
+        if (!$res) {
+            echo $context;
+        } else {
+            return $res;
+        }
+    }
+
     public function serialize(): string
     {
         return $this->__toString();
-    }
-
-    public static function unSerialize(string $context): Build
-    {
-        return unserialize($context);
     }
 
     /**

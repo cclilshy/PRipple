@@ -8,8 +8,9 @@ declare(strict_types=1);
  * @Last  Modified time: 2023-02-28 17:30:12
  */
 
-namespace Cclilshy\PRipple\File;
-use Cclilshy\PRipple\File\Standard\File;
+namespace Cclilshy\PRipple\FileSystem;
+
+use Cclilshy\PRipple\FileSystem\Standard\File;
 
 class Pipe implements File
 {

@@ -1,6 +1,4 @@
 <?php
-
-declare(strict_types=1);
 /*
  * @Author: cclilshy jingnigg@gmail.com
  * @Date: 2023-03-16 21:12:25
@@ -8,6 +6,7 @@ declare(strict_types=1);
  * @Description: CCPHP
  * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
  */
+declare(strict_types=1);
 
 namespace Cclilshy\PRipple\Communication\Agreement;
 
@@ -28,7 +27,7 @@ class CCL implements AgreementInterface
     public static function send(CommunicationInterface $aisle, string $context): bool
     {
         $context = self::build($context);
-        return self::sendOriginal($aisle, $context);
+        return self::sendRawContext($aisle, $context);
     }
 
 
@@ -46,10 +45,9 @@ class CCL implements AgreementInterface
         // 报文长度#正文长度PACK正文
     }
 
-    private static function sendOriginal(CommunicationInterface $aisle, string $context): bool
+    private static function sendRawContext(CommunicationInterface $aisle, string $context): bool
     {
-        $aisle->write($context);
-        return true;
+        return $aisle->write($context) !== false;
     }
 
     /**
@@ -65,7 +63,7 @@ class CCL implements AgreementInterface
         $pack    = pack('L', $int);
         $context = $pack . $context;
         $package = self::build($context);
-        return self::sendOriginal($aisle, $package);
+        return self::sendRawContext($aisle, $package);
     }
 
 
@@ -82,7 +80,7 @@ class CCL implements AgreementInterface
         $pack    = pack('A64', $param);
         $context = $pack . $context;
         $package = self::build($context);
-        return self::sendOriginal($aisle, $package);
+        return self::sendRawContext($aisle, $package);
     }
 
 

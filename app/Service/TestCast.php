@@ -23,18 +23,10 @@ class TestCast extends Service
 
     public function initialize(): void
     {
-        $i = 0;
         while (true) {
             $this->publish(new Build($this->publish, null, new Event($this->publish, 'TEST', ''), '测试例子循环消息'));
-            usleep(10000);
-            echo $i++ . PHP_EOL;
-            if($i>5000){
-                break;
-            }
+            usleep(100000);
         }
-        echo '开始缓冲处理数据' . PHP_EOL;
-        $len = $this->dispatcherServerAisle->truncate();
-        var_dump($len);
     }
 
     public function execMessage(string $message): void

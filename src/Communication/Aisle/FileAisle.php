@@ -9,12 +9,12 @@
 
 namespace Cclilshy\PRipple\Communication\Aisle;
 
-use Cclilshy\PRipple\File\File;
+use Cclilshy\PRipple\FileSystem\File;
 use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 
 class FileAisle implements CommunicationInterface
 {
-    const EXT = '.aisle';
+    const EXT = '.pipe';
 
     private File $file;
 
@@ -66,17 +66,20 @@ class FileAisle implements CommunicationInterface
      * 写入数据
      *
      * @param string $context
-     * @param        $handledLength
-     * @return bool
+     * @return int|bool
      */
-    public function write(string $context): int|false
+    public function write(string $context): int|bool
     {
         return $this->file->write($context);
     }
 
+    /**
+     * 释放连接
+     *
+     * @return bool
+     */
     public function release(): bool
     {
-        //        $this->file->release();
         return false;
     }
 
@@ -88,21 +91,37 @@ class FileAisle implements CommunicationInterface
      */
     public function close(): bool
     {
-        //        $this->file->close();
         return false;
     }
 
 
+    /**
+     * 移动指针
+     *
+     * @param int      $location
+     * @param int|null $whence
+     * @return int
+     */
     public function adjustPoint(int $location, int|null $whence = SEEK_SET): int
     {
         return $this->file->adjustPoint($location, $whence);
     }
 
-    public function flush()
+    /**
+     * 清空文件
+     *
+     * @return void
+     */
+    public function flush(): void
     {
         $this->file->flush();
     }
 
+    /**
+     * 获取指针位置
+     *
+     * @return int|bool
+     */
     public function getPoint(): int|bool
     {
         return $this->file->getPoint();

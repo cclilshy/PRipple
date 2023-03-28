@@ -25,7 +25,7 @@ class SocketInet
         foreach ($options as $item => $value) {
             socket_set_option($server, SOL_SOCKET, $item, $value);
         }
-        if(!socket_bind($server, $address, $port)) {
+        if (!socket_bind($server, $address, $port)) {
             throw new Exception("无法绑定套接字地址 > {$address} : {$port}", 1);
         }
         socket_listen($server);

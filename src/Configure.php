@@ -1,4 +1,5 @@
 <?php
+
 namespace Cclilshy\PRipple;
 
 class Configure

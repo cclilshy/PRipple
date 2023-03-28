@@ -1,12 +1,12 @@
 <?php
-
-namespace Cclilshy\PRipple\Service;
 /*
  * @Author: cclilshy jingnigg@gmail.com
  * @Date: 2023-03-21 20:32:14
  * @LastEditors: cclilshy jingnigg@gmail.com
  * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
  */
+
+namespace Cclilshy\PRipple\Service;
 
 use Cclilshy\PRipple\Communication\Socket\Client;
 use Cclilshy\PRipple\Dispatch\DataStandard\Build;
@@ -48,7 +48,8 @@ interface ServiceStandard
     /**
      * 处理服务器报文
      *
-     * @param string $context
+     * @param string                                        $context
+     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
      * @return void
      */
     public function execOriginalContext(string $context, Client $client): void;

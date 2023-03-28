@@ -1,6 +1,6 @@
 <?php
 
-namespace Cclilshy\PRipple\File;
+namespace Cclilshy\PRipple\FileSystem;
 
 class File
 {
@@ -92,7 +92,8 @@ class File
     /**
      * 调整指针到指定位置
      *
-     * @param int $location
+     * @param int      $location
+     * @param int|null $whence
      * @return int
      */
     public function adjustPoint(int $location, int|null $whence = SEEK_SET): int
@@ -112,12 +113,20 @@ class File
         return fwrite($this->file, $context);
     }
 
+    /**
+     * 清空文件
+     * @return bool
+     */
     public function flush(): bool
     {
         $this->adjustPoint(0);
         return ftruncate($this->file, 0);
     }
 
+    /**
+     * 获取文件指针
+     * @return int|bool
+     */
     public function getPoint(): int|bool
     {
         return ftell($this->file);

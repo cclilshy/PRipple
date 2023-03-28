@@ -9,11 +9,6 @@ declare(strict_types=1);
 
 namespace Cclilshy\PRipple\Communication\Standard;
 
-/**
- * Aisle 不是一个具体, 这个接口的实现必须考虑在多个方法中适用
- * 如协议发送通用接口
- * 每个Aisle的实现都有不同的特征, 一对一/一对多/堵塞/非堵塞/内存缓冲/文件实体传输管道
- */
 interface CommunicationInterface
 {
     const EXT = '.switch';
@@ -49,8 +44,7 @@ interface CommunicationInterface
      * 向通道内写数据
      *
      * @param string $context
-     * @param        $handledLength
-     * @return bool
+     * @return int|bool
      */
-    public function write(string $context): int|false;
+    public function write(string $context): int|bool;
 }

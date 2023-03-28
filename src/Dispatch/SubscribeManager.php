@@ -17,7 +17,7 @@ class SubscribeManager
     public function addSubscribes(string $publish, string $eventName, string $subscriber, int $option): void
     {
         $this->subscribes[$publish][$eventName][$subscriber] = $option;
-        Console::debug("[Subscribe]订阅事件: {$subscriber} 订阅了 > {$publish} 的 `{$eventName}` 事件");
+        Console::debug("[Subscribe]", "{$subscriber} 订阅了 > {$publish} 的 `{$eventName}` 事件");
     }
 
     /**
@@ -48,13 +48,13 @@ class SubscribeManager
         if ($eventName) {
             if (isset($this->subscribes[$publish][$eventName][$subscriber])) {
                 unset($this->subscribes[$publish][$eventName][$subscriber]);
-                Console::debug("取消订阅事件: {$subscriber} 取消订阅了 > {$publish} 的 `{$eventName}` 事件");
+                Console::debug("[Subscribe]", "{$subscriber} 取消订阅了 > {$publish} 的 `{$eventName}` 事件");
             }
         } else {
             foreach ($this->subscribes as $eventName => $_) {
                 if (isset($this->subscribes[$publish][$eventName][$subscriber])) {
                     unset($this->subscribes[$publish][$eventName][$subscriber]);
-                    Console::debug("取消订阅事件: {$subscriber} 取消订阅了 > {$publish} 的 `{$eventName}` 事件");
+                    Console::debug("[Subscribe]", "{$subscriber} 取消订阅了 > {$publish} 的 `{$eventName}` 事件");
                 }
             }
         }
