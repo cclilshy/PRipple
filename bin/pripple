@@ -7,6 +7,4 @@ use Cclilshy\PRipple\Dispatch\Control;
 
 Configure::init();
 $control = new Control();
-$control->showServices();
-$control->showSubscribes();
-$control->listen();
+$control->run();

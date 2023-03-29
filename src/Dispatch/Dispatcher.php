@@ -26,14 +26,15 @@ class Dispatcher
     const FORMAT_EVENT      = 2;
     const FORMAT_MESSAGE    = 3;
 
-    public static string $handleServiceUnixAddress  = SOCK_PATH . FS . 'dispatcher_handle' . SocketAisle::EXT;
-    public static string $controlServiceUnixAddress = SOCK_PATH . FS . 'dispatcher_control' . SocketAisle::EXT;
+    public static string $handleServiceUnixAddress  = PRIPPLE_SOCK_PATH . FS . 'dispatcher_handle' . SocketAisle::EXT;
+    public static string $controlServiceUnixAddress = PRIPPLE_SOCK_PATH . FS . 'dispatcher_control' . SocketAisle::EXT;
     private static array $socketHashMap             = array();
 
     private static SubscribeManager $subscribeManager;
     private static SocketManager    $handlerSocketManager;
     private static SocketManager    $controlSocketManager;
     private static array            $servers;
+    private static int              $lastUpdateStatusTime = 0;
 
     /**
      * 启动
@@ -49,7 +50,11 @@ class Dispatcher
             Console::debug("[Dispatcher]", $e->getMessage());
             return;
         }
-        self::listen();
+        try {
+            self::listen();
+        } catch (Exception $e) {
+            Console::debug($e->getMessage());
+        }
     }
 
     /**
@@ -81,7 +86,6 @@ class Dispatcher
 
         Dispatcher::$handlerSocketManager = SocketManager::createServer(Dispatcher::LOCAL_STREAM_TYPE, Dispatcher::$handleServiceUnixAddress);
         Dispatcher::$controlSocketManager = SocketManager::createServer(Dispatcher::LOCAL_STREAM_TYPE, Dispatcher::$controlServiceUnixAddress);
-
     }
 
     /**
@@ -174,7 +178,6 @@ class Dispatcher
             $message   = $package->getMessage();
             $event     = $package->getEvent();
 
-            Console::debug("[Dispatcher]", "处理器消息" . $publisher);
             if ($event) {
                 // 处理调度器内置事件
                 if (self::handleBuiltEvent($event, $client)) {
@@ -249,13 +252,18 @@ class Dispatcher
         $client->setNoBlock();
         if (!$service = self::getServiceByName($event->getPublisher())) {
             $service = new Service($event->getPublisher(), $client);
-            Console::debug("[Dispatcher]", $event->getPublisher() . ' 上线');
+            $msg     = "[Dispatcher]" . $event->getPublisher() . ' 上线';
+
+            Console::debug($msg);
             self::$servers[$event->getPublisher()] = $service;
             $service->setState(Service::STATE_START);
         } else {
-            Console::debug("[Dispatcher]", $event->getPublisher() . ' 重连');
+            $msg = "[Dispatcher]" . $event->getPublisher() . ' 重连';
+            Console::debug($msg);
+
             $service->handleServiceOnReconnect($client);
         }
+        self::noticeControl($msg, true);
         self::$handlerSocketManager->setIdentityBySocket($client->getSocket(), $event->getPublisher());
     }
 
@@ -341,11 +349,15 @@ class Dispatcher
      */
     private static function handleServiceOnBlack(Client $client, string $message): void
     {
-        Console::debug('[Dispatcher]', '断开链接<->', $message);
+        $msg = '[Dispatcher]' . '断开连接' . $message;
+        self::noticeControl($msg, true);
+        Console::debug($msg);
         if ($service = self::getServiceByName($client->getIdentity())) {
             if ($service->getState() !== Service::STATE_CLOSE) {
                 $service->setState(Service::STATE_EXPECT);
-                Console::debug("[Dispatcher]", '非正常退出<->' . $client->getIdentity());
+                $msg = "[Dispatcher]" . '异常退出' . $client->getIdentity();
+                self::noticeControl($msg, true);
+                Console::debug($msg);
             }
         }
         self::$handlerSocketManager->removeClient($client->getSocket());
@@ -368,28 +380,52 @@ class Dispatcher
         switch ($event->getName()) {
             case 'getSubscribes':
                 $event = new Event('dispatcher', 'subscribes', self::$subscribeManager->getSubscribes());
-                $build = new Build('dispatcher', null, $event);
-                Dispatcher::AGREE::sendWithInt($client, $build->serialize(), Dispatcher::FORMAT_BUILD);
+                Dispatcher::AGREE::sendWithInt($client, $event->serialize(), Dispatcher::FORMAT_EVENT);
                 break;
             case 'getServices':
-                $event = new Event('dispatcher', 'subscribes', self::$servers);
-                $build = new Build('dispatcher', null, $event);
-                Dispatcher::AGREE::sendWithInt($client, $build->serialize(), Dispatcher::FORMAT_BUILD);
+                $event = new Event('dispatcher', 'services', self::$servers);
+                Dispatcher::AGREE::sendWithInt($client, $event->serialize(), Dispatcher::FORMAT_EVENT);
                 break;
+            case 'getServiceInfo':
+                $event = new Event('dispatcher', 'serviceInfo', self::$servers[$event->getData()] ?? null);
+                Dispatcher::AGREE::sendWithInt($client, $event->serialize(), Dispatcher::FORMAT_EVENT);
+                break;
+            case 'termination':
+                foreach (self::$handlerSocketManager->getClientSockets() ?? [] as $socket) {
+                    self::$handlerSocketManager->removeClient($socket);
+                }
+                foreach (self::$controlSocketManager->getClientSockets() ?? [] as $socket) {
+                    self::$controlSocketManager->removeClient($socket);
+                }
+                // Console::debug("[Dispatcher]", 'close.');
+                exit;
             default:
                 # code...
                 break;
         }
     }
 
-    public static function noticeControl($message): void
+    public static function noticeControl(string $message, bool|null $upStatus = false): void
     {
         if (isset(self::$controlSocketManager)) {
             if ($list = self::$controlSocketManager->getClientSockets()) {
                 foreach ($list as $controlSocket) {
-                    socket_write($controlSocket, $message);
+                    $client = self::$controlSocketManager->getClientBySocket($controlSocket);
+                    if ($upStatus || self::$lastUpdateStatusTime + 10 < time()) {
+                        self::updateStatus($client);
+                    }
+                    Dispatcher::AGREE::sendWithInt($client, $message, Dispatcher::FORMAT_MESSAGE);
                 }
             }
         }
+    }
+
+    public static function updateStatus(Client $client): void
+    {
+        self::$lastUpdateStatusTime = time();
+        $event                      = new Event('dispatcher', 'services', self::$servers);
+        Dispatcher::AGREE::sendWithInt($client, $event->serialize(), Dispatcher::FORMAT_EVENT);
+        $event = new Event('dispatcher', 'subscribes', self::$subscribeManager->getSubscribes());
+        Dispatcher::AGREE::sendWithInt($client, $event->serialize(), Dispatcher::FORMAT_EVENT);
     }
 }

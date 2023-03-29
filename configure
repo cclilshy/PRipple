@@ -1,0 +1,22 @@
+#!/usr/bin/env php
+<?php
+include __DIR__ . '/vendor/autoload.php';
+
+\Cclilshy\PRipple\Configure::init();
+
+$dirs       = [PRIPPLE_CACHE_PATH, PRIPPLE_SOCK_PATH, PRIPPLE_PIPE_PATH, PRIPPLE_RUNTIME_PATH];
+$extensions = ['pcntl', 'sockets', 'posix'];
+
+foreach ($dirs as $dir) {
+    if (!is_writable($dir)) {
+        die("The core path does not have read and write permissions: " . $dir . "\n");
+    }
+}
+
+foreach ($extensions as $extension) {
+    if (!extension_loaded($extension)) {
+        die("Please install: " . $extension . "\n");
+    }
+}
+echo 'please write to you system bashrc file:' . PHP_EOL;
+echo '  export PATH=$PATH:' . __DIR__ . '/bin' . PHP_EOL;

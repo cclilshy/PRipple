@@ -23,7 +23,7 @@ class Fifo
     public function __construct(string $name)
     {
         $this->name   = $name;
-        $this->path   = PIPE_PATH . '/fifo_' . $name . self::EXT;
+        $this->path   = PRIPPLE_PIPE_PATH . '/fifo_' . $name . self::EXT;
         $this->stream = fopen($this->path, 'r+');
     }
 
@@ -33,7 +33,7 @@ class Fifo
      */
     public static function create(string $name): Fifo|false
     {
-        $path = PIPE_PATH . '/fifo_' . $name;
+        $path = PRIPPLE_PIPE_PATH . '/fifo_' . $name;
         if (file_exists($path . self::EXT)) {
             return false;
         } elseif (posix_mkfifo($path . self::EXT, 0666)) {
@@ -52,7 +52,7 @@ class Fifo
      */
     public static function exists(string $name): bool
     {
-        return file_exists(PIPE_PATH . '/fifo_' . $name . self::EXT);
+        return file_exists(PRIPPLE_PIPE_PATH . '/fifo_' . $name . self::EXT);
     }
 
 
@@ -64,7 +64,7 @@ class Fifo
      */
     public static function link(string $name): Fifo|false
     {
-        $path = PIPE_PATH . '/fifo_' . $name;
+        $path = PRIPPLE_PIPE_PATH . '/fifo_' . $name;
         if (!!file_exists($path . self::EXT)) {
             return new self($name);
         } else {

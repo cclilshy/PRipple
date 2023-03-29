@@ -13,12 +13,13 @@ use Cclilshy\PRipple\Communication\Aisle\SocketAisle;
 
 class Manager
 {
-    private mixed $entranceSocket;
-    private array $clientSockets;
-    private array $clientInfos;
-    private array $identityHashMap;
-    private array $bufferClientList;
-    private array $bufferSocketList;
+    private mixed  $entranceSocket;
+    private array  $clientSockets;
+    private array  $clientInfos;
+    private array  $identityHashMap;
+    private array  $bufferClientList;
+    private array  $bufferSocketList;
+    private string $socketType;
 
     public function __construct(mixed $entranceSocket)
     {
@@ -293,5 +294,10 @@ class Manager
             return $writeSockets;
         }
         return false;
+    }
+
+    public function getClients(): array|null
+    {
+        return $this->clientInfos ?? null;
     }
 }

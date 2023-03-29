@@ -24,7 +24,7 @@ class TestCast extends Service
 
     public function initialize(): void
     {
-        $this->subscribe('Service_TestCasb', 'DEFAULT', Dispatcher::FORMAT_BUILD);
+        $this->subscribe('Test', 'DEFAULT', Dispatcher::FORMAT_BUILD);
         while (true) {
             $this->publish(new Build($this->publish, null, new Event($this->publish, 'TEST', ''), '测试例子循环消息'));
             usleep(100000);

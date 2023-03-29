@@ -5,7 +5,7 @@ namespace Cclilshy\PRipple\FileSystem\Standard;
 
 interface File
 {
-    public const STP = PIPE_PATH;
+    public const STP = PRIPPLE_PIPE_PATH;
     public const EXT = '.pipe';
 
     /**

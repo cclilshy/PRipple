@@ -72,7 +72,7 @@ class SocketAisle implements CommunicationInterface
         $this->receiveBufferSize   = socket_get_option($socket, SOL_SOCKET, SO_RCVBUF);
         $this->sendLowWaterSize    = socket_get_option($socket, SOL_SOCKET, SO_SNDLOWAT);
         $this->receiveLowWaterSize = socket_get_option($socket, SOL_SOCKET, SO_RCVLOWAT);
-        $this->cacheFilePath       = CACHE_PATH . '/socket_cache_' . $this->keyName . microtime(true) . mt_rand(1111, 9999) . self::EXT;
+        $this->cacheFilePath       = PRIPPLE_CACHE_PATH . '/socket_cache_' . $this->keyName . microtime(true) . mt_rand(1111, 9999) . self::EXT;
         if (File::exists($this->cacheFilePath)) {
             unlink($this->cacheFilePath);
         }
@@ -599,6 +599,5 @@ class SocketAisle implements CommunicationInterface
             'cacheFilePath',
             'activeTime'
         ];
-
     }
 }

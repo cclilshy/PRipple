@@ -63,7 +63,7 @@ class Pipe implements File
     public static function link(string|null $name): Pipe|false
     {
         if (self::exists($name)) {
-            return new Pipe($name, filesize(CACHE_PATH . '/pipe/' . $name . '.pipe'));
+            return new Pipe($name, filesize(PRIPPLE_CACHE_PATH . '/pipe/' . $name . '.pipe'));
         }
         return false;
     }

@@ -39,7 +39,7 @@ class Service
     public function __construct(string $publish, Client $socket)
     {
         $this->name          = $publish;
-        $this->cacheFilePath = CACHE_PATH . '/server_cache_' . $publish . File::EXT;
+        $this->cacheFilePath = PRIPPLE_CACHE_PATH . '/server_cache_' . $publish . File::EXT;
         if (File::exists($this->cacheFilePath)) {
             $file = File::open($this->cacheFilePath, 'r+');
         } else {
