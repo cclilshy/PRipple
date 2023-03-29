@@ -147,7 +147,7 @@ abstract class Service implements ServiceStandard
     private function reConnectDispatcher(): bool
     {
         try {
-            $this->dispatcherServer      = SocketUnix::connect(Dispatcher::UNIX_HANDLE);
+            $this->dispatcherServer      = SocketUnix::connect(Dispatcher::$handleServiceUnixAddress);
             $this->dispatcherServerAisle = SocketAisle::create($this->dispatcherServer);
             $this->dispatcherServerAisle->setNoBlock();
             $this->noticeStart();
@@ -217,6 +217,7 @@ abstract class Service implements ServiceStandard
         } catch (Exception $exception) {
             do {
                 Console::debug("[Server]", "Dispatcher close reconnect ...");
+                sleep(1);
             } while (!$this->reConnectDispatcher());
             return;
         }

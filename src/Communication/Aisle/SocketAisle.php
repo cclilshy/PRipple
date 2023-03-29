@@ -17,39 +17,39 @@ use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 class SocketAisle implements CommunicationInterface
 {
     const EXT = '.sock';
-    private readonly string $address;    // 用户地址
-    private readonly string $keyName;    // 在管理器中的键名
-    private readonly int    $createTime; // 用户连接时
-    private readonly mixed  $socket;     // 套接字实体
-    private readonly int    $port;
+    protected readonly string $address;    // 用户地址
+    protected readonly string $keyName;    // 在管理器中的键名
+    protected readonly int    $createTime; // 用户连接时
+    protected readonly mixed  $socket;     // 套接字实体
+    protected readonly int    $port;
 
-    private int $sendBufferSize;
+    protected int $sendBufferSize;
     // 发送缓冲区大小
-    private int $receiveBufferSize;
+    protected int $receiveBufferSize;
     // 接收缓冲区大小
-    private int $sendLowWaterSize;
+    protected int $sendLowWaterSize;
     // 发送低水位大小
-    private int $receiveLowWaterSize;
+    protected int $receiveLowWaterSize;
     // 接收低水位大小
-    private int $sendFlowCount = 0;
+    protected int $sendFlowCount = 0;
     // 总共接收流量
-    private int $receiveFlowCount = 0;
+    protected int $receiveFlowCount = 0;
     // 总共发送流量
-    private string $sendBuffer = '';
+    protected string $sendBuffer = '';
     // 发送丢包储存区
-    private FileAisle $cacheFile;
+    protected FileAisle $cacheFile;
     // 文件缓冲区
-    private string $cacheFilePath;
+    protected string $cacheFilePath;
     // 文件缓冲区文件路径
-    private int $cacheLength = 0;
+    protected int $cacheLength = 0;
     // 文件缓冲长度
-    private int $cachePoint = 0;
+    protected int $cachePoint = 0;
     // 缓存指针位置
-    private Manager $manager;
+    protected Manager $manager;
 
-    private string $name;        // 自定义的名称
-    private string $identity;    // 自定义身份标识
-    private int    $activeTime;  // 上次活跃时间
+    protected string $name;        // 自定义的名称
+    protected string $identity;    // 自定义身份标识
+    protected int    $activeTime;  // 上次活跃时间
 
     /**
      * @throws \Exception
@@ -576,5 +576,29 @@ class SocketAisle implements CommunicationInterface
     public function getCacheLength(): int
     {
         return $this->cacheLength;
+    }
+
+    public function __sleep()
+    {
+        return [
+            'address',
+            'keyName',
+            'createTime',
+            'port',
+            'sendBufferSize',
+            'receiveBufferSize',
+            'sendLowWaterSize',
+            'receiveLowWaterSize',
+            'sendFlowCount',
+            'receiveFlowCount',
+            'sendBuffer',
+            'cacheLength',
+            'cachePoint',
+            'name',
+            'identity',
+            'cacheFilePath',
+            'activeTime'
+        ];
+
     }
 }

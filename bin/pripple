@@ -1,2 +1,12 @@
 #!/usr/bin/env php
 <?php
+include __DIR__ . '/../vendor/autoload.php';
+
+use Cclilshy\PRipple\Configure;
+use Cclilshy\PRipple\Dispatch\Control;
+
+Configure::init();
+$control = new Control();
+$control->showServices();
+$control->showSubscribes();
+$control->listen();

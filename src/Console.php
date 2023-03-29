@@ -1,6 +1,8 @@
 <?php
 
 namespace Cclilshy\PRipple;
+use Cclilshy\PRipple\Dispatch\Dispatcher;
+
 class Console
 {
     /**
@@ -95,6 +97,7 @@ class Console
             }
             $text .= $_ . '|';
         }
+        Dispatcher::noticeControl($text);
         self::coloredDebug($text, 'yellow');
     }
 
@@ -130,5 +133,51 @@ class Console
             default  => "\033[0m",
         };
     }
+
+    public static function displayTableFromArray(array $tableArray, string $tableName): void
+    {
+        if (empty($tableArray['header']) || empty($tableArray['body'])) {
+            echo "No data to display.";
+            return;
+        }
+
+        // Determine maximum length of each column
+        $columnMaxLen = array_map(function ($column) {
+            return $column[1];
+        }, $tableArray['header']);
+
+        // Output table name
+        $tableNameColor = "\033[1;32m"; // Bold cyan
+        printf("%s%s:\n%s", $tableNameColor, $tableName, "\033[0m");
+
+        // Output table top border
+        $borderStr = "+-" . str_repeat('-', array_sum($columnMaxLen) + count($columnMaxLen) * 2) . "-+\n";
+        printf("%s", $borderStr);
+
+        // Output table header
+        $headerStr = '';
+        foreach ($tableArray['header'] as $i => $column) {
+            $headerStr .= "| \033[1;36m%{$columnMaxLen[$i]}s\033[0m ";
+        }
+        $headerStr .= "|\n";
+        printf($headerStr, ...array_column($tableArray['header'], 0));
+
+        // Output table mid border
+        printf("%s", $borderStr);
+
+        // Output table rows
+        foreach ($tableArray['body'] as $row) {
+            $rowStr = '';
+            foreach ($row as $i => $column) {
+                $rowStr .= "| %{$columnMaxLen[$i]}s ";
+            }
+            $rowStr .= "|\n";
+            printf($rowStr, ...$row);
+        }
+
+        // Output table bottom border
+        printf("%s", $borderStr);
+    }
+
 
 }

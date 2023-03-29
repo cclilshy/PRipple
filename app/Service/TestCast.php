@@ -9,9 +9,10 @@
 namespace Service;
 
 use Cclilshy\PRipple\Service\Service;
-use Cclilshy\PRipple\Dispatch\DataStandard\Build;
+use Cclilshy\PRipple\Dispatch\Dispatcher;
 use Cclilshy\PRipple\Dispatch\DataStandard\Event;
 use Cclilshy\PRipple\Communication\Socket\Client;
+use Cclilshy\PRipple\Dispatch\DataStandard\Build;
 use Cclilshy\PRipple\Communication\Socket\SocketInet;
 
 class TestCast extends Service
@@ -23,6 +24,7 @@ class TestCast extends Service
 
     public function initialize(): void
     {
+        $this->subscribe('Service_TestCasb', 'DEFAULT', Dispatcher::FORMAT_BUILD);
         while (true) {
             $this->publish(new Build($this->publish, null, new Event($this->publish, 'TEST', ''), '测试例子循环消息'));
             usleep(100000);

@@ -186,7 +186,7 @@ class Manager
     {
         $name = Manager::getNameBySocket($clientSocket);
         if ($clientSocket = $this->clientSockets[$name] ?? null) {
-            socket_close($this->clientSockets[$name]);
+//            socket_close($this->clientSockets[$name]);
             unset($this->clientSockets[$name]);
         }
 
@@ -194,6 +194,7 @@ class Manager
          * @var \Cclilshy\PRipple\Communication\Aisle\SocketAisle $clientAisle
          */
         if ($clientAisle = $this->clientInfos[$name] ?? null) {
+            $clientAisle->release();
             $this->removeClientWithBufferedData($clientAisle);
             $identity = $clientAisle->getIdentity();
             if (isset($this->identityHashMap[$identity])) {

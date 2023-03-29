@@ -9,14 +9,18 @@
 namespace Cclilshy\PRipple\Dispatch;
 
 use Cclilshy\PRipple\Console;
+use Cclilshy\PRipple\Dispatch\DataStandard\Event;
 
 class SubscribeManager
 {
-    private array $subscribes;
+    private array $subscribes = [];
 
     public function addSubscribes(string $publish, string $eventName, string $subscriber, int $option): void
     {
         $this->subscribes[$publish][$eventName][$subscriber] = $option;
+        if (!isset($this->subscribes[$publish][$eventName]['count'])) {
+            $this->subscribes[$publish][$eventName]['count'] = 0;
+        }
         Console::debug("[Subscribe]", "{$subscriber} 订阅了 > {$publish} 的 `{$eventName}` 事件");
     }
 
@@ -70,5 +74,21 @@ class SubscribeManager
     public function getSubscribesByPublishAndEvent(string $publish, string $event): array
     {
         return $this->subscribes[$publish][$event] ?? [];
+    }
+
+    public function getSubscribes(): array
+    {
+        return $this->subscribes ?? [];
+    }
+
+    public function recordHappen(Event $event): void
+    {
+        $publish   = $event->getPublisher();
+        $eventName = $event->getName();
+        if (isset($this->subscribes[$publish][$eventName]['count'])) {
+            $this->subscribes[$publish][$eventName]['count']++;
+        } elseif (isset($this->subscribes[$publish]['DEFAULT']['count'])) {
+            $this->subscribes[$publish]['DEFAULT']['count']++;
+        }
     }
 }

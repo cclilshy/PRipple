@@ -1,4 +1,10 @@
 <?php
+/*
+ * @Author: cclilshy jingnigg@gmail.com
+ * @Date: 2023-03-27 13:07:08
+ * @LastEditors: cclilshy jingnigg@gmail.com
+ * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
+ */
 
 namespace Cclilshy\PRipple\Dispatch\DataStandard;
 

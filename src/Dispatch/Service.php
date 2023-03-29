@@ -18,23 +18,22 @@ class Service
     const STATE_EXPECT = 'STATE_EXPECT';
     const STATE_START  = 'STATE_START';
 
-    private string $cacheFilePath;
+    public string $cacheFilePath;
     // 长缓存文件
 
-    private int $cacheCount = 0;
+    public int $cacheCount = 0;
     // 暂存区总数
 
-    private string $name;
+    public string $name;
     // 暂存区名称
 
-    private string $state = '';
+    public string $state = '';
     // 状态
 
-    private FileAisle $cacheFile;
+    public FileAisle $cacheFile;
     // 长缓存文件
 
-    private Client $socket;
-
+    public Client $socket;
     // 标准套接字
 
     public function __construct(string $publish, Client $socket)
@@ -126,6 +125,6 @@ class Service
 
     public function __sleep()
     {
-        return ['cacheFilePath', 'name'];
+        return ['cacheFilePath', 'name', 'cacheCount', 'state', 'socket'];
     }
 }

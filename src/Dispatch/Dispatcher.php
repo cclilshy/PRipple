@@ -18,16 +18,21 @@ class Dispatcher
 {
     const AGREE             = CCL::class;
     const LOCAL_STREAM_TYPE = SocketUnix::class;
-    const UNIX_HANDLE       = SOCK_PATH . FS . __CLASS__ . SocketAisle::EXT;
+    const MSF_CONTROL       = 1;
     const MSF_HANDLER       = 2;
     const PD_SUBSCRIBE      = 'PD_SUBSCRIBE';
     const PD_SUBSCRIBE_UN   = 'PD_SUBSCRIBE_UN';
     const FORMAT_BUILD      = 1;
     const FORMAT_EVENT      = 2;
     const FORMAT_MESSAGE    = 3;
-    private static array            $socketHashMap = array();
+
+    public static string $handleServiceUnixAddress  = SOCK_PATH . FS . 'dispatcher_handle' . SocketAisle::EXT;
+    public static string $controlServiceUnixAddress = SOCK_PATH . FS . 'dispatcher_control' . SocketAisle::EXT;
+    private static array $socketHashMap             = array();
+
     private static SubscribeManager $subscribeManager;
     private static SocketManager    $handlerSocketManager;
+    private static SocketManager    $controlSocketManager;
     private static array            $servers;
 
     /**
@@ -67,30 +72,47 @@ class Dispatcher
     private static function launchServer(): void
     {
         self::$servers = [];
-        if (file_exists(Dispatcher::UNIX_HANDLE)) {
-            unlink(Dispatcher::UNIX_HANDLE);
+        if (file_exists(Dispatcher::$handleServiceUnixAddress)) {
+            unlink(Dispatcher::$handleServiceUnixAddress);
         }
-        Dispatcher::$handlerSocketManager = SocketManager::createServer(Dispatcher::LOCAL_STREAM_TYPE, Dispatcher::UNIX_HANDLE);
+        if (file_exists(Dispatcher::$controlServiceUnixAddress)) {
+            unlink(Dispatcher::$controlServiceUnixAddress);
+        }
+
+        Dispatcher::$handlerSocketManager = SocketManager::createServer(Dispatcher::LOCAL_STREAM_TYPE, Dispatcher::$handleServiceUnixAddress);
+        Dispatcher::$controlSocketManager = SocketManager::createServer(Dispatcher::LOCAL_STREAM_TYPE, Dispatcher::$controlServiceUnixAddress);
+
     }
 
     /**
      * 开始监听服务
      *
      * @return void
+     * @throws \Exception
      */
     private static function listen(): void
     {
         while (true) {
-            if (!$readList = self::$handlerSocketManager->waitReads()) {
-                // TODO:处理缓冲数据
-                Console::debug("[Dispatcher]", '清理缓冲数据');
-                self::$handlerSocketManager->handleBufferContext();
-            } else {
+            $readList = array_merge([
+                self::$controlSocketManager->getEntranceSocket(),
+                self::$handlerSocketManager->getEntranceSocket()
+            ], self::$controlSocketManager->getClientSockets() ?? [], self::$handlerSocketManager->getClientSockets() ?? []);
+            if (socket_select($readList, $writeList, $exceptList, 0, 1000000)) {
                 foreach ($readList as $readSocket) {
                     switch ($readSocket) {
                         case Dispatcher::$handlerSocketManager->getEntranceSocket():
-                            //TODO:入口发来消息
-                            self::handleServiceOnline($readSocket);
+                            //TODO:服务入口有连接
+                            // self::handleServiceOnline($readSocket);
+                            $name                             = self::$handlerSocketManager->accept($readSocket);
+                            Dispatcher::$socketHashMap[$name] = Dispatcher::MSF_HANDLER;
+                            break;
+                        case Dispatcher::$controlSocketManager->getEntranceSocket():
+                            //TODO:控制入口有连接
+                            $name = self::$controlSocketManager->accept($readSocket);
+                            if ($client = self::$controlSocketManager->getClientByName($name)) {
+                                $client->setNoBlock();
+                            }
+                            Dispatcher::$socketHashMap[$name] = Dispatcher::MSF_CONTROL;
                             break;
                         default:
                             $name = SocketManager::getNameBySocket($readSocket);
@@ -99,6 +121,14 @@ class Dispatcher
                                     //TODO:来自处理的消息
                                     self::handleHandlerMessage($readSocket);
                                     break;
+                                case Dispatcher::MSF_CONTROL:
+                                    try {
+                                        self::handleControlMessage($readSocket);
+                                    } catch (Exception $e) {
+                                        self::$controlSocketManager->removeClient($readSocket);
+                                        Console::debug("[Dispatcher]", "控制器退出" . $e->getMessage());
+                                    }
+                                    break;
                                 default:
                                     //TODO:集群消息可能得有
                                     break;
@@ -106,12 +136,17 @@ class Dispatcher
                             break;
                     }
                 }
+            } else {
+                // TODO:处理缓冲数据
+                //                Console::debug("[Dispatcher]", '清理缓冲数据');
+                self::$handlerSocketManager->handleBufferContext();
+                // self::$controlSocketManager->handleBufferContext();
             }
         }
     }
 
     /**
-     * 有新的连接加入
+     * 有新连接加入
      *
      * @param mixed $readSocket
      * @return void
@@ -156,6 +191,7 @@ class Dispatcher
             // 全局事件的订阅者列表
             $subscribers = self::$subscribeManager->getSubscribesByPublishAndEvent($publisher, 'DEFAULT');
             foreach ($subscribers as $subscriber => $needType) {
+                self::$subscribeManager->recordHappen($event);
                 self::notice($subscriber, $package, $needType);
             }
         } catch (Exception $e) {
@@ -313,5 +349,47 @@ class Dispatcher
             }
         }
         self::$handlerSocketManager->removeClient($client->getSocket());
+    }
+
+    private static function handleControlMessage(mixed $socket): void
+    {
+        if (!$client = self::$controlSocketManager->getClientBySocket($socket)) {
+            return;
+        }
+
+        if (!$build = Build::getBuildByAgreement(Dispatcher::AGREE, $client)) {
+            return;
+        }
+
+        if (!$event = $build->getEvent()) {
+            return;
+        }
+
+        switch ($event->getName()) {
+            case 'getSubscribes':
+                $event = new Event('dispatcher', 'subscribes', self::$subscribeManager->getSubscribes());
+                $build = new Build('dispatcher', null, $event);
+                Dispatcher::AGREE::sendWithInt($client, $build->serialize(), Dispatcher::FORMAT_BUILD);
+                break;
+            case 'getServices':
+                $event = new Event('dispatcher', 'subscribes', self::$servers);
+                $build = new Build('dispatcher', null, $event);
+                Dispatcher::AGREE::sendWithInt($client, $build->serialize(), Dispatcher::FORMAT_BUILD);
+                break;
+            default:
+                # code...
+                break;
+        }
+    }
+
+    public static function noticeControl($message): void
+    {
+        if (isset(self::$controlSocketManager)) {
+            if ($list = self::$controlSocketManager->getClientSockets()) {
+                foreach ($list as $controlSocket) {
+                    socket_write($controlSocket, $message);
+                }
+            }
+        }
     }
 }
