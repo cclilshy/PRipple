@@ -3,7 +3,7 @@
  * @Author: cclilshy jingnigg@gmail.com
  * @Date: 2023-03-16 21:12:25
  * @LastEditors: cclilshy jingnigg@gmail.com
- * @Description: CCPHP
+ * @Description: PRipple
  * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
  */
 declare(strict_types=1);
@@ -45,11 +45,6 @@ class CCL implements AgreementInterface
         // 报文长度#正文长度PACK正文
     }
 
-    private static function sendRawContext(CommunicationInterface $aisle, string $context): bool
-    {
-        return $aisle->write($context) !== false;
-    }
-
     /**
      * 发送一条附加一个字节的整数的信息,最长4个字节
      *
@@ -65,7 +60,6 @@ class CCL implements AgreementInterface
         $package = self::build($context);
         return self::sendRawContext($aisle, $package);
     }
-
 
     /**
      * 发送一条附带一条文本的信息，最长64个字节
@@ -83,20 +77,18 @@ class CCL implements AgreementInterface
         return self::sendRawContext($aisle, $package);
     }
 
-
     /**
      * 报文验证
      *
      * @param string         $context  报文
-     * @param \stdClass|null $standard 附加参数
+     * @param \stdClass|null $Standard 附加参数
      * @return string|false 验证结果
      */
-    public static function verify(string $context, ?stdClass $standard): string|false
+    public static function verify(string $context, ?stdClass $Standard): string|false
     {
         //不支持校验
         return false;
     }
-
 
     /**
      * 切断一条带整形参数的报文
@@ -118,7 +110,6 @@ class CCL implements AgreementInterface
         }
         return false;
     }
-
 
     /**
      * 报文切片
@@ -179,7 +170,6 @@ class CCL implements AgreementInterface
         return false;
     }
 
-
     /**
      * 不支持调整
      *
@@ -189,5 +179,10 @@ class CCL implements AgreementInterface
     public static function corrective(CommunicationInterface $aisle): string|false
     {
         return false;
+    }
+
+    private static function sendRawContext(CommunicationInterface $aisle, string $context): bool
+    {
+        return $aisle->write($context) !== false;
     }
 }

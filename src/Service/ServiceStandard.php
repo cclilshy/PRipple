@@ -22,20 +22,12 @@ interface ServiceStandard
     public function initialize(): void;
 
     /**
-     * 处理消息类型消息
-     *
-     * @param string $message
-     * @return void
-     */
-    public function execMessage(string $message): void;
-
-    /**
      * 处理原生消息包
      *
      * @param \Cclilshy\PRipple\Dispatch\DataStandard\Build $package
      * @return void
      */
-    public function execPackage(Build $package): void;
+    public function onPackage(Build $package): void;
 
     /**
      * 处理事件类型消息
@@ -43,7 +35,9 @@ interface ServiceStandard
      * @param \Cclilshy\PRipple\Dispatch\DataStandard\Event $event
      * @return void
      */
-    public function execEvent(Event $event): void;
+    public function onEvent(Event $event): void;
+
+    public function onConnect(Client $client): void;
 
     /**
      * 处理服务器报文
@@ -52,5 +46,7 @@ interface ServiceStandard
      * @param \Cclilshy\PRipple\Communication\Socket\Client $client
      * @return void
      */
-    public function execOriginalContext(string $context, Client $client): void;
+    public function onMessage(string $context, Client $client): void;
+
+    public function onClose(Client $client);
 }

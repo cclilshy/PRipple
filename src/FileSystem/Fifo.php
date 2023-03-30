@@ -3,7 +3,7 @@
  * @Author: cclilshy cclilshy@163.com
  * @Date: 2023-03-02 00:17:47
  * @LastEditors: cclilshy jingnigg@gmail.com
- * @Description: CCPHP
+ * @Description: PRipple
  * Copyright (c) 2023 by user email: cclilshy, All Rights Reserved.
  */
 declare(strict_types=1);

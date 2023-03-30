@@ -2,9 +2,12 @@
 <?php
 include __DIR__ . '/../vendor/autoload.php';
 
+use Cclilshy\PRipple\Config;
+use Cclilshy\PRipple\Console;
 use Cclilshy\PRipple\Configure;
-use Cclilshy\PRipple\Dispatch\Control;
+use Cclilshy\PRipple\Route\Route;
 
 Configure::init();
-$control = new Control();
-$control->run();
+Route::init();
+Config::init();
+Console::init()->run();

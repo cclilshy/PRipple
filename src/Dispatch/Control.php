@@ -10,6 +10,7 @@ namespace Cclilshy\PRipple\Dispatch;
 
 use Exception;
 use Cclilshy\PRipple\Console;
+use Cclilshy\PRipple\Service\ServiceInfo;
 use Cclilshy\PRipple\Dispatch\DataStandard\Build;
 use Cclilshy\PRipple\Dispatch\DataStandard\Event;
 use Cclilshy\PRipple\Communication\Socket\SocketUnix;
@@ -27,10 +28,15 @@ class Control
     private int         $messageLine             = 0;
     private int         $lastUpdateTableTime     = 0;
 
+    public static function register(): string
+    {
+        return 'pripple';
+    }
+
     public function __construct()
     {
-
     }
+
 
     public function __destruct()
     {
@@ -39,9 +45,9 @@ class Control
         }
     }
 
-    public function run(): void
+
+    public function main($argv, $console): void
     {
-        global $argv;
         if (count($argv) < 2) {
             printf("Please Enter The Correct Parameter.\n\033[32m pripple help\033[0m viewHelp\n");
             return;
@@ -49,15 +55,13 @@ class Control
         $option = $argv[1];
         switch ($option) {
             case 'service':
+                $this->connectDispatcher();
                 if (isset($argv[2])) {
-                    $this->connectDispatcher();
                     $this->getServiceInfo($argv[2]);
-                    $this->listen(true);
                 } else {
-                    $this->connectDispatcher();
                     $this->getServices();
-                    $this->listen(true);
                 }
+                $this->listen(true);
                 break;
             case 'subscribe':
                 $this->connectDispatcher();
@@ -76,13 +80,44 @@ class Control
                 $build = new Build('control', null, $event);
                 Dispatcher::AGREE::send($this->dispatcherSocket, $build->serialize());
                 break;
+            case 'start':
+                if ($serviceInfo = ServiceInfo::create('dispatcher')) {
+                    $pid = pcntl_fork();
+                    if ($pid === 0) {
+                        Dispatcher::launch();
+                        exit;
+                    } elseif ($pid === -1) {
+                        Console::pdebug("[Dispatcher] start failed!");
+                    } else {
+                        if (!isset($argv[2]) || $argv[2] !== '-d') {
+                            sleep(1);
+                            $this->connectDispatcher();
+                            $this->getServices();
+                            $this->getSubscribes();
+                            $this->listen(false);
+                            break;
+                        } else {
+                            sleep(1);
+                            $this->connectDispatcher();
+                            $this->getServices();
+                            $this->getSubscribes();
+                            $this->listen(true);
+                            $this->listen(true);
+                        }
+                    }
+                } else {
+                    Console::pdebug("[Dispatcher] server is running!");
+                }
+
+                break;
             case 'help':
             default:
+                echo 'sb';
                 # code...
                 break;
         }
-
     }
+
 
     public function listen(bool|null $oneOff = true): void
     {
@@ -148,6 +183,21 @@ class Control
         $event = new Event('control', 'getServiceInfo', $name);
         $build = new Build('dispatcher', null, $event);
         Dispatcher::AGREE::send($this->dispatcherSocket, $build->serialize());
+    }
+
+    public function printMessage(string $message): void
+    {
+        if ($this->messageLine > 0) {
+            $this->seekCursor($this->messageLine);
+        } else {
+            $this->seekCursor($this->lastLine);
+            $this->messageLine = $this->currentLine;
+        }
+
+        // 清空当前终端行
+        echo "\033[2K\033[1;32mStatus:\033[0m {$message}";
+        $this->currentLine = $this->messageLine;
+        \ob_flush();
     }
 
     private function formatEventSubscribersTable(array $eventSubscribersArray): array
@@ -273,7 +323,6 @@ class Control
         $this->seekCursor($this->currentLine);
     }
 
-
     private function updateServicesTable(array $table): void
     {
         if (empty($table['header']) || empty($table['body'])) {
@@ -336,21 +385,6 @@ class Control
         return $output;
     }
 
-    public function printMessage(string $message): void
-    {
-        if ($this->messageLine > 0) {
-            $this->seekCursor($this->messageLine);
-        } else {
-            $this->seekCursor($this->lastLine);
-            $this->messageLine = $this->currentLine;
-        }
-
-        // 清空当前终端行
-        echo "\033[2K\033[1;32mStatus:\033[0m {$message}";
-        $this->currentLine = $this->messageLine;
-        \ob_flush();
-    }
-
     private function connectDispatcher(): void
     {
         try {
@@ -389,6 +423,5 @@ class Control
         echo "  name: " . $service->socket->getName() . "\n";
         echo "  identity: " . $service->socket->getIdentity() . "\n";
         echo "  activeTime: " . $service->socket->getActiveTime() . "\n";
-
     }
 }

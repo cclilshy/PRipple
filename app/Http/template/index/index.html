@@ -1,0 +1,35 @@
+<!--
+ * @Author: cclilshy jingnigg@gmail.com
+ * @Date: 2023-03-31 02:15:42
+ * @LastEditors: cclilshy jingnigg@gmail.com
+ * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
+-->
+<!DOCTYPE html>
+<html lang="zh_cn">
+@embed ('index/head') @endembed
+
+<body>
+<div>
+    <p style="font-size: 48px;margin: 0;">Hello,CcPHP</p>
+    <p id="inputLine" style="font-size: 20px;margin: 0;display: inline-block;"></p>
+    <!--suppress XmlDeprecatedElement -->
+    <span class="flash" style="font-size: 20px;">|</span>
+</div>
+<script>
+    function typeText(text, element) {
+        let i = 0;
+        const typingInterval = setInterval(() => {
+            element.innerHTML += text[i];
+            i++;
+            if (i >= text.length) {
+                clearInterval(typingInterval);
+            }
+        }, 50);
+    }
+
+    const inputLine = document.getElementById("inputLine");
+    typeText("不做无法实现的梦.", inputLine);
+</script>
+</body>
+
+</html>

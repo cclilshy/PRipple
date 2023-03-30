@@ -4,7 +4,7 @@
   "autoload": {
     "psr-4": {
       "Cclilshy\\PRipple\\": "src/",
-      "": "app/"
+      "app\\": "app/"
     }
   },
   "authors": [
@@ -16,6 +16,7 @@
   "require": {
     "ext-sockets": "*",
     "ext-pcntl": "*",
-    "ext-posix": "*"
+    "ext-posix": "*",
+    "ext-fileinfo": "*"
   }
 }

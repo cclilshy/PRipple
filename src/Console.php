@@ -1,135 +1,169 @@
 <?php
+declare(strict_types=1);
+/*
+ * @Author: cclilshy cclilshy@163.com
+ * @Date: 2022-12-04 00:42:32
+ * @LastEditors: cclilshy jingnigg@gmail.com
+ * @Description: PRipple
+ * Copyright (c) 2022 by cclilshy email: cclilshy@163.com, All Rights Reserved.
+ */
 
 namespace Cclilshy\PRipple;
 
+use Cclilshy\PRipple\Route\Route;
+
+
 class Console
 {
+    public const RESERVED = ['help', 'test', 'list', 'run'];
+    private static array $commands = [];
+    private static array $argv;
+
     /**
-     * 输出信息
-     *
-     * @param mixed $message
+     * @return \Cclilshy\PRipple\Console
+     */
+    public static function init(): Console
+    {
+        $list = Route::getConsoles();
+        foreach ($list as $key => $item) {
+            $describe       = call_user_func([$item, 'register']);
+            self::$commands = array_merge(self::$commands, [$key => $describe]);
+        }
+        return new self();
+    }
+
+    /**
+     * @return array
+     */
+    public static function argv(): array
+    {
+        return self::$argv;
+    }
+
+    /**
      * @return void
      */
-    public static function log(mixed $message): void
+    public static function pdebug(): void
     {
-        echo self::format($message, "\n");
+        call_user_func_array([__CLASS__, 'extracted'], func_get_args());
     }
 
     /**
-     * 格式化输出信息
-     *
-     * @param mixed  $message
-     * @param string $prefix
-     * @return string
-     */
-    private static function format(mixed $message, string $prefix): string
-    {
-        return $prefix . print_r($message, true);
-    }
-
-    /**
-     * 输出警告信息
-     *
-     * @param mixed $message
+     * @param string $content
      * @return void
      */
-    public static function warn(mixed $message): void
+    public static function printn(string $content): void
     {
-        echo self::format($message, "\033[33m[Warning]\033[0m\n");
+        printf($content . PHP_EOL);
     }
 
     /**
-     * 输出错误信息
-     *
-     * @param mixed $message
      * @return void
      */
-    public static function error(mixed $message): void
+    public static function extracted(): void
     {
-        echo self::format($message, "\033[31m[Error]\033[0m\n");
+        if (!Config::get('console.debug')) {
+            return;
+        }
+        $args    = func_get_args();
+        $content = '';
+        foreach ($args as $index => $arg) {
+            if (is_array($arg) || is_object($arg)) {
+                $content .= json_encode($arg, JSON_UNESCAPED_UNICODE);
+            } else {
+                $content .= $arg;
+            }
+            if ($index !== count($args) - 1) {
+                $content .= ',';
+            }
+        }
+
+        //        self::pred('[DEBUG][' . date('H:i:s') . ']' . $content);
+        $_micrometer = explode(' ', microtime());
+        $date        = date("H:i:s", intval($_micrometer[1]));
+        $date        .= substr($_micrometer[0], 1);
+        self::printn("\033[33m[DEBUG][" . posix_getpid() . '][' . $date . "]{$content}\033[0m");
     }
 
     /**
-     * 服务状态输出模式方法
-     *
-     * @param mixed  $message
-     * @param string $state
      * @return void
      */
-    public static function serviceStatus(mixed $message, string $state): void
+    public function run(): void
     {
-        $stateColor = self::getStateColor($state);
-        echo self::format($message, $stateColor . " [$state]\033[0m\n");
+        self::inspection();
+        global $argc;
+        global $argv;
+        $option     = $argv[1] ?? 'help';
+        $map        = Route::guide('console', $option);
+        self::$argv = $argv;
+        if ($map !== null) {
+            array_shift($argv);
+            $map->run($argv, $this);
+        } elseif ($option === 'help' || $option === 'list') {
+            self::printn("\033[32mPRipple is successfully initialized. Procedure \033[0m");
+            self::brief('list', '应用列表');
+            self::brief('test', '服务器环境自检');
+            self::brief('help', '帮助');
+            //            self::brief('run', 'mini server');
+            foreach (self::$commands as $key => $item)
+                self::brief($key, $item);
+        } elseif ($option === 'test') {
+            self::inspection(true);
+        }
     }
 
     /**
-     * 获取服务状态的颜色代码
+     * 运行环境自检
      *
-     * @param string $state
-     * @return string
+     * @param bool $print
+     * @return bool
      */
-    private static function getStateColor(string $state): string
+    private static function inspection(bool $print = false): bool
     {
-        return match ($state) {
-            'STOPPING', 'RESTARTING', 'STARTING' => "\033[33m",
-            'RUNNING'                            => "\033[32m",
-            'ERROR', 'STOPPED'                   => "\033[31m",
-            default                              => "\033[0m",
-        };
+        return true;
     }
 
+    /**
+     * @return void
+     */
     public static function debug(): void
     {
-        $arguments = func_get_args();
-        $text      = '';
-        while ($argument = array_shift($arguments)) {
-            if (is_callable($argument)) {
-                $_ = 'function';
-            } elseif (is_resource($argument)) {
-                $_ = 'resource';
-            } elseif (is_object($argument) || is_array($argument)) {
-                $_ = json_encode($argument);
-            } elseif (is_string($argument)) {
-                $_ = $argument;
-            } else {
-                $_ = gettype($argument);
-            }
-            $text .= $_ . '|';
-        }
-        $text = ltrim($text, '|');
-        self::coloredDebug($text, 'yellow');
+        self::extracted();
     }
 
     /**
-     * 带颜色的调试输出方法
-     *
-     * @param mixed  $message
-     * @param string $color
+     * @param string $content
      * @return void
      */
-    public static function coloredDebug(mixed $message, string $color): void
+    public static function pred(string $content): void
     {
-        $colorCode = self::getColorCode($color);
-        echo self::format($message . "\n", "\033[36m[Debug]\033[0m" . $colorCode);
+        self::printn("\033[31m[" . posix_getpid() . "]{$content}\033[0m");
     }
 
     /**
-     * 获取颜色代码
-     *
-     * @param string $color
-     * @return string
+     * @param string $title
+     * @param string $content
+     * @return void
      */
-    private static function getColorCode(string $color): string
+    public function brief(string $title, string $content): void
     {
-        return match ($color) {
-            'red'    => "\033[31m",
-            'green'  => "\033[32m",
-            'yellow' => "\033[33m",
-            'blue'   => "\033[34m",
-            'purple' => "\033[35m",
-            'cyan'   => "\033[36m",
-            'white'  => "\033[37m",
-            default  => "\033[0m",
-        };
+        $maxLength      = $this->getMaxCommandLength();
+        $formattedTitle = str_pad($title, $maxLength, ' ', STR_PAD_RIGHT);
+        self::printn("\t\033[34m{$formattedTitle}\t\033[0m \t\t\033[37m {$content} \033[0m");
+    }
+
+    /**
+     * @return int
+     */
+    private function getMaxCommandLength(): int
+    {
+        $maxLength = 0;
+        foreach (self::$commands as $key => $item) {
+            $length = strlen($key);
+            if ($length > $maxLength) {
+                $maxLength = $length;
+            }
+        }
+        return $maxLength;
     }
 }

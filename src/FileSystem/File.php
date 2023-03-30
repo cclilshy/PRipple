@@ -115,6 +115,7 @@ class File
 
     /**
      * 清空文件
+     *
      * @return bool
      */
     public function flush(): bool
@@ -125,6 +126,7 @@ class File
 
     /**
      * 获取文件指针
+     *
      * @return int|bool
      */
     public function getPoint(): int|bool

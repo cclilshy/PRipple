@@ -4,6 +4,7 @@ namespace Cclilshy\PRipple\Dispatch;
 
 use Exception;
 use Cclilshy\PRipple\Console;
+use Cclilshy\PRipple\Service\ServiceInfo;
 use Cclilshy\PRipple\Communication\Agreement\CCL;
 use Cclilshy\PRipple\Communication\Socket\Client;
 use Cclilshy\PRipple\Dispatch\DataStandard\Build;
@@ -55,6 +56,30 @@ class Dispatcher
         } catch (Exception $e) {
             Console::debug($e->getMessage());
         }
+    }
+
+    public static function noticeControl(string $message, bool|null $upStatus = false): void
+    {
+        if (isset(self::$controlSocketManager)) {
+            if ($list = self::$controlSocketManager->getClientSockets()) {
+                foreach ($list as $controlSocket) {
+                    $client = self::$controlSocketManager->getClientBySocket($controlSocket);
+                    if ($upStatus || self::$lastUpdateStatusTime + 10 < time()) {
+                        self::updateStatus($client);
+                    }
+                    Dispatcher::AGREE::sendWithInt($client, $message, Dispatcher::FORMAT_MESSAGE);
+                }
+            }
+        }
+    }
+
+    public static function updateStatus(Client $client): void
+    {
+        self::$lastUpdateStatusTime = time();
+        $event                      = new Event('dispatcher', 'services', self::$servers);
+        Dispatcher::AGREE::sendWithInt($client, $event->serialize(), Dispatcher::FORMAT_EVENT);
+        $event = new Event('dispatcher', 'subscribes', self::$subscribeManager->getSubscribes());
+        Dispatcher::AGREE::sendWithInt($client, $event->serialize(), Dispatcher::FORMAT_EVENT);
     }
 
     /**
@@ -398,34 +423,13 @@ class Dispatcher
                     self::$controlSocketManager->removeClient($socket);
                 }
                 // Console::debug("[Dispatcher]", 'close.');
+                if ($serviceInfo = ServiceInfo::load('dispatcher')) {
+                    $serviceInfo->release();
+                }
                 exit;
             default:
                 # code...
                 break;
         }
-    }
-
-    public static function noticeControl(string $message, bool|null $upStatus = false): void
-    {
-        if (isset(self::$controlSocketManager)) {
-            if ($list = self::$controlSocketManager->getClientSockets()) {
-                foreach ($list as $controlSocket) {
-                    $client = self::$controlSocketManager->getClientBySocket($controlSocket);
-                    if ($upStatus || self::$lastUpdateStatusTime + 10 < time()) {
-                        self::updateStatus($client);
-                    }
-                    Dispatcher::AGREE::sendWithInt($client, $message, Dispatcher::FORMAT_MESSAGE);
-                }
-            }
-        }
-    }
-
-    public static function updateStatus(Client $client): void
-    {
-        self::$lastUpdateStatusTime = time();
-        $event                      = new Event('dispatcher', 'services', self::$servers);
-        Dispatcher::AGREE::sendWithInt($client, $event->serialize(), Dispatcher::FORMAT_EVENT);
-        $event = new Event('dispatcher', 'subscribes', self::$subscribeManager->getSubscribes());
-        Dispatcher::AGREE::sendWithInt($client, $event->serialize(), Dispatcher::FORMAT_EVENT);
     }
 }

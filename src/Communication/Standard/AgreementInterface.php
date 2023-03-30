@@ -42,10 +42,10 @@ interface AgreementInterface
      * 报文验证
      *
      * @param string         $context  报文
-     * @param \stdClass|null $standard 附加参数
+     * @param \stdClass|null $Standard 附加参数
      * @return string|false 验证结果
      */
-    public static function verify(string $context, ?stdClass $standard): string|false;
+    public static function verify(string $context, ?stdClass $Standard): string|false;
 
 
     /**

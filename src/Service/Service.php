@@ -20,7 +20,7 @@ use Cclilshy\PRipple\Communication\Socket\SocketUnix;
 /**
  * 事件处理器开发依赖
  */
-abstract class Service implements ServiceStandard
+abstract class Service extends ServiceInfo implements ServiceStandard
 {
     const PS_START = 'PS_START';
     const PS_CLOSE = 'PS_CLOSE';
@@ -41,16 +41,12 @@ abstract class Service implements ServiceStandard
 
     /**
      * 服务配置
-     *
-     * @param string     $socketType 套接字类型
-     * @param string     $address    套接字地址
-     * @param int|null   $port       套接字端口
-     * @param array|null $options    套接字选项
      */
-    public function __construct(string $socketType, string $address, int|null $port = 0, array|null $options = [])
+    public function __construct()
     {
         $this->publish = get_class($this);
         $this->publish = str_replace('\\', '_', $this->publish);
+        parent::__construct($this->publish);
     }
 
     /**
@@ -90,19 +86,27 @@ abstract class Service implements ServiceStandard
                     switch ($readSocket) {
                         case $this->serverSocketManager->getEntranceSocket():
                             // TODO::有新的客户端链接
-                            $this->serverSocketManager->accept($readSocket);
+                            $name                             = $this->serverSocketManager->accept($readSocket);
                             $this->socketTypeMap[$socketName] = 'client';
+                            if ($client = $this->serverSocketManager->getClientByName($name)) {
+                                $this->onConnect($client);
+                            }
                             break;
                         case $this->dispatcherServer:
                             $this->handlerDispatcherMessage();
                             // TODO::调度器发来通知
                             break;
                         default:
+                            // TODO::客户端消息
                             if ($client = $this->serverSocketManager->getClientBySocket($readSocket)) {
-                                $client->read($context);
-                                $this->execOriginalContext($context, $client);
+                                if ($client->read($context)) {
+                                    $this->onMessage($context, $client);
+                                } else {
+                                    $this->onClose($client);
+                                    $this->serverSocketManager->removeClient($readSocket);
+                                }
+
                             }
-                        // TODO::客户端消息
                     }
                 }
             } else {
@@ -112,49 +116,6 @@ abstract class Service implements ServiceStandard
                     $this->dispatcherServerAisle->write("");
                 }
             }
-        }
-    }
-
-    /**
-     * 错误处理器
-     *
-     * @return void
-     */
-    private function registerErrorHandler(): void
-    {
-        set_exception_handler(function (mixed $error) {
-            Console::debug("[Service]", $error->getMessage(), $error->getFile(), $error->getLine());
-            if (property_exists($this, 'errorHandler')) {
-                return $this->errorHandler($error);
-            }
-            return false;
-        });
-
-        $_ = set_error_handler(function ($errno, $errStr, $errFile, $errLine) {
-            if ($errFile === __FILE__ && $errLine === $this->selectBlockLine) {
-                Console::debug(PHP_EOL, "[Subscribe]", '[' . $this->publish . '] Close.');
-                die;
-            } else {
-                Console::debug("[Subscribe]", $errStr, $errFile, $errLine);
-            }
-            if (property_exists($this, 'errorHandler')) {
-                return $this->errorHandler($errno, $errStr, $errFile, $errLine);
-            }
-            return false;
-        });
-    }
-
-    private function reConnectDispatcher(): bool
-    {
-        try {
-            $this->dispatcherServer      = SocketUnix::connect(Dispatcher::$handleServiceUnixAddress);
-            $this->dispatcherServerAisle = SocketAisle::create($this->dispatcherServer);
-            $this->dispatcherServerAisle->setNoBlock();
-            $this->noticeStart();
-            return true;
-        } catch (Exception $e) {
-            Console::debug("[Subscribe]", $e->getMessage());
-            return false;
         }
     }
 
@@ -202,38 +163,6 @@ abstract class Service implements ServiceStandard
         $this->serverPort    = $port;
         $this->socketOptions = $options;
         $this->isServer      = true;
-    }
-
-    /**
-     * 处理调度器返回消息
-     *
-     * @return void
-     */
-    private function handlerDispatcherMessage(): void
-    {
-        $messageType = -9;
-        try {
-            $context = Dispatcher::AGREE::cutWithInt($this->dispatcherServerAisle, $messageType);
-        } catch (Exception $exception) {
-            do {
-                Console::debug("[Server]", "Dispatcher close reconnect ...");
-                sleep(1);
-            } while (!$this->reConnectDispatcher());
-            return;
-        }
-        switch ($messageType) {
-            case Dispatcher::FORMAT_MESSAGE:
-                $this->execMessage($context);
-                break;
-            case Dispatcher::FORMAT_BUILD:
-                $package = Build::unSerialize($context);
-                $this->execPackage($package);
-                break;
-            case Dispatcher::FORMAT_EVENT:
-                $event = unserialize($context);
-                $this->execEvent($event);
-                break;
-        }
     }
 
     /**
@@ -288,5 +217,81 @@ abstract class Service implements ServiceStandard
     protected function noticeClose(): bool
     {
         return $this->publishEvent(Service::PS_CLOSE, null);
+    }
+
+    /**
+     * 错误处理器
+     *
+     * @return void
+     */
+    private function registerErrorHandler(): void
+    {
+        return;
+        set_exception_handler(function (mixed $error) {
+            Console::debug("[Service]", $error->getMessage(), $error->getFile(), $error->getLine());
+            if (property_exists($this, 'errorHandler')) {
+                return $this->errorHandler($error);
+            }
+            return false;
+        });
+
+        $_ = set_error_handler(function ($errno, $errStr, $errFile, $errLine) {
+            if ($errFile === __FILE__ && $errLine === $this->selectBlockLine) {
+                Console::debug(PHP_EOL, "[Subscribe]", '[' . $this->publish . '] Close.');
+                die;
+            } else {
+                Console::debug("[Subscribe]", $errStr, $errFile, $errLine);
+            }
+            if (property_exists($this, 'errorHandler')) {
+                return $this->errorHandler($errno, $errStr, $errFile, $errLine);
+            }
+            return false;
+        });
+    }
+
+    private function reConnectDispatcher(): bool
+    {
+        try {
+            $this->dispatcherServer      = SocketUnix::connect(Dispatcher::$handleServiceUnixAddress);
+            $this->dispatcherServerAisle = SocketAisle::create($this->dispatcherServer);
+            $this->dispatcherServerAisle->setNoBlock();
+            $this->noticeStart();
+            return true;
+        } catch (Exception $e) {
+            Console::debug("[Subscribe]", $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * 处理调度器返回消息
+     *
+     * @return void
+     */
+    private function handlerDispatcherMessage(): void
+    {
+        $messageType = -9;
+        try {
+            $context = Dispatcher::AGREE::cutWithInt($this->dispatcherServerAisle, $messageType);
+        } catch (Exception $exception) {
+            do {
+                Console::debug("[Server]", "Dispatcher close reconnect ...");
+                sleep(1);
+            } while (!$this->reConnectDispatcher());
+            return;
+        }
+        switch ($messageType) {
+            case Dispatcher::FORMAT_MESSAGE:
+                $this->execMessage($context);
+                break;
+            case Dispatcher::FORMAT_BUILD:
+                $package = Build::unSerialize($context);
+                $this->execPackage($package);
+                break;
+            case Dispatcher::FORMAT_EVENT:
+                $event = unserialize($context);
+                $this->execEvent($event);
+                break;
+        }
     }
 }

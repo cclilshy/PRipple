@@ -34,6 +34,7 @@ class Service
     // 长缓存文件
 
     public Client $socket;
+
     // 标准套接字
 
     public function __construct(string $publish, Client $socket)

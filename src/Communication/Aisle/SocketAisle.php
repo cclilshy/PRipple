@@ -3,7 +3,7 @@
  * @Author: cclilshy jingnigg@gmail.com
  * @Date: 2023-03-16 22:33:59
  * @LastEditors: cclilshy jingnigg@gmail.com
- * @Description: CCPHP
+ * @Description: PRipple
  * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
  */
 
@@ -45,7 +45,7 @@ class SocketAisle implements CommunicationInterface
     // 文件缓冲长度
     protected int $cachePoint = 0;
     // 缓存指针位置
-    protected Manager $manager;
+    public Manager $manager;
 
     protected string $name;        // 自定义的名称
     protected string $identity;    // 自定义身份标识

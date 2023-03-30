@@ -8,11 +8,9 @@
 
 namespace Cclilshy\PRipple;
 
-use Service\Http;
-
 include __DIR__ . '/vendor/autoload.php';
 
 Configure::init();
-
-$http = new Http();
+Config::init();
+$http = new \Cclilshy\PRipple\Built\Http\Service();
 $http->launch();
