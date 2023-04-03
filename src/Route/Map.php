@@ -54,14 +54,14 @@ class Map
         if ($this->type == 'Controller') {
             return call_user_func([new $this->className(...$vars), $this->action], ...$vars);
         } elseif ($this->type === 'Static') {
-            $request  = $vars[0];
-            $response = new Response($request);
+            $request    = $vars[0];
+            $response   = new Response($request);
             $statistics = new Statistics();
-            $filePath = $this->className . $request->path;
+            $filePath   = $this->className . $request->path;
             if (is_file($filePath) && pathinfo($filePath, PATHINFO_EXTENSION) !== 'php') {
                 return $response->setContentType(mime_content_type($filePath))->setBody(file_get_contents($filePath))->setStatusCode(200);
             } else {
-                return $response->setBody(Text::htmlErrorPage(404, 'There is no such static file!', __FILE__, __LINE__, $request,$statistics))->setStatusCode(404);
+                return $response->setBody(Text::htmlErrorPage(404, 'There is no such static file!', __FILE__, __LINE__, $request, $statistics))->setStatusCode(404);
             }
         } else {
             return call_user_func_array($this->callable, ...$vars);

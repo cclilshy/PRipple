@@ -43,6 +43,26 @@ class Node
     }
 
     /**
+     * 与IPC建立一次性连接，并发送遗传自定义命令
+     *
+     * @return mixed
+     */
+    private function sendIPCMessage(): mixed
+    {
+        try {
+            if ($ipc = Event::link($this->IPCName)) {
+                $res = call_user_func_array([$ipc, 'call'], func_get_args());
+                $ipc->close();
+                return $res;
+            }
+        } catch (Exception $e) {
+            return false;
+        }
+
+        return false;
+    }
+
+    /**
      * @param $name
      * @return mixed
      */
@@ -161,25 +181,5 @@ class Node
     public function getProcessId(): int
     {
         return $this->pid;
-    }
-
-    /**
-     * 与IPC建立一次性连接，并发送遗传自定义命令
-     *
-     * @return mixed
-     */
-    private function sendIPCMessage(): mixed
-    {
-        try {
-            if ($ipc = Event::link($this->IPCName)) {
-                $res = call_user_func_array([$ipc, 'call'], func_get_args());
-                $ipc->close();
-                return $res;
-            }
-        } catch (Exception $e) {
-            return false;
-        }
-
-        return false;
     }
 }

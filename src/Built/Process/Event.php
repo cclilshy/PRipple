@@ -61,108 +61,6 @@ class Event implements EventFactory
     }
 
     /**
-     * 根据IPC名称连接到监视者
-     *
-     * @param string    $name
-     * @param bool|null $destroy
-     * @return Event|false
-     * @throws Exception
-     */
-    public static function link(string $name, ?bool $destroy = false): Event|false
-    {
-
-        $ipc = new self($name);
-        return $ipc->initConnection($destroy);
-    }
-
-    /**
-     * 通过此方法可以调用监视者
-     * 该进程会堵塞直到监视者返回结果,并返回结果
-     * 该进程如果等不到结果会被强制杀死
-     *
-     * @return mixed
-     * @throws Exception
-     */
-    public function call(): mixed
-    {
-        $lock = $this->lock->clone();
-        @$_ = $lock->lock();
-        if (!$_) {
-            throw new Exception("管道被破坏");
-        }
-        $context    = serialize(func_get_args());
-        $contextLen = strlen($context);
-        $context    = pack('L', strlen($context)) . $context;
-        $this->common->write($context);
-        $this->notice->write($contextLen . PHP_EOL);
-        $length = $this->sender->fgets();
-        if ($length === '') {
-            $lock->unlock();
-            return false;
-        }
-        $length = intval($length);
-        if (!$fullContext = $this->fullContext($length)) {
-            $result = false;
-        } else {
-            $result = unserialize($fullContext);
-        }
-        $lock->unlock();
-        return $result;
-    }
-
-    /**
-     * 关闭连接
-     */
-    public function close(): void
-    {
-        $this->sender->close();
-        $this->notice->close();
-        $this->common->close();
-        $this->lock->close();
-    }
-
-    /**
-     * @param $name
-     * @return mixed
-     */
-    public function __get($name)
-    {
-        return $this->$name;
-    }
-
-    /**
-     * 通知监视者销毁并自关闭管道
-     *
-     * @return void
-     */
-    public function stop(): void
-    {
-        try {
-            // 新增超时销毁
-            switch ($pid = pcntl_fork()) {
-                case 0:
-                    if ($this->call('quit') === 'quit') {
-                        $this->close();
-                    }
-                    exit;
-                case -1:
-                    throw new Exception('无法启用fork服务,请检查系统荷载 ', 1);
-                default:
-
-                    declare(ticks=1);
-                    pcntl_signal(SIGCHLD, function () {
-                    });
-                    sleep(1);
-                    posix_kill($pid, SIGKILL);
-                    $this->release();
-            }
-        } catch (Exception $e) {
-            Console::pred($e->getMessage());
-            return;
-        }
-    }
-
-    /**
      * @param callable $observer
      * @param mixed    $space
      * @return \Cclilshy\PRipple\Process\Event|false
@@ -182,11 +80,6 @@ class Event implements EventFactory
 
         return $this->observed() ? $this : false;
     }
-
-
-    // 事实上管道的安全,应该由监视者自己维护,而不应该由调用者维护
-    // 消费者是服务态,调用者只需要考虑调用,不应考虑其他问题
-    // 但是,由于管道的特殊性,调用者需要考虑管道的安全性
 
     /**
      * 开始监视进程
@@ -255,6 +148,21 @@ class Event implements EventFactory
     }
 
     /**
+     * 根据IPC名称连接到监视者
+     *
+     * @param string    $name
+     * @param bool|null $destroy
+     * @return Event|false
+     * @throws Exception
+     */
+    public static function link(string $name, ?bool $destroy = false): Event|false
+    {
+
+        $ipc = new self($name);
+        return $ipc->initConnection($destroy);
+    }
+
+    /**
      * @param bool|null $destroy
      * @return \Cclilshy\PRipple\Process\Event|false
      * @throws Exception
@@ -298,6 +206,46 @@ class Event implements EventFactory
     }
 
     /**
+     * 通过此方法可以调用监视者
+     * 该进程会堵塞直到监视者返回结果,并返回结果
+     * 该进程如果等不到结果会被强制杀死
+     *
+     * @return mixed
+     * @throws Exception
+     */
+    public function call(): mixed
+    {
+        $lock = $this->lock->clone();
+        @$_ = $lock->lock();
+        if (!$_) {
+            throw new Exception("管道被破坏");
+        }
+        $context    = serialize(func_get_args());
+        $contextLen = strlen($context);
+        $context    = pack('L', strlen($context)) . $context;
+        $this->common->write($context);
+        $this->notice->write($contextLen . PHP_EOL);
+        $length = $this->sender->fgets();
+        if ($length === '') {
+            $lock->unlock();
+            return false;
+        }
+        $length = intval($length);
+        if (!$fullContext = $this->fullContext($length)) {
+            $result = false;
+        } else {
+            $result = unserialize($fullContext);
+        }
+        $lock->unlock();
+        return $result;
+    }
+
+
+    // 事实上管道的安全,应该由监视者自己维护,而不应该由调用者维护
+    // 消费者是服务态,调用者只需要考虑调用,不应考虑其他问题
+    // 但是,由于管道的特殊性,调用者需要考虑管道的安全性
+
+    /**
      * 获取完整上下文
      *
      * @param int $length  寻找数据长度
@@ -339,5 +287,57 @@ class Event implements EventFactory
         $this->notice->release();
         $this->common->release();
         $this->lock->release();
+    }
+
+    /**
+     * 关闭连接
+     */
+    public function close(): void
+    {
+        $this->sender->close();
+        $this->notice->close();
+        $this->common->close();
+        $this->lock->close();
+    }
+
+    /**
+     * @param $name
+     * @return mixed
+     */
+    public function __get($name)
+    {
+        return $this->$name;
+    }
+
+    /**
+     * 通知监视者销毁并自关闭管道
+     *
+     * @return void
+     */
+    public function stop(): void
+    {
+        try {
+            // 新增超时销毁
+            switch ($pid = pcntl_fork()) {
+                case 0:
+                    if ($this->call('quit') === 'quit') {
+                        $this->close();
+                    }
+                    exit;
+                case -1:
+                    throw new Exception('无法启用fork服务,请检查系统荷载 ', 1);
+                default:
+
+                    declare(ticks=1);
+                    pcntl_signal(SIGCHLD, function () {
+                    });
+                    sleep(1);
+                    posix_kill($pid, SIGKILL);
+                    $this->release();
+            }
+        } catch (Exception $e) {
+            Console::pred($e->getMessage());
+            return;
+        }
     }
 }

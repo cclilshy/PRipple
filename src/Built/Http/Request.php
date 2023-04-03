@@ -12,35 +12,36 @@ use Fiber;
 use Cclilshy\PRipple\Route\Map;
 use Cclilshy\PRipple\Statistics;
 use Cclilshy\PRipple\Route\Route;
-use Cclilshy\PRipple\Built\Http\Text\Text;
+use Cclilshy\PRipple\Communication\Socket\Client;
+use Cclilshy\PRipple\Communication\Aisle\SocketAisle;
 
 class Request
 {
     const INVALID    = -1;
     const COMPLETE   = 2;
     const INCOMPLETE = -1;
-    public string $path;
-    public string $method;                                 // 请求URI
-    public string $version;                                // 请求方法
-    public string $clientAddress;                          // 请求版本
-    public mixed  $socket;                                 // 客户端地址
-    public array  $header;                                 // 客户端套接字
-    public array  $fileInfo;                               // 请求头内容
-    public int    $bodyLength = 0;                         // 文件信息
-    public string $body;                                   // 主体长度
-    public array  $param      = array();                   // 主体
-    public bool   $isUpload   = false;                     // 变量
-    public mixed  $fileStream;                             // 是否上传
-    public bool   $complete   = false;                     // 文件流
-    public string $buffer     = '';                        // 是否完整
-    public string $name;                                   // 缓冲区
-    public bool   $isStatic;                               // 客户端名称
-    public string $hash;                                   // 路由信息
-    public int    $statusCode;                             // 当前包的随机哈希
-    public Map    $route;                                  // 是否为静态请求
-    public Fiber $fiber;                                  // 协程
-    public Statistics $statistics;                         // 统计
-    public Response $response;
+    public string      $path;
+    public string      $method;                                 // 请求URI
+    public string      $version;                                // 请求方法
+    public string      $clientAddress;                          // 请求版本
+    public mixed       $socket;                                 // 客户端地址
+    public array       $header;                                 // 客户端套接字
+    public array       $fileInfo;                               // 请求头内容
+    public int         $bodyLength = 0;                         // 文件信息
+    public string      $body;                                   // 主体长度
+    public array       $param      = array();                   // 主体
+    public bool        $isUpload   = false;                     // 变量
+    public mixed       $fileStream;                             // 是否上传
+    public bool        $complete   = false;                     // 文件流
+    public string      $buffer     = '';                        // 是否完整
+    public string      $name;                                   // 缓冲区
+    public bool        $isStatic;                               // 客户端名称
+    public string      $hash;                                   // 路由信息
+    public int         $statusCode;                             // 当前包的随机哈希
+    public Map         $route;                                  // 是否为静态请求
+    public Statistics  $statistics;                             // 统计
+    public Response    $response;
+    public SocketAisle $clientSocket;
 
     public function __construct(string $name)
     {
@@ -49,9 +50,25 @@ class Request
         $this->hash       = md5(mt_rand(1111, 9999) . microtime(true));
         $this->statusCode = Request::INCOMPLETE;
         $this->response   = new Response($this);
-        $this->fiber      = new Fiber(function () {
-            $this->toResponse();
-        });
+    }
+
+
+    /**
+     * @return bool
+     */
+    public function isStatic(): bool
+    {
+        return $this->isStatic ?? false;
+    }
+
+    /**
+     * 获取请求方法
+     *
+     * @return string
+     */
+    public function method(): string
+    {
+        return $this->method ?? 'undefined';
     }
 
     public static function create(string $name): self
@@ -177,43 +194,6 @@ class Request
     }
 
     /**
-     * 设置路径
-     *
-     * @param string $path
-     * @return bool
-     */
-    public function setPath(string $path): bool
-    {
-        // 设置路径时对路由配对
-        $urlInfo = parse_url($path);
-        if (isset($urlInfo['query'])) {
-            parse_str($urlInfo['query'], $getParam);
-            $this->param['GET'] = $getParam;
-        } else {
-            $this->param['GET'] = array();
-        }
-        $this->path = $urlInfo['path'];
-        if ($route = Route::guide($this->method, $this->path)) {
-            $this->route = $route;
-            if ($this->method === 'GET') {
-                $this->statusCode = Request::COMPLETE;
-            }
-            return true;
-        } elseif ($route = Route::guide('STATIC', $this->path)) {
-            if ($index = strpos($this->path, '/', 1)) {
-                $this->path = substr($this->path, $index);
-            } else {
-                $this->path = '';
-            }
-            $this->route      = $route;
-            $this->isStatic   = true;
-            $this->statusCode = Request::COMPLETE;
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * 设置版本
      *
      * @param string $version
@@ -249,6 +229,19 @@ class Request
         //        }
         $this->header[$key] = $value;
         return $this;
+    }
+
+    public function parseUploadInfo(): void
+    {
+        $this->isUpload = true;
+        do {
+            $path = PRIPPLE_CACHE_PATH . '/' . md5(microtime(true) . rand(1, 9));
+        } while (file_exists($path));
+        $this->fileStream = fopen($path, 'a+');
+        $this->setFile($path);
+        fwrite($this->fileStream, $this->body);
+        $this->bodyLength = strlen($this->body);
+        $this->body       = '';
     }
 
     /**
@@ -317,16 +310,6 @@ class Request
         return $this->param['POST'][$key] ?? null;
     }
 
-    /**
-     * 获取请求方法
-     *
-     * @return string
-     */
-    public function method(): string
-    {
-        return $this->method ?? 'undefined';
-    }
-
     public function build(): Request
     {
         return new Request((string)$this);
@@ -382,14 +365,6 @@ class Request
     {
         $this->clientAddress = $address;
         return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isStatic(): bool
-    {
-        return $this->isStatic ?? false;
     }
 
     /**
@@ -463,6 +438,43 @@ class Request
         return $this->path ?? null;
     }
 
+    /**
+     * 设置路径
+     *
+     * @param string $path
+     * @return bool
+     */
+    public function setPath(string $path): bool
+    {
+        // 设置路径时对路由配对
+        $urlInfo = parse_url($path);
+        if (isset($urlInfo['query'])) {
+            parse_str($urlInfo['query'], $getParam);
+            $this->param['GET'] = $getParam;
+        } else {
+            $this->param['GET'] = array();
+        }
+        $this->path = $urlInfo['path'];
+        if ($route = Route::guide($this->method, $this->path)) {
+            $this->route = $route;
+            if ($this->method === 'GET') {
+                $this->statusCode = Request::COMPLETE;
+            }
+            return true;
+        } elseif ($route = Route::guide('STATIC', $this->path)) {
+            if ($index = strpos($this->path, '/', 1)) {
+                $this->path = substr($this->path, $index);
+            } else {
+                $this->path = '';
+            }
+            $this->route      = $route;
+            $this->isStatic   = true;
+            $this->statusCode = Request::COMPLETE;
+            return true;
+        }
+        return false;
+    }
+
     public function getRoute(): Map|null
     {
         return $this->route ?? null;
@@ -491,51 +503,9 @@ class Request
         ];
     }
 
-    public function go(): \Cclilshy\PRipple\Dispatch\DataStandard\Event
-    {
-        return $this->fiber->start();
-    }
 
-    public function toResponse(): void
+    public function setClientSocket(Client $socket)
     {
-
-        if ($this->isStatic()) {
-            $response = $this->route->run($this);
-        } else {
-            if (!isset($this->route)) {
-                $result = (Text::htmlErrorPage(404, "Not match Route '{$this->path}'", __FILE__, __LINE__, $this, $this->statistics));
-            } else {
-                switch ($this->route->type) {
-                    case 'Controller':
-                        $className = $this->route->className;
-                        $_         = new $className($this);
-                        $result    = call_user_func([$_, $this->route->action], $this);
-                        break;
-                    case 'Closure':
-                        $this->route = Route::guide($this->method(), $this->path);
-                        $result      = call_user_func($this->route->callable, $this);
-                        break;
-                    default:
-                        $result = '';
-                        break;
-                }
-            }
-            $response = $this->response->setBody($result);
-        }
-        $event = new \Cclilshy\PRipple\Dispatch\DataStandard\Event($this->hash, 'response', $response);
-        Fiber::suspend($event);
-    }
-
-    public function parseUploadInfo(): void
-    {
-        $this->isUpload = true;
-        do {
-            $path = PRIPPLE_CACHE_PATH . '/' . md5(microtime(true) . rand(1, 9));
-        } while (file_exists($path));
-        $this->fileStream = fopen($path, 'a+');
-        $this->setFile($path);
-        fwrite($this->fileStream, $this->body);
-        $this->bodyLength = strlen($this->body);
-        $this->body       = '';
+        $this->clientSocket = $socket;
     }
 }

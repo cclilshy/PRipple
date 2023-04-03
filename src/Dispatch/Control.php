@@ -28,15 +28,14 @@ class Control
     private int         $messageLine             = 0;
     private int         $lastUpdateTableTime     = 0;
 
-    public static function register(): string
-    {
-        return 'pripple';
-    }
-
     public function __construct()
     {
     }
 
+    public static function register(): string
+    {
+        return 'pripple';
+    }
 
     public function __destruct()
     {
@@ -114,6 +113,31 @@ class Control
         }
     }
 
+    private function connectDispatcher(): void
+    {
+        try {
+            $socket                 = SocketUnix::connect(Dispatcher::$controlServiceUnixAddress);
+            $this->dispatcherSocket = SocketAisle::create($socket);
+            $this->dispatcherSocket->setBlock();
+        } catch (Exception $e) {
+            Console::debug("[Control]", $e->getMessage());
+            die;
+        }
+    }
+
+    public function getServiceInfo(string $name): void
+    {
+        $event = new Event('control', 'getServiceInfo', $name);
+        $build = new Build('dispatcher', null, $event);
+        Dispatcher::AGREE::send($this->dispatcherSocket, $build->serialize());
+    }
+
+    public function getServices(): void
+    {
+        $event = new Event('control', 'getServices', null);
+        $build = new Build('dispatcher', null, $event);
+        Dispatcher::AGREE::send($this->dispatcherSocket, $build->serialize());
+    }
 
     public function listen(bool|null $oneOff = true): void
     {
@@ -160,42 +184,6 @@ class Control
         }
     }
 
-    public function getSubscribes(): void
-    {
-        $event = new Event('control', 'getSubscribes', null);
-        $build = new Build('dispatcher', null, $event);
-        Dispatcher::AGREE::send($this->dispatcherSocket, $build->serialize());
-    }
-
-    public function getServices(): void
-    {
-        $event = new Event('control', 'getServices', null);
-        $build = new Build('dispatcher', null, $event);
-        Dispatcher::AGREE::send($this->dispatcherSocket, $build->serialize());
-    }
-
-    public function getServiceInfo(string $name): void
-    {
-        $event = new Event('control', 'getServiceInfo', $name);
-        $build = new Build('dispatcher', null, $event);
-        Dispatcher::AGREE::send($this->dispatcherSocket, $build->serialize());
-    }
-
-    public function printMessage(string $message): void
-    {
-        if ($this->messageLine > 0) {
-            $this->seekCursor($this->messageLine);
-        } else {
-            $this->seekCursor($this->lastLine);
-            $this->messageLine = $this->currentLine;
-        }
-
-        // 清空当前终端行
-        echo "\033[2K\033[1;32mStatus:\033[0m {$message}";
-        $this->currentLine = $this->messageLine;
-        \ob_flush();
-    }
-
     private function formatEventSubscribersTable(array $eventSubscribersArray): array
     {
         $data = [];
@@ -215,6 +203,7 @@ class Control
         $subscriberMaxLen = 0;
         foreach ($eventSubscribersArray as $publisher => $events) {
             foreach ($events as $event => $subscribers) {
+                var_dump($subscribers);
                 $subscriberList   = implode(", ", array_keys($subscribers));
                 $subscriberTypes  = implode(", ", array_values($subscribers));
                 $subscriberMaxLen = max($subscriberMaxLen, strlen($subscriberList) + strlen($subscriberTypes) + 3); // add 3 for parentheses and comma
@@ -243,53 +232,6 @@ class Control
         return $data;
     }
 
-    private function formatServicesTable(array $services): array
-    {
-        $data = [];
-
-        if (empty($services)) {
-            $data['header'] = [
-                ['Name', 10],
-                ['Status', 10],
-            ];
-            $data['body']   = [];
-            return $data;
-        }
-
-        $nameMaxLen   = max(array_map('strlen', array_map('strval', array_column($services, 'name'))));
-        $statusMaxLen = 10;
-
-        $data['header'] = [
-            ['Name', $nameMaxLen],
-            ['Status', $statusMaxLen],
-        ];
-
-        $body = [];
-        foreach ($services as $service) {
-            $body[] = [$service->name, $service->state];
-        }
-
-        $data['body'] = $body;
-        return $data;
-    }
-
-    private function flushPrint(): void
-    {
-    }
-
-    private function seekCursor(int $line): void
-    {
-        $count = $line - $this->currentLine;
-        if ($count > 0) {
-            // 光标下移
-            echo "\033[{$count}B";
-        } elseif ($count < 0) {
-            // 光标上移
-            echo "\033[{$count}A";
-        }
-        $this->currentLine = $line;
-    }
-
     private function updateSubscribersTable(array $table): void
     {
         if (empty($table['header']) || empty($table['body'])) {
@@ -311,35 +253,6 @@ class Control
             $this->subscriberStatusEndLine = $this->subscriberStatusLine + $outputLineCount;
             echo $output;
             $this->currentLine = $this->subscriberStatusEndLine;
-        }
-
-        $this->lastLine    = $this->currentLine;
-        $this->messageLine = $this->lastLine;
-        \ob_flush();
-        $this->seekCursor($this->currentLine);
-    }
-
-    private function updateServicesTable(array $table): void
-    {
-        if (empty($table['header']) || empty($table['body'])) {
-            return;
-        }
-        $output          = $this->getOutputContentByTableArray($table, 'Services');
-        $outputLines     = explode("\n", $output);
-        $outputLineCount = count($outputLines);
-
-        if ($this->serviceStatusEndLine > 0) {
-            $this->seekCursor($this->serviceStatusLine);
-            for ($i = 0; $i < $outputLineCount; $i++) {
-                echo "\r" . str_repeat(' ', 80) . "\r";
-                echo $outputLines[$i] . "\n";
-            }
-            $this->currentLine = $this->serviceStatusLine + $outputLineCount;
-        } else {
-            $this->serviceStatusLine    = $this->lastLine;
-            $this->serviceStatusEndLine = $this->serviceStatusLine + $outputLineCount;
-            echo $output;
-            $this->currentLine = $this->serviceStatusEndLine;
         }
 
         $this->lastLine    = $this->currentLine;
@@ -381,16 +294,76 @@ class Control
         return $output;
     }
 
-    private function connectDispatcher(): void
+    private function seekCursor(int $line): void
     {
-        try {
-            $socket                 = SocketUnix::connect(Dispatcher::$controlServiceUnixAddress);
-            $this->dispatcherSocket = SocketAisle::create($socket);
-            $this->dispatcherSocket->setBlock();
-        } catch (Exception $e) {
-            Console::debug("[Control]", $e->getMessage());
-            die;
+        $count = $line - $this->currentLine;
+        if ($count > 0) {
+            // 光标下移
+            echo "\033[{$count}B";
+        } elseif ($count < 0) {
+            // 光标上移
+            echo "\033[{$count}A";
         }
+        $this->currentLine = $line;
+    }
+
+    private function formatServicesTable(array $services): array
+    {
+        $data = [];
+
+        if (empty($services)) {
+            $data['header'] = [
+                ['Name', 10],
+                ['Status', 10],
+            ];
+            $data['body']   = [];
+            return $data;
+        }
+
+        $nameMaxLen   = max(array_map('strlen', array_map('strval', array_column($services, 'name'))));
+        $statusMaxLen = 10;
+
+        $data['header'] = [
+            ['Name', $nameMaxLen],
+            ['Status', $statusMaxLen],
+        ];
+
+        $body = [];
+        foreach ($services as $service) {
+            $body[] = [$service->name, $service->state];
+        }
+
+        $data['body'] = $body;
+        return $data;
+    }
+
+    private function updateServicesTable(array $table): void
+    {
+        if (empty($table['header']) || empty($table['body'])) {
+            return;
+        }
+        $output          = $this->getOutputContentByTableArray($table, 'Services');
+        $outputLines     = explode("\n", $output);
+        $outputLineCount = count($outputLines);
+
+        if ($this->serviceStatusEndLine > 0) {
+            $this->seekCursor($this->serviceStatusLine);
+            for ($i = 0; $i < $outputLineCount; $i++) {
+                echo "\r" . str_repeat(' ', 80) . "\r";
+                echo $outputLines[$i] . "\n";
+            }
+            $this->currentLine = $this->serviceStatusLine + $outputLineCount;
+        } else {
+            $this->serviceStatusLine    = $this->lastLine;
+            $this->serviceStatusEndLine = $this->serviceStatusLine + $outputLineCount;
+            echo $output;
+            $this->currentLine = $this->serviceStatusEndLine;
+        }
+
+        $this->lastLine    = $this->currentLine;
+        $this->messageLine = $this->lastLine;
+        \ob_flush();
+        $this->seekCursor($this->currentLine);
     }
 
     private function showServiceInfo(mixed $service): void
@@ -419,5 +392,31 @@ class Control
         echo "  name: " . $service->socket->getName() . "\n";
         echo "  identity: " . $service->socket->getIdentity() . "\n";
         echo "  activeTime: " . $service->socket->getActiveTime() . "\n";
+    }
+
+    public function printMessage(string $message): void
+    {
+        if ($this->messageLine > 0) {
+            $this->seekCursor($this->messageLine);
+        } else {
+            $this->seekCursor($this->lastLine);
+            $this->messageLine = $this->currentLine;
+        }
+
+        // 清空当前终端行
+        echo "\033[2K\033[1;32mStatus:\033[0m {$message}";
+        $this->currentLine = $this->messageLine;
+        \ob_flush();
+    }
+
+    public function getSubscribes(): void
+    {
+        $event = new Event('control', 'getSubscribes', null);
+        $build = new Build('dispatcher', null, $event);
+        Dispatcher::AGREE::send($this->dispatcherSocket, $build->serialize());
+    }
+
+    private function flushPrint(): void
+    {
     }
 }

@@ -26,26 +26,30 @@ abstract class Service extends ServiceInfo implements ServiceStandard
     const PS_CLOSE = 'PS_CLOSE';
     const PC_CLOSE = 'PC_CLOSE';
 
-    protected Manager     $serverSocketManager;
-    protected SocketAisle $dispatcherServerAisle;
-    protected string      $publish;
-    protected mixed       $dispatcherServer;
-    protected array       $socketTypeMap;
+    public Manager     $serverSocketManager;
+    public SocketAisle $dispatcherServerAisle;
+    public string      $publish;
+    public mixed       $dispatcherServer;
+    public array       $socketTypeMap;
 
-    protected string $socketType;
-    protected string $serverAddress;
-    protected int    $serverPort;
-    protected array  $socketOptions;
-    protected int    $selectBlockLine;
-    protected bool   $isServer = false;
+    public string $socketType;
+    public string $serverAddress;
+    public int    $serverPort;
+    public array  $socketOptions;
+    public int    $selectBlockLine;
+    public bool   $isServer = false;
 
     /**
      * 服务配置
      */
-    public function __construct()
+    public function __construct(string|null $name = null)
     {
-        $this->publish = get_class($this);
-        $this->publish = str_replace('\\', '_', $this->publish);
+        if ($name !== null) {
+            $this->publish = $name;
+        } else {
+            $this->publish = get_class($this);
+            $this->publish = str_replace('\\', '_', $this->publish);
+        }
         parent::__construct($this->publish);
     }
 
@@ -76,7 +80,7 @@ abstract class Service extends ServiceInfo implements ServiceStandard
             }
 
             $this->selectBlockLine = __LINE__ + 1;
-            if (socket_select($readList, $_, $_, null, 1000000)) {
+            if (socket_select($readList, $_, $_, 0, 1000000)) {
                 foreach ($readList as $readSocket) {
                     if (!$this->isServer) {
                         $this->handlerDispatcherMessage();
@@ -109,114 +113,16 @@ abstract class Service extends ServiceInfo implements ServiceStandard
                     }
                 }
             } else {
-                //TODO::对方在忙
-                $this->serverSocketManager->handleBufferContext();
+                if (isset($this->serverSocketManager)) {
+                    $this->serverSocketManager->handleBufferContext();
+                }
+
                 if ($this->dispatcherServerAisle->getCacheLength() > 0) {
                     $this->dispatcherServerAisle->write("");
                 }
+                $this->heartbeat();
             }
         }
-    }
-
-    /**
-     * 通知调度器启动
-     *
-     * @return void
-     */
-    protected function noticeStart(): void
-    {
-        $this->publishEvent(Service::PS_START, null);
-        $this->initialize();
-    }
-
-    /**
-     * 发布一个事件
-     *
-     * @param string      $name    事件名称
-     * @param mixed       $data    事件数据
-     * @param string|null $message 携带消息
-     * @return bool
-     */
-    protected function publishEvent(string $name, mixed $data, string|null $message = null): bool
-    {
-        $event = new Event($this->publish, $name, $data);
-        $build = new Build($this->publish, null, $event, $message);
-        return $this->publish($build);
-    }
-
-    /**
-     * 发布一个自定义的信息包
-     *
-     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Build $package
-     * @return bool
-     */
-    protected function publish(Build $package): bool
-    {
-        return Dispatcher::AGREE::send($this->dispatcherServerAisle, (string)$package);
-    }
-
-    protected function createServer(string $socketType, string $address, int|null $port = 0, array|null $options = [])
-    {
-        $this->socketType    = $socketType;
-        $this->serverAddress = $address;
-        $this->serverPort    = $port;
-        $this->socketOptions = $options;
-        $this->isServer      = true;
-    }
-
-    /**
-     * 声明订阅
-     *
-     * @param string $publisher 订阅的发布者
-     * @param string $eventName 订阅的事件
-     * @param int    $type      接收的消息类型
-     * @return bool
-     */
-    protected function subscribe(string $publisher, string $eventName, int $type,array|null $options = []): bool
-    {
-        return $this->publishEvent(Dispatcher::PD_SUBSCRIBE, [
-            'publish' => $publisher,
-            'event'   => $eventName,
-            'type'    => $type,
-            'options' => $options
-        ]);
-    }
-
-    /**
-     * 取消订阅
-     *
-     * @param string      $publisher 取消的订阅者
-     * @param string|null $eventName 取消的订阅事件
-     * @return bool
-     */
-    protected function unSubscribe(string $publisher, string|null $eventName = null): bool
-    {
-        return $this->publishEvent(Dispatcher::PD_SUBSCRIBE_UN, [
-            'publish' => $publisher,
-            'event'   => $eventName,
-        ]);
-    }
-
-    protected function builtEventHandle(Event $event): bool
-    {
-        switch ($event->getName()) {
-            case Service::PC_CLOSE:
-                $this->dispatcherServerAisle->release();
-                $this->noticeClose();
-                exit;
-            default:
-                return false;
-        }
-    }
-
-    /**
-     * 通知调度器关闭
-     *
-     * @return bool
-     */
-    protected function noticeClose(): bool
-    {
-        return $this->publishEvent(Service::PS_CLOSE, null);
     }
 
     /**
@@ -264,6 +170,52 @@ abstract class Service extends ServiceInfo implements ServiceStandard
     }
 
     /**
+     * 通知调度器启动
+     *
+     * @return void
+     */
+    public function noticeStart(): void
+    {
+        $this->publishEvent(Service::PS_START, null);
+        $this->initialize();
+    }
+
+    /**
+     * 发布一个事件
+     *
+     * @param string      $name    事件名称
+     * @param mixed       $data    事件数据
+     * @param string|null $message 携带消息
+     * @return bool
+     */
+    public function publishEvent(string $name, mixed $data, string|null $message = null): bool
+    {
+        $event = new Event($this->publish, $name, $data);
+        $build = new Build($this->publish, null, $event, $message);
+        return $this->publish($build);
+    }
+
+    /**
+     * 发布一个自定义的信息包
+     *
+     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Build $package
+     * @return bool
+     */
+    public function publish(Build $package): bool
+    {
+        return Dispatcher::AGREE::send($this->dispatcherServerAisle, (string)$package);
+    }
+
+    public function createServer(string $socketType, string $address, int|null $port = 0, array|null $options = [])
+    {
+        $this->socketType    = $socketType;
+        $this->serverAddress = $address;
+        $this->serverPort    = $port;
+        $this->socketOptions = $options;
+        $this->isServer      = true;
+    }
+
+    /**
      * 处理调度器返回消息
      *
      * @return void
@@ -282,16 +234,72 @@ abstract class Service extends ServiceInfo implements ServiceStandard
         }
         switch ($messageType) {
             case Dispatcher::FORMAT_MESSAGE:
-                $this->execMessage($context);
+                $this->onMessage($context, $this->dispatcherServer);
                 break;
             case Dispatcher::FORMAT_BUILD:
                 $package = Build::unSerialize($context);
-                $this->execPackage($package);
+                $this->onPackage($package);
                 break;
             case Dispatcher::FORMAT_EVENT:
                 $event = unserialize($context);
-                $this->execEvent($event);
+                $this->onEvent($event);
                 break;
         }
+    }
+
+    /**
+     * 声明订阅
+     *
+     * @param string     $publisher 订阅的发布者
+     * @param string     $eventName 订阅的事件
+     * @param int        $type      接收的消息类型
+     * @param array|null $options
+     * @return bool
+     */
+    public function subscribe(string $publisher, string $eventName, int $type, array|null $options = []): bool
+    {
+        $options = array_merge($options, [
+            'publish' => $publisher,
+            'event'   => $eventName,
+            'type'    => $type,
+        ]);
+        return $this->publishEvent(Dispatcher::PD_SUBSCRIBE, $options);
+    }
+
+    /**
+     * 取消订阅
+     *
+     * @param string      $publisher 取消的订阅者
+     * @param string|null $eventName 取消的订阅事件
+     * @return bool
+     */
+    public function unSubscribe(string $publisher, string|null $eventName = null): bool
+    {
+        return $this->publishEvent(Dispatcher::PD_SUBSCRIBE_UN, [
+            'publish' => $publisher,
+            'event'   => $eventName,
+        ]);
+    }
+
+    public function builtEventHandle(Event $event): bool
+    {
+        switch ($event->getName()) {
+            case Service::PC_CLOSE:
+                $this->dispatcherServerAisle->release();
+                $this->noticeClose();
+                exit;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * 通知调度器关闭
+     *
+     * @return bool
+     */
+    public function noticeClose(): bool
+    {
+        return $this->publishEvent(Service::PS_CLOSE, null);
     }
 }

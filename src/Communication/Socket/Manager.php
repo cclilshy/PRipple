@@ -46,17 +46,6 @@ class Manager
     }
 
     /**
-     * 获取客户端HASH
-     *
-     * @param mixed $socket
-     * @return string
-     */
-    public static function getNameBySocket(mixed $socket): string
-    {
-        return spl_object_hash($socket);
-    }
-
-    /**
      * 获取入口套接字
      *
      * @return mixed
@@ -94,6 +83,17 @@ class Manager
         $this->clientSockets[$name] = $clientSocket;
         $this->clientInfos[$name]   = new Client($clientSocket, $this);
         return $name;
+    }
+
+    /**
+     * 获取客户端HASH
+     *
+     * @param mixed $socket
+     * @return string
+     */
+    public static function getNameBySocket(mixed $socket): string
+    {
+        return spl_object_hash($socket);
     }
 
     /**

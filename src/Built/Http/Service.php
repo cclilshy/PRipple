@@ -8,26 +8,26 @@
 
 namespace Cclilshy\PRipple\Built\Http;
 
-use Fiber;
 use Cclilshy\PRipple\Dispatch\DataStandard\Event;
 use Cclilshy\PRipple\Dispatch\DataStandard\Build;
 use Cclilshy\PRipple\Communication\Socket\Client;
-use Cclilshy\PRipple\Communication\Socket\SocketInet;
 use Cclilshy\PRipple\Service\Service as ServiceBase;
+use Cclilshy\PRipple\Communication\Socket\SocketInet;
 use Cclilshy\PRipple\Built\Http\Event as HttpRequestEvent;
 
 class Service extends ServiceBase
 {
 
 
-    private array $requests = array();
-    private array $transfers = array();
+    private array            $requests  = array();
+    private array            $transfers = array();
+    private HttpRequestEvent $httpRequestEvent;
 
     public function __construct()
     {
-        parent::__construct();
+        parent::__construct('HttpService');
+        $this->httpRequestEvent = new HttpRequestEvent($this);
     }
-
 
     public function initialize(): void
     {
@@ -35,8 +35,14 @@ class Service extends ServiceBase
         $this->createServer(SocketInet::class, '0.0.0.0', 2222, [SO_REUSEADDR => 1]);
     }
 
+    public function heartbeat(): void
+    {
+        // $this->httpRequestEvent->handle();
+    }
+
     public function onEvent(Event $event): void
     {
+        $this->httpRequestEvent->extracted($event);
     }
 
     public function onPackage(Build $package): void
@@ -51,26 +57,29 @@ class Service extends ServiceBase
     public function onMessage(string $context, Client $client): void
     {
         $clientName = $client->getKeyName();
-        if (!isset($this->requests[$clientName])) {
-            $request = new Request($clientName);
+        if ($transfer = $this->transfers[$clientName] ?? null) {
+            if (!$transfer->push($context) || $transfer->getStatusCode() == Request::COMPLETE) {
+                unset($this->transfers[$clientName]);
+            }
+            return;
+        } elseif (!$request = $this->requests[$clientName] ?? null) {
+            $request                     = new Request($clientName);
             $this->requests[$clientName] = $request;
-            $client->setIdentity($request->getHash());
+            $client->setName($clientName);
+            $request->setClientSocket($client);
         }
-        $request = $this->requests[$clientName];
-        if (!$request->push($context)) {
+
+        $request->push($context);
+
+        if ($request->getStatusCode() == Request::COMPLETE) {
+            $this->httpRequestEvent->access($request, $client);
+            unset($this->requests[$clientName]);
+        } elseif ($request->isUpload === true) {
+            $this->httpRequestEvent->access($request, $client);
+            $this->transfers[$clientName] = $request;
             unset($this->requests[$clientName]);
         }
 
-        if ($request->getStatusCode() == Request::COMPLETE) {
-            HttpRequestEvent::access($request);
-            unset($this->requests[$request->getHash()]);
-        } elseif ($request->isUpload === true) {
-            $this->transfers[$request->getHash()] = $request;
-            $event    = $request->go();
-            $response = $event->getData();
-            $client->write($response->__toString());
-            unset($this->requests[$clientName]);
-        }
     }
 
     public function onClose(Client $client): void

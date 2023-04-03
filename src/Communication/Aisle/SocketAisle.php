@@ -17,36 +17,34 @@ use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 class SocketAisle implements CommunicationInterface
 {
     const EXT = '.sock';
-    protected readonly string $address;    // 用户地址
-    protected readonly string $keyName;    // 在管理器中的键名
-    protected readonly int    $createTime; // 用户连接时
-    protected readonly mixed  $socket;     // 套接字实体
+    public Manager            $manager;        // 用户地址
+    protected readonly string $address;        // 在管理器中的键名
+    protected readonly string $keyName;        // 用户连接时
+    protected readonly int    $createTime;     // 套接字实体
+    protected readonly mixed  $socket;
     protected readonly int    $port;
-
-    protected int $sendBufferSize;
     // 发送缓冲区大小
-    protected int $receiveBufferSize;
+    protected int $sendBufferSize;
     // 接收缓冲区大小
-    protected int $sendLowWaterSize;
+    protected int $receiveBufferSize;
     // 发送低水位大小
-    protected int $receiveLowWaterSize;
+    protected int $sendLowWaterSize;
     // 接收低水位大小
-    protected int $sendFlowCount = 0;
+    protected int $receiveLowWaterSize;
     // 总共接收流量
-    protected int $receiveFlowCount = 0;
+    protected int $sendFlowCount = 0;
     // 总共发送流量
-    protected string $sendBuffer = '';
+    protected int $receiveFlowCount = 0;
     // 发送丢包储存区
-    protected FileAisle $cacheFile;
+    protected string $sendBuffer = '';
     // 文件缓冲区
-    protected string $cacheFilePath;
+    protected FileAisle $cacheFile;
     // 文件缓冲区文件路径
-    protected int $cacheLength = 0;
+    protected string $cacheFilePath;
     // 文件缓冲长度
-    protected int $cachePoint = 0;
+    protected int $cacheLength = 0;
     // 缓存指针位置
-    public Manager $manager;
-
+    protected int    $cachePoint = 0;
     protected string $name;        // 自定义的名称
     protected string $identity;    // 自定义身份标识
     protected int    $activeTime;  // 上次活跃时间

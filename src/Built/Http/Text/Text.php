@@ -29,7 +29,7 @@ class Text
      * @param \Cclilshy\PRipple\Statistics         $statistics
      * @return string
      */
-    public static function statistics(string $content, Request $request,Statistics $statistics): string
+    public static function statistics(string $content, Request $request, Statistics $statistics): string
     {
         if (Config::get('http.debug') === true && $request->isAjax() === false) {
             $statistics->record('endTime', microtime(true));
@@ -65,7 +65,7 @@ class Text
      * @param \Cclilshy\PRipple\Statistics         $statistics
      * @return string|null
      */
-    public static function htmlErrorPage(int $errno, string $erst, string $errFile, int $errLine, Request $request,Statistics $statistics): ?string
+    public static function htmlErrorPage(int $errno, string $erst, string $errFile, int $errLine, Request $request, Statistics $statistics): ?string
     {
         $statistics->record('endTime', microtime(true));
         $fileDescribe = '';

@@ -16,8 +16,8 @@ use Cclilshy\PRipple\Built\Process\Standard\EventInterface;
 
 class GuardEvent
 {
-    private string         $name;
-    private array          $siblingsProcessIds = [];
+    private string             $name;
+    private array              $siblingsProcessIds = [];
     private AgreementInterface $aisle;
 
     public function __construct()

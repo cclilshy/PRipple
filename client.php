@@ -9,8 +9,13 @@
 namespace Cclilshy\PRipple;
 
 include __DIR__ . '/vendor/autoload.php';
-
 Configure::init();
 Config::init();
+if (pcntl_fork() === 0) {
+    $timer = new Built\Timer\Timer();
+    $timer->launch();
+    return;
+}
+
 $http = new \Cclilshy\PRipple\Built\Http\Service();
 $http->launch();

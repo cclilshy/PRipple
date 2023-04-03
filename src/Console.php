@@ -43,29 +43,28 @@ class Console
     /**
      * @return void
      */
-    public static function pdebug(): void
+    public static function pdebug(...$args): void
     {
-        call_user_func_array([__CLASS__, 'extracted'], func_get_args());
-    }
-
-    /**
-     * @param string $content
-     * @return void
-     */
-    public static function printn(string $content): void
-    {
-        printf($content . PHP_EOL);
+        self::extracted($args);
     }
 
     /**
      * @return void
      */
-    public static function extracted(): void
+    public static function debug(...$args): void
     {
-        if (!Config::get('console.debug')) {
-            return;
-        }
-        $args    = func_get_args();
+        self::extracted($args);
+    }
+
+    /**
+     * @return void
+     */
+    public static function extracted($args): void
+    {
+        // if (!Config::get('console.debug')) {
+        //     return;
+        // }
+        // $args    = func_get_args();
         $content = '';
         foreach ($args as $index => $arg) {
             if (is_array($arg) || is_object($arg)) {
@@ -83,6 +82,24 @@ class Console
         $date        = date("H:i:s", intval($_micrometer[1]));
         $date        .= substr($_micrometer[0], 1);
         self::printn("\033[33m[DEBUG][" . posix_getpid() . '][' . $date . "]{$content}\033[0m");
+    }
+
+    /**
+     * @param string $content
+     * @return void
+     */
+    public static function printn(string $content): void
+    {
+        printf($content . PHP_EOL);
+    }
+
+    /**
+     * @param string $content
+     * @return void
+     */
+    public static function pred(string $content): void
+    {
+        self::printn("\033[31m[" . posix_getpid() . "]{$content}\033[0m");
     }
 
     /**
@@ -121,23 +138,6 @@ class Console
     private static function inspection(bool $print = false): bool
     {
         return true;
-    }
-
-    /**
-     * @return void
-     */
-    public static function debug(): void
-    {
-        self::extracted();
-    }
-
-    /**
-     * @param string $content
-     * @return void
-     */
-    public static function pred(string $content): void
-    {
-        self::printn("\033[31m[" . posix_getpid() . "]{$content}\033[0m");
     }
 
     /**

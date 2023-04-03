@@ -172,14 +172,6 @@ class Response
     }
 
     /**
-     * @return \Cclilshy\PRipple\Built\Http\Response
-     */
-    public function result(): Response
-    {
-        return $this;
-    }
-
-    /**
      * @return string
      */
     public function __toString(): string
@@ -214,6 +206,14 @@ class Response
     public function getHttpBodyContext(): string
     {
         return $this->body;
+    }
+
+    /**
+     * @return \Cclilshy\PRipple\Built\Http\Response
+     */
+    public function result(): Response
+    {
+        return $this;
     }
 
     /**

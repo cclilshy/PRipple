@@ -58,30 +58,6 @@ class Dispatcher
         }
     }
 
-    public static function noticeControl(string $message, bool|null $upStatus = false): void
-    {
-        if (isset(self::$controlSocketManager)) {
-            if ($list = self::$controlSocketManager->getClientSockets()) {
-                foreach ($list as $controlSocket) {
-                    $client = self::$controlSocketManager->getClientBySocket($controlSocket);
-                    if ($upStatus || self::$lastUpdateStatusTime + 10 < time()) {
-                        self::updateStatus($client);
-                    }
-                    Dispatcher::AGREE::sendWithInt($client, $message, Dispatcher::FORMAT_MESSAGE);
-                }
-            }
-        }
-    }
-
-    public static function updateStatus(Client $client): void
-    {
-        self::$lastUpdateStatusTime = time();
-        $event                      = new Event('dispatcher', 'services', self::$servers);
-        Dispatcher::AGREE::sendWithInt($client, $event->serialize(), Dispatcher::FORMAT_EVENT);
-        $event = new Event('dispatcher', 'subscribes', self::$subscribeManager->getSubscribes());
-        Dispatcher::AGREE::sendWithInt($client, $event->serialize(), Dispatcher::FORMAT_EVENT);
-    }
-
     /**
      * 注册公共事件
      *
@@ -175,19 +151,6 @@ class Dispatcher
     }
 
     /**
-     * 有新连接加入
-     *
-     * @param mixed $readSocket
-     * @return void
-     * @throws \Exception
-     */
-    private static function handleServiceOnline(mixed $readSocket): void
-    {
-        $name                             = self::$handlerSocketManager->accept($readSocket);
-        Dispatcher::$socketHashMap[$name] = Dispatcher::MSF_HANDLER;
-    }
-
-    /**
      * 事件消息服务器
      *
      * @param mixed $socket
@@ -204,6 +167,7 @@ class Dispatcher
             $event     = $package->getEvent();
 
             if ($event) {
+                Console::debug($event->getPublisher() . " 发布了 " . $event->getName() . " 事件");
                 // 处理调度器内置事件
                 if (self::handleBuiltEvent($event, $client)) {
                     return;
@@ -211,7 +175,11 @@ class Dispatcher
                 // 订阅者列表
                 $subscribers = self::$subscribeManager->getSubscribesByPublishAndEvent($publisher, $event->getName());
                 // 通知订阅事件
+                //                var_dump($subscribers);
                 foreach ($subscribers as $subscriber => $options) {
+                    if ($subscriber === 'count') {
+                        continue;
+                    }
                     self::notice($subscriber, $package, $options['type']);
                     if (isset($options['oneOff']) && $options['oneOff'] === true) {
                         self::$subscribeManager->unSubscribes($subscriber, $publisher, $event->getName());
@@ -247,7 +215,7 @@ class Dispatcher
             case Dispatcher::PD_SUBSCRIBE:
                 //TODO::订阅事件
                 if (is_array($subscribeInfo = $event->getData())) {
-                    self::$subscribeManager->addSubscribes($subscribeInfo['publish'], $subscribeInfo['event'], $event->getPublisher(), $subscribeInfo['options']);
+                    self::$subscribeManager->addSubscribes($subscribeInfo['publish'], $subscribeInfo['event'], $event->getPublisher(), $subscribeInfo);
                 }
                 break;
             case Dispatcher::PD_SUBSCRIBE_UN:
@@ -307,6 +275,30 @@ class Dispatcher
     private static function getServiceByName(string $name): Service|null
     {
         return self::$servers[$name] ?? null;
+    }
+
+    public static function noticeControl(string $message, bool|null $upStatus = false): void
+    {
+        if (isset(self::$controlSocketManager)) {
+            if ($list = self::$controlSocketManager->getClientSockets()) {
+                foreach ($list as $controlSocket) {
+                    $client = self::$controlSocketManager->getClientBySocket($controlSocket);
+                    if ($upStatus || self::$lastUpdateStatusTime + 10 < time()) {
+                        self::updateStatus($client);
+                    }
+                    Dispatcher::AGREE::sendWithInt($client, $message, Dispatcher::FORMAT_MESSAGE);
+                }
+            }
+        }
+    }
+
+    public static function updateStatus(Client $client): void
+    {
+        self::$lastUpdateStatusTime = time();
+        $event                      = new Event('dispatcher', 'services', self::$servers);
+        Dispatcher::AGREE::sendWithInt($client, $event->serialize(), Dispatcher::FORMAT_EVENT);
+        $event = new Event('dispatcher', 'subscribes', self::$subscribeManager->getSubscribes());
+        Dispatcher::AGREE::sendWithInt($client, $event->serialize(), Dispatcher::FORMAT_EVENT);
     }
 
     /**
@@ -437,5 +429,18 @@ class Dispatcher
                 # code...
                 break;
         }
+    }
+
+    /**
+     * 有新连接加入
+     *
+     * @param mixed $readSocket
+     * @return void
+     * @throws \Exception
+     */
+    private static function handleServiceOnline(mixed $readSocket): void
+    {
+        $name                             = self::$handlerSocketManager->accept($readSocket);
+        Dispatcher::$socketHashMap[$name] = Dispatcher::MSF_HANDLER;
     }
 }

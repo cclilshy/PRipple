@@ -34,6 +34,18 @@ class Route
         Route::loadPath($path);
     }
 
+    public static function loadPath(string $path): void
+    {
+        if (is_dir($path)) {
+            $list = scandir($path);
+            array_shift($list);
+            array_shift($list);
+            foreach ($list as $item) {
+                require $path . FS . $item;
+            }
+        }
+    }
+
     /**
      * 在允许的方法内定义路由
      *
@@ -66,18 +78,6 @@ class Route
             $target = new Map('Controller', $_[0], $_[1] ?? 'main');
         }
         return true;
-    }
-
-    public static function loadPath(string $path): void
-    {
-        if (is_dir($path)) {
-            $list = scandir($path);
-            array_shift($list);
-            array_shift($list);
-            foreach ($list as $item) {
-                require $path . FS . $item;
-            }
-        }
     }
 
     /**

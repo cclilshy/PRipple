@@ -21,6 +21,7 @@ interface ServiceStandard
      */
     public function initialize(): void;
 
+    public function heartbeat(): void;
     /**
      * 处理原生消息包
      *

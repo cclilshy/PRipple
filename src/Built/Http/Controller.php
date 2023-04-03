@@ -10,7 +10,7 @@ declare(strict_types=1);
  */
 
 namespace Cclilshy\PRipple\Built\Http;
-
+use Fiber;
 use Cclilshy\PRipple\Config;
 use Cclilshy\PRipple\Statistics;
 use Cclilshy\PRipple\Built\Http\Text\Text;
@@ -18,22 +18,22 @@ use Cclilshy\PRipple\Built\Http\Text\Plaster;
 
 class Controller
 {
-    protected Event   $http;
-    protected Plaster $plaster;
-    protected Response $response;
-    protected Request $request;
+    protected Event      $http;
+    protected Plaster    $plaster;
+    protected Response   $response;
+    protected Request    $request;
     protected Statistics $statistics;
-    protected array   $assign = [];
+    protected array      $assign = [];
 
     /**
      * @param \Cclilshy\PRipple\Built\Http\Request $base
      */
     public function __construct(Request $base)
     {
-        $this->request = $base;
-        $this->response = $base->response;
+        $this->request    = $base;
+        $this->response   = $base->response;
         $this->statistics = $base->statistics;
-        $this->plaster = new Plaster();
+        $this->plaster    = new Plaster();
     }
 
     /**
@@ -52,10 +52,10 @@ class Controller
         $function                   = $templateInfo['function'];
         $controllerName             = strtolower(substr($class, strrpos($class, '\\') + 1));
         $functionToTemplateFileName = strtolower(preg_replace('/([A-Z])/', '$0_', $function));
-        $templatePath = Http::TEMPLATE_PATH . FS . $controllerName . FS . $functionToTemplateFileName . '.' . Config::get('http.template_extension');
+        $templatePath               = Http::TEMPLATE_PATH . FS . $controllerName . FS . $functionToTemplateFileName . '.' . Config::get('http.template_extension');
         if (file_exists($templatePath)) {
-            $template                   = file_get_contents($templatePath);
-            $html =  $this->plaster->apply($template, $this->assign);
+            $template = file_get_contents($templatePath);
+            $html     = $this->plaster->apply($template, $this->assign);
             if (Config::get('http.debug')) {
                 $html = Text::statistics($html, $this->request, $this->statistics);
             }
@@ -93,5 +93,13 @@ class Controller
     public function header(string $key, string $value): void
     {
         $this->response->setHeader($key, $value);
+    }
+
+    public function sleep(int $time): void
+    {
+        $event = new \Cclilshy\PRipple\Dispatch\DataStandard\Event($this->request->getHash(), 'sleep', [
+            'time' => $time,
+        ]);
+        Fiber::suspend($event);
     }
 }

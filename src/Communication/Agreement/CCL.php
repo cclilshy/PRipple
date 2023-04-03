@@ -45,6 +45,11 @@ class CCL implements AgreementInterface
         // 报文长度#正文长度PACK正文
     }
 
+    private static function sendRawContext(CommunicationInterface $aisle, string $context): bool
+    {
+        return $aisle->write($context) !== false;
+    }
+
     /**
      * 发送一条附加一个字节的整数的信息,最长4个字节
      *
@@ -179,10 +184,5 @@ class CCL implements AgreementInterface
     public static function corrective(CommunicationInterface $aisle): string|false
     {
         return false;
-    }
-
-    private static function sendRawContext(CommunicationInterface $aisle, string $context): bool
-    {
-        return $aisle->write($context) !== false;
     }
 }
