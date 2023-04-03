@@ -65,17 +65,17 @@ class Service extends ServiceBase
         } elseif (!$request = $this->requests[$clientName] ?? null) {
             $request                     = new Request($clientName);
             $this->requests[$clientName] = $request;
-            $client->setName($clientName);
             $request->setClientSocket($client);
         }
 
         $request->push($context);
 
         if ($request->getStatusCode() == Request::COMPLETE) {
-            $this->httpRequestEvent->access($request, $client);
+            $this->httpRequestEvent->access($request);
             unset($this->requests[$clientName]);
+            unset($this->transfers[$clientName]);
         } elseif ($request->isUpload === true) {
-            $this->httpRequestEvent->access($request, $client);
+            $this->httpRequestEvent->access($request);
             $this->transfers[$clientName] = $request;
             unset($this->requests[$clientName]);
         }
@@ -84,5 +84,8 @@ class Service extends ServiceBase
 
     public function onClose(Client $client): void
     {
+        unset($this->requests[$client->getKeyName()]);
+        unset($this->transfers[$client->getKeyName()]);
+        $this->httpRequestEvent->break($client);
     }
 }

@@ -52,6 +52,10 @@ class Request
         $this->response   = new Response($this);
     }
 
+    public static function create(string $name): self
+    {
+        return new self($name);
+    }
 
     /**
      * @return bool
@@ -69,11 +73,6 @@ class Request
     public function method(): string
     {
         return $this->method ?? 'undefined';
-    }
-
-    public static function create(string $name): self
-    {
-        return new self($name);
     }
 
     /**
@@ -216,17 +215,6 @@ class Request
     {
         $key   = trim(strtoupper($key));
         $value = trim($value);
-        //        if (str_starts_with(strtoupper($value), 'MULTIPART/FORM-DATA')) {
-        //            $this->isUpload = true;
-        //            do {
-        //                $path = PRIPPLE_CACHE_PATH . '/' . md5(microtime(true) . rand(1, 9));
-        //            } while (file_exists($path));
-        //            $this->fileStream = fopen($path, 'a+');
-        //            $this->setFile($path);
-        //            fwrite($this->fileStream, $this->body);
-        //            $this->bodyLength = strlen($this->body);
-        //            $this->body       = '';
-        //        }
         $this->header[$key] = $value;
         return $this;
     }
@@ -499,12 +487,12 @@ class Request
             'complete',
             'name',
             'route',
-            'hash'
+            'hash',
+            'clientSocket'
         ];
     }
 
-
-    public function setClientSocket(Client $socket)
+    public function setClientSocket(Client $socket): void
     {
         $this->clientSocket = $socket;
     }

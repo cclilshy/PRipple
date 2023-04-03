@@ -111,6 +111,31 @@ class Tree extends ServerAbstract implements Module
     }
 
     /**
+     * 关闭树服务
+     *
+     * @return void
+     */
+    public function stop(): void
+    {
+        if ($this->initLoad()) {
+            try {
+                if ($ipcName = $this->data['tree_name'] ?? null) {
+                    if ($IPC = Event::link($ipcName, true)) {
+                        $IPC->stop();
+                        $this->release();
+                        Console::pgreen('[TreeServer] stopped!');
+                        return;
+                    }
+                }
+            } catch (Exception $e) {
+                Console::pred($e->getMessage());
+            }
+            $this->release();
+        }
+        Console::pred('[TreeServer] stop failed may not run');
+    }
+
+    /**
      * 搜索指定ID的节点引用指针
      *
      * @param $pid
@@ -194,30 +219,5 @@ class Tree extends ServerAbstract implements Module
         }
         $node->kill();
         unset($this->processMap[$node->getProcessId()]);
-    }
-
-    /**
-     * 关闭树服务
-     *
-     * @return void
-     */
-    public function stop(): void
-    {
-        if ($this->initLoad()) {
-            try {
-                if ($ipcName = $this->data['tree_name'] ?? null) {
-                    if ($IPC = Event::link($ipcName, true)) {
-                        $IPC->stop();
-                        $this->release();
-                        Console::pgreen('[TreeServer] stopped!');
-                        return;
-                    }
-                }
-            } catch (Exception $e) {
-                Console::pred($e->getMessage());
-            }
-            $this->release();
-        }
-        Console::pred('[TreeServer] stop failed may not run');
     }
 }

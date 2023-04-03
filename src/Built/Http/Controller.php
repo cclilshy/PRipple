@@ -10,6 +10,7 @@ declare(strict_types=1);
  */
 
 namespace Cclilshy\PRipple\Built\Http;
+
 use Fiber;
 use Cclilshy\PRipple\Config;
 use Cclilshy\PRipple\Statistics;
