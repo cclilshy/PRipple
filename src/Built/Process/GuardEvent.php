@@ -27,12 +27,9 @@ class GuardEvent
     }
 
     /**
-     * @param callable    $observer
-     * @param mixed|null  $space
-     * @param string|null $name
-     * @return \Cclilshy\PRipple\Service\Process\Event|false
+     * @return \Cclilshy\PRipple\Built\Process\GuardEvent
      */
-    public static function create(): EventInterface
+    public static function create(): GuardEvent
     {
         return new self();
     }

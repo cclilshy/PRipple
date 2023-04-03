@@ -15,7 +15,6 @@ namespace Cclilshy\PRipple\Built\Http\Text;
 
 use Cclilshy\Console;
 use Cclilshy\PRipple\Built\Http\Http;
-
 use function substr;
 use function is_string;
 use function htmlspecialchars;
@@ -130,7 +129,7 @@ class Plaster
                     if (is_string($applyBracecExecResult)) {
                         $applyBracecExecResult = htmlspecialchars($applyBracecExecResult);
                     }
-                $applyTemplateText = str_replace($applyBraceMatchResult[0][$applyBracecExecIndex], $applyBracecExecResult, $applyTemplateText);
+                $applyTemplateText = str_replace($applyBraceMatchResult[0][$applyBracecExecIndex], $applyBracecExecResult ?? '', $applyTemplateText);
             }
         }
 

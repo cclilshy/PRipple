@@ -19,7 +19,7 @@ class EventPackage implements PackageInterface
     {
     }
 
-    public static function create(string $name): PackageInterface
+    public static function create(string $name): EventPackage
     {
         return new self($name);
     }

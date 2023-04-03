@@ -424,6 +424,7 @@ class SocketAisle implements CommunicationInterface
      */
     public function read(mixed &$data, int|null $length = null): bool
     {
+
         $this->activeTime = time();
         if (!$length) {
             $length = $this->receiveBufferSize;

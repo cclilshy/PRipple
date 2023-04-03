@@ -211,16 +211,22 @@ class Dispatcher
                 // 订阅者列表
                 $subscribers = self::$subscribeManager->getSubscribesByPublishAndEvent($publisher, $event->getName());
                 // 通知订阅事件
-                foreach ($subscribers as $subscriber => $needType) {
-                    self::notice($subscriber, $package, $needType);
+                foreach ($subscribers as $subscriber => $options) {
+                    self::notice($subscriber, $package, $options['type']);
+                    if (isset($options['oneOff']) && $options['oneOff'] === true) {
+                        self::$subscribeManager->unSubscribes($subscriber, $publisher, $event->getName());
+                    }
                 }
             }
 
             // 全局事件的订阅者列表
             $subscribers = self::$subscribeManager->getSubscribesByPublishAndEvent($publisher, 'DEFAULT');
-            foreach ($subscribers as $subscriber => $needType) {
+            foreach ($subscribers as $subscriber => $options) {
                 self::$subscribeManager->recordHappen($event);
-                self::notice($subscriber, $package, $needType);
+                self::notice($subscriber, $package, $options['type']);
+                if (isset($options['oneOff']) && $options['oneOff'] === true) {
+                    self::$subscribeManager->unSubscribes($subscriber, $publisher, $event->getName());
+                }
             }
         } catch (Exception $e) {
             self::handleServiceOnBlack($client, $e->getMessage());
@@ -241,7 +247,7 @@ class Dispatcher
             case Dispatcher::PD_SUBSCRIBE:
                 //TODO::订阅事件
                 if (is_array($subscribeInfo = $event->getData())) {
-                    self::$subscribeManager->addSubscribes($subscribeInfo['publish'], $subscribeInfo['event'], $event->getPublisher(), $subscribeInfo['type']);
+                    self::$subscribeManager->addSubscribes($subscribeInfo['publish'], $subscribeInfo['event'], $event->getPublisher(), $subscribeInfo['options']);
                 }
                 break;
             case Dispatcher::PD_SUBSCRIBE_UN:

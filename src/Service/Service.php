@@ -105,7 +105,6 @@ abstract class Service extends ServiceInfo implements ServiceStandard
                                     $this->onClose($client);
                                     $this->serverSocketManager->removeClient($readSocket);
                                 }
-
                             }
                     }
                 }
@@ -173,12 +172,13 @@ abstract class Service extends ServiceInfo implements ServiceStandard
      * @param int    $type      接收的消息类型
      * @return bool
      */
-    protected function subscribe(string $publisher, string $eventName, int $type): bool
+    protected function subscribe(string $publisher, string $eventName, int $type,array|null $options = []): bool
     {
         return $this->publishEvent(Dispatcher::PD_SUBSCRIBE, [
             'publish' => $publisher,
             'event'   => $eventName,
-            'type'    => $type
+            'type'    => $type,
+            'options' => $options
         ]);
     }
 
@@ -227,26 +227,26 @@ abstract class Service extends ServiceInfo implements ServiceStandard
     private function registerErrorHandler(): void
     {
         return;
-        set_exception_handler(function (mixed $error) {
-            Console::debug("[Service]", $error->getMessage(), $error->getFile(), $error->getLine());
-            if (property_exists($this, 'errorHandler')) {
-                return $this->errorHandler($error);
-            }
-            return false;
-        });
+        // set_exception_handler(function (mixed $error) {
+        //     Console::debug("[Service]", $error->getMessage(), $error->getFile(), $error->getLine());
+        //     if (property_exists($this, 'errorHandler')) {
+        //         return $this->errorHandler($error);
+        //     }
+        //     return false;
+        // });
 
-        $_ = set_error_handler(function ($errno, $errStr, $errFile, $errLine) {
-            if ($errFile === __FILE__ && $errLine === $this->selectBlockLine) {
-                Console::debug(PHP_EOL, "[Subscribe]", '[' . $this->publish . '] Close.');
-                die;
-            } else {
-                Console::debug("[Subscribe]", $errStr, $errFile, $errLine);
-            }
-            if (property_exists($this, 'errorHandler')) {
-                return $this->errorHandler($errno, $errStr, $errFile, $errLine);
-            }
-            return false;
-        });
+        // set_error_handler(function ($errno, $errStr, $errFile, $errLine) {
+        //     if ($errFile === __FILE__ && $errLine === $this->selectBlockLine) {
+        //         Console::debug(PHP_EOL, "[Subscribe]", '[' . $this->publish . '] Close.');
+        //         die;
+        //     } else {
+        //         Console::debug("[Subscribe]", $errStr, $errFile, $errLine);
+        //     }
+        //     if (property_exists($this, 'errorHandler')) {
+        //         return $this->errorHandler($errno, $errStr, $errFile, $errLine);
+        //     }
+        //     return false;
+        // });
     }
 
     private function reConnectDispatcher(): bool

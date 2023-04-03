@@ -12,14 +12,16 @@ use Fiber;
 use Cclilshy\PRipple\Dispatch\DataStandard\Event;
 use Cclilshy\PRipple\Dispatch\DataStandard\Build;
 use Cclilshy\PRipple\Communication\Socket\Client;
-use Cclilshy\PRipple\Service\Service as ServiceBase;
 use Cclilshy\PRipple\Communication\Socket\SocketInet;
+use Cclilshy\PRipple\Service\Service as ServiceBase;
+use Cclilshy\PRipple\Built\Http\Event as HttpRequestEvent;
 
 class Service extends ServiceBase
 {
 
 
     private array $requests = array();
+    private array $transfers = array();
 
     public function __construct()
     {
@@ -35,12 +37,10 @@ class Service extends ServiceBase
 
     public function onEvent(Event $event): void
     {
-
     }
 
     public function onPackage(Build $package): void
     {
-
     }
 
     public function onConnect(Client $client): void
@@ -52,14 +52,22 @@ class Service extends ServiceBase
     {
         $clientName = $client->getKeyName();
         if (!isset($this->requests[$clientName])) {
-            $this->requests[$clientName] = new Request($clientName);
+            $request = new Request($clientName);
+            $this->requests[$clientName] = $request;
+            $client->setIdentity($request->getHash());
         }
         $request = $this->requests[$clientName];
         if (!$request->push($context)) {
             unset($this->requests[$clientName]);
         }
+
         if ($request->getStatusCode() == Request::COMPLETE) {
-            $response = $request->go();
+            HttpRequestEvent::access($request);
+            unset($this->requests[$request->getHash()]);
+        } elseif ($request->isUpload === true) {
+            $this->transfers[$request->getHash()] = $request;
+            $event    = $request->go();
+            $response = $event->getData();
             $client->write($response->__toString());
             unset($this->requests[$clientName]);
         }
@@ -67,6 +75,5 @@ class Service extends ServiceBase
 
     public function onClose(Client $client): void
     {
-
     }
 }

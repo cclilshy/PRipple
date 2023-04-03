@@ -15,9 +15,12 @@ class SubscribeManager
 {
     private array $subscribes = [];
 
-    public function addSubscribes(string $publish, string $eventName, string $subscriber, int $option): void
+    public function addSubscribes(string $publish, string $eventName, string $subscriber, array|null $options = null): void
     {
-        $this->subscribes[$publish][$eventName][$subscriber] = $option;
+        if ($options === null) {
+            $options = ['type' => Dispatcher::FORMAT_EVENT];
+        }
+        $this->subscribes[$publish][$eventName][$subscriber] = $options;
         if (!isset($this->subscribes[$publish][$eventName]['count'])) {
             $this->subscribes[$publish][$eventName]['count'] = 0;
         }

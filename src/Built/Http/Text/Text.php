@@ -14,7 +14,6 @@ use Cclilshy\PRipple\Config;
 use Cclilshy\PRipple\Statistics;
 use Cclilshy\PRipple\Built\Http\Http;
 use Cclilshy\PRipple\Built\Http\Request;
-use Cclilshy\PRipple\Built\Http\Service;
 
 // Load The Running Request Information
 // And Guide To The Destination According To The Routing Static Method Can Be Called Anywhere
@@ -27,6 +26,7 @@ class Text
      *
      * @param string                               $content
      * @param \Cclilshy\PRipple\Built\Http\Request $request
+     * @param \Cclilshy\PRipple\Statistics         $statistics
      * @return string
      */
     public static function statistics(string $content, Request $request,Statistics $statistics): string

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 /*
  * @Author: cclilshy jingnigg@gmail.com
@@ -15,52 +16,16 @@ use Cclilshy\PRipple\Statistics;
 use Cclilshy\PRipple\Route\Route;
 use Cclilshy\PRipple\Built\Http\Text\Text;
 use Cclilshy\PRipple\Communication\Socket\Client;
+use Fiber;
 
 class Event
 {
-    private static array $config;
-    private Statistics   $statistics;
-    private Request      $request;
-    private Response     $response;
-    private Client $client;
+    public array $accessList;
 
-    /**
-     * @param \Cclilshy\PRipple\Built\Http\Request          $request
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
-     */
-    public function __construct(Request $request,Client $client)
+    public function access(Request $request) : void
     {
-        $this->statistics = new Statistics();
-        $this->client = $client;
-        $this->request    = $request;
-        $this->response   = new Response($request);
-        $this->response->setName($this->request->getName());
-    }
-
-        /**
-     * @param $name
-     * @return mixed
-     */
-    public function __get($name): mixed
-    {
-        return $this->$name;
-    }
-
-    /**
-     * @return static|null
-     */
-    public static function init(): self|null
-    {
-        self::$config = Config::get('http');
-        return null;
-    }
-
-    /**
-     * @param $key
-     * @return mixed|null
-     */
-    public static function config($key): mixed
-    {
-        return self::$config[$key] ?? null;
+        $this->accessList[$request->getHash()] = new Fiber(function () use ($request) {
+            $response = $request->toResponse();
+        });
     }
 }

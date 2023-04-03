@@ -102,7 +102,7 @@
                 <li class="cct-li"> (GET) {{ $key }} : {{$get}}</li>
                 @endforeach
 
-                @foreach($posts as $post)
+                @foreach($posts as $key => $post)
                 <li class="cct-li"> (POST) {{ $key }} : {{$post}} </li>
                 @endforeach
             </ul>

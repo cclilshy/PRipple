@@ -8,10 +8,10 @@
 
 namespace Cclilshy\PRipple\Built\Http;
 
-use Cclilshy\PRipple\Route\Map;
-use Cclilshy\PRipple\Route\Route;
-use Cclilshy\PRipple\Statistics;
 use Fiber;
+use Cclilshy\PRipple\Route\Map;
+use Cclilshy\PRipple\Statistics;
+use Cclilshy\PRipple\Route\Route;
 use Cclilshy\PRipple\Built\Http\Text\Text;
 
 class Request
@@ -38,43 +38,19 @@ class Request
     public string $hash;                                   // 路由信息
     public int    $statusCode;                             // 当前包的随机哈希
     public Map    $route;                                  // 是否为静态请求
+    public Fiber $fiber;                                  // 协程
     public Statistics $statistics;                         // 统计
-    private Fiber $fiber;                                  // 协程
     public Response $response;
 
     public function __construct(string $name)
     {
+        $this->statistics = new Statistics();
         $this->name       = $name;
         $this->hash       = md5(mt_rand(1111, 9999) . microtime(true));
-        $this->statusCode = self::INCOMPLETE;
-        $this->response = new Response($this);
+        $this->statusCode = Request::INCOMPLETE;
+        $this->response   = new Response($this);
         $this->fiber      = new Fiber(function () {
-            $this->statistics = new Statistics();
-
-            if ($this->isStatic()) {
-                Fiber::suspend($this->route->run($this));
-                return;
-            } else {
-                if (!isset($this->route)) {
-                    $result = (Text::htmlErrorPage(404, "Not match Route '{$this->path}'", __FILE__, __LINE__, $this, $this->statistics));
-                } else {
-                    switch ($this->route->type) {
-                        case 'Controller':
-                            $className = $this->route->className;
-                            $_         = new $className($this);
-                            $result = call_user_func([$_, $this->route->action], $this);
-                            break;
-                        case 'Closure':
-                            $this->route    = Route::guide($this->method(), $this->path);
-                            $result = call_user_func($this->route->callable, $this);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            }
-            Fiber::suspend($this->response->setBody($result));
-            return;
+            $this->toResponse();
         });
     }
 
@@ -135,7 +111,7 @@ class Request
                     $base = array_shift($headerLines);
                     if (count($base = explode(' ', $base)) !== 3) {
                         // 请求头非法
-                        $this->signStatusCode(self::INVALID);
+                        $this->signStatusCode(Request::INVALID);
                         return false;
                     } else {
                         $this->setMethod(strtoupper($base[0]));
@@ -145,30 +121,28 @@ class Request
                             $_ = explode(':', $item);
                             $this->setHeader($_[0], $_[1] ?? '');
                         }
+                        if (isset($this->header['CONTENT-TYPE']) && str_starts_with(strtoupper($this->header['CONTENT-TYPE']), 'MULTIPART/FORM-DATA')) {
+                            $this->parseUploadInfo();
+                        }
                     }
                 } else {
-                    // 无法获取HTTP头
-                    $this->signStatusCode(self::INVALID);
+                    $this->signStatusCode(Request::INVALID);
                     return false;
                 }
-            } else {
-                //TODO:未知报文
             }
         } elseif ($this->method === 'POST' && $this->bodyLength < intval($this->header('CONTENT-LENGTH'))) {    // POST处理
             if ($this->isUpload) {
-                fwrite($this->fileStream, $this->body);
+                fwrite($this->fileStream, $context);
             } else {
                 $this->body .= $context;
             }
             $this->bodyLength += strlen($context);
             return $this;
-        }
-        // 解析包
-        if (isset($this->method) && intval($this->header('CONTENT-LENGTH')) === $this->bodyLength) {
-            $this->statusCode = self::COMPLETE;
-            if ($this->isUpload) {
-                $this->setFile($this->fileInfo['filepath']);
-            }
+        } elseif ($this->isUpload) {
+            return $this;
+        } elseif (isset($this->method) && intval($this->header('CONTENT-LENGTH')) === $this->bodyLength) {
+            $this->statusCode = Request::COMPLETE;
+            parse_str($this->body, $this->param['POST']);
         }
         return $this;
     }
@@ -211,9 +185,19 @@ class Request
     public function setPath(string $path): bool
     {
         // 设置路径时对路由配对
-        $this->path = $path;
+        $urlInfo = parse_url($path);
+        if (isset($urlInfo['query'])) {
+            parse_str($urlInfo['query'], $getParam);
+            $this->param['GET'] = $getParam;
+        } else {
+            $this->param['GET'] = array();
+        }
+        $this->path = $urlInfo['path'];
         if ($route = Route::guide($this->method, $this->path)) {
             $this->route = $route;
+            if ($this->method === 'GET') {
+                $this->statusCode = Request::COMPLETE;
+            }
             return true;
         } elseif ($route = Route::guide('STATIC', $this->path)) {
             if ($index = strpos($this->path, '/', 1)) {
@@ -223,7 +207,7 @@ class Request
             }
             $this->route      = $route;
             $this->isStatic   = true;
-            $this->statusCode = self::COMPLETE;
+            $this->statusCode = Request::COMPLETE;
             return true;
         }
         return false;
@@ -252,16 +236,17 @@ class Request
     {
         $key   = trim(strtoupper($key));
         $value = trim($value);
-        if (str_starts_with(strtoupper($value), 'MULTIPART/FORM-DATA')) {
-            $this->isUpload = true;
-            do {
-                $path = PRIPPLE_CACHE_PATH . '/' . md5(microtime(true) . rand(1, 9));
-            } while (file_exists($path));
-            $this->fileStream = fopen($path, 'a+');
-            $this->setFile($path);
-            fwrite($this->fileStream, $this->body);
-            $this->body = '';
-        }
+        //        if (str_starts_with(strtoupper($value), 'MULTIPART/FORM-DATA')) {
+        //            $this->isUpload = true;
+        //            do {
+        //                $path = PRIPPLE_CACHE_PATH . '/' . md5(microtime(true) . rand(1, 9));
+        //            } while (file_exists($path));
+        //            $this->fileStream = fopen($path, 'a+');
+        //            $this->setFile($path);
+        //            fwrite($this->fileStream, $this->body);
+        //            $this->bodyLength = strlen($this->body);
+        //            $this->body       = '';
+        //        }
         $this->header[$key] = $value;
         return $this;
     }
@@ -344,7 +329,7 @@ class Request
 
     public function build(): Request
     {
-        return new Request($this);
+        return new Request((string)$this);
     }
 
     /**
@@ -470,7 +455,7 @@ class Request
 
     public function complete(): bool
     {
-        return $this->statusCode === self::COMPLETE;
+        return $this->statusCode === Request::COMPLETE;
     }
 
     public function getPath(): string|null
@@ -488,25 +473,6 @@ class Request
      */
     public function __sleep(): array
     {
-        //    public string     $path;                   // 请求URI
-        //    public string     $method;                 // 请求方法
-        //    public string     $version;                // 请求版本
-        //    public string     $clientAddress;          // 客户端地址
-        //    public mixed      $socket;                 // 客户端套接字
-        //    public array      $header;                 // 请求头内容
-        //    public array      $fileInfo;               // 文件信息
-        //    public int        $bodyLength = 0;         // 主体长度
-        //    public string     $body;                   // 主体
-        //    public array      $param      = array();   // 变量
-        //    public bool       $isUpload   = false;     // 是否上传
-        //    public mixed      $fileStream;             // 文件流
-        //    public bool       $complete   = false;     // 是否完整
-        //    public string     $buffer      = '';        // 缓冲区
-        //    public string     $name;                   // 客户端名称
-        //    public bool       $isStatic;               // 是否为静态请求
-        //    public Map        $route;                  // 路由信息
-        //    public Statistics $statistics;             // 统计信息
-        //    public string     $hash;                   // 当前包的随机哈希
         return [
             'path',
             'method',
@@ -525,8 +491,51 @@ class Request
         ];
     }
 
-    public function go(): Response
+    public function go(): \Cclilshy\PRipple\Dispatch\DataStandard\Event
     {
         return $this->fiber->start();
+    }
+
+    public function toResponse(): void
+    {
+
+        if ($this->isStatic()) {
+            $response = $this->route->run($this);
+        } else {
+            if (!isset($this->route)) {
+                $result = (Text::htmlErrorPage(404, "Not match Route '{$this->path}'", __FILE__, __LINE__, $this, $this->statistics));
+            } else {
+                switch ($this->route->type) {
+                    case 'Controller':
+                        $className = $this->route->className;
+                        $_         = new $className($this);
+                        $result    = call_user_func([$_, $this->route->action], $this);
+                        break;
+                    case 'Closure':
+                        $this->route = Route::guide($this->method(), $this->path);
+                        $result      = call_user_func($this->route->callable, $this);
+                        break;
+                    default:
+                        $result = '';
+                        break;
+                }
+            }
+            $response = $this->response->setBody($result);
+        }
+        $event = new \Cclilshy\PRipple\Dispatch\DataStandard\Event($this->hash, 'response', $response);
+        Fiber::suspend($event);
+    }
+
+    public function parseUploadInfo(): void
+    {
+        $this->isUpload = true;
+        do {
+            $path = PRIPPLE_CACHE_PATH . '/' . md5(microtime(true) . rand(1, 9));
+        } while (file_exists($path));
+        $this->fileStream = fopen($path, 'a+');
+        $this->setFile($path);
+        fwrite($this->fileStream, $this->body);
+        $this->bodyLength = strlen($this->body);
+        $this->body       = '';
     }
 }

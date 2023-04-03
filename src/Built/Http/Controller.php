@@ -12,9 +12,9 @@ declare(strict_types=1);
 namespace Cclilshy\PRipple\Built\Http;
 
 use Cclilshy\PRipple\Config;
+use Cclilshy\PRipple\Statistics;
 use Cclilshy\PRipple\Built\Http\Text\Text;
 use Cclilshy\PRipple\Built\Http\Text\Plaster;
-use Cclilshy\PRipple\Statistics;
 
 class Controller
 {
@@ -26,7 +26,7 @@ class Controller
     protected array   $assign = [];
 
     /**
-     * @param \Cclilshy\PRipple\Built\Http\Event $base
+     * @param \Cclilshy\PRipple\Built\Http\Request $base
      */
     public function __construct(Request $base)
     {

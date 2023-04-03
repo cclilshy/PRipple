@@ -23,4 +23,17 @@ class Index extends Controller
         $this->assign('name', 'PRipple');
         return $this;
     }
+
+    public function upload(): string
+    {
+        if ($this->request->isUpload) {
+            \ob_start();
+            var_dump($this->response);
+
+            return \ob_get_clean();
+        } else {
+            return $this;
+        }
+
+    }
 }

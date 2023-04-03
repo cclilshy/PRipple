@@ -89,18 +89,14 @@ class Control
                     } elseif ($pid === -1) {
                         Console::pdebug("[Dispatcher] start failed!");
                     } else {
+                        sleep(1);
+                        $this->connectDispatcher();
+                        $this->getServices();
+                        $this->getSubscribes();
                         if (!isset($argv[2]) || $argv[2] !== '-d') {
-                            sleep(1);
-                            $this->connectDispatcher();
-                            $this->getServices();
-                            $this->getSubscribes();
                             $this->listen(false);
                             break;
                         } else {
-                            sleep(1);
-                            $this->connectDispatcher();
-                            $this->getServices();
-                            $this->getSubscribes();
                             $this->listen(true);
                             $this->listen(true);
                         }
