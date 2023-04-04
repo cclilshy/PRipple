@@ -2,4 +2,4 @@
 
 use Cclilshy\PRipple\Route\Route;
 
-Route::console("dispatcher", 'Cclilshy\PRipple\Dispatch\Control');
+Route::console("dth", 'Cclilshy\PRipple\Dispatch\Control');

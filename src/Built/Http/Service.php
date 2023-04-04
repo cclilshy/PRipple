@@ -87,5 +87,6 @@ class Service extends ServiceBase
         unset($this->requests[$client->getKeyName()]);
         unset($this->transfers[$client->getKeyName()]);
         $this->httpRequestEvent->break($client);
+        gc_collect_cycles();
     }
 }

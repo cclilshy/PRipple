@@ -422,8 +422,12 @@ class Dispatcher
                 }
                 // Console::debug("[Dispatcher]", 'close.');
                 if ($serviceInfo = ServiceInfo::load('dispatcher')) {
+                    $info = $serviceInfo->info();
+                    posix_kill($info['httpProcessId'], SIGKILL);
+                    posix_kill($info['timerProcessId'], SIGKILL);
                     $serviceInfo->release();
                 }
+
                 exit;
             default:
                 # code...

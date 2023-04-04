@@ -438,7 +438,7 @@ class SocketAisle implements CommunicationInterface
             if (!socket_select($readList, $_, $_, null, 1000)) {
                 break;
             }
-            $recLength = socket_recv($this->socket, $_buffer, min($length, $this->receiveBufferSize), 0);
+            @$recLength = socket_recv($this->socket, $_buffer, min($length, $this->receiveBufferSize), 0);
             if ($recLength === false || $recLength === 0 || $_buffer === null) {
                 break;
             }

@@ -41,6 +41,7 @@ class Console
     }
 
     /**
+     * @param mixed ...$args
      * @return void
      */
     public static function pdebug(...$args): void
@@ -49,6 +50,7 @@ class Console
     }
 
     /**
+     * @param mixed ...$args
      * @return void
      */
     public static function debug(...$args): void
@@ -57,6 +59,7 @@ class Console
     }
 
     /**
+     * @param $args
      * @return void
      */
     public static function extracted($args): void

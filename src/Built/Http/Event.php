@@ -80,6 +80,7 @@ class Event
                 $client->write($response->__toString());
                 unset($this->tasks[$request->getHash()]);
                 unset($this->arrayHashMap[$client->getKeyName()][$request->getHash()]);
+                unset($this->requests[$request->getHash()]);
                 break;
             case 'sleep':
                 $requestHash = $event->getPublisher();

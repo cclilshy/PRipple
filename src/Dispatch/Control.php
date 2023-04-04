@@ -10,6 +10,7 @@ namespace Cclilshy\PRipple\Dispatch;
 
 use Exception;
 use Cclilshy\PRipple\Console;
+use Cclilshy\PRipple\Built\Timer\Timer;
 use Cclilshy\PRipple\Service\ServiceInfo;
 use Cclilshy\PRipple\Dispatch\DataStandard\Build;
 use Cclilshy\PRipple\Dispatch\DataStandard\Event;
@@ -34,7 +35,7 @@ class Control
 
     public static function register(): string
     {
-        return 'pripple';
+        return '主程序';
     }
 
     public function __destruct()
@@ -48,7 +49,7 @@ class Control
     public function main($argv, $console): void
     {
         if (count($argv) < 2) {
-            printf("Please Enter The Correct Parameter.\n\033[32m pripple help\033[0m viewHelp\n");
+            printf("Please Enter The Correct Parameter.\n\033[32m dth\033[0m help\n");
             return;
         }
         $option = $argv[1];
@@ -74,10 +75,15 @@ class Control
                 $this->listen(false);
                 break;
             case 'stop':
-                $this->connectDispatcher();
-                $event = new Event("control", 'termination', null);
-                $build = new Build('control', null, $event);
-                Dispatcher::AGREE::send($this->dispatcherSocket, $build->serialize());
+                if ($serviceInfo = ServiceInfo::load('dispatcher')) {
+                    if ($this->connectDispatcher()) {
+                        $event = new Event("control", 'termination', null);
+                        $build = new Build('control', null, $event);
+                        Dispatcher::AGREE::send($this->dispatcherSocket, $build->serialize());
+                    } else {
+                        $serviceInfo->release();
+                    }
+                }
                 break;
             case 'start':
                 if ($serviceInfo = ServiceInfo::create('dispatcher')) {
@@ -90,15 +96,25 @@ class Control
                     } else {
                         sleep(1);
                         $this->connectDispatcher();
-                        $this->getServices();
-                        $this->getSubscribes();
-                        if (!isset($argv[2]) || $argv[2] !== '-d') {
-                            $this->listen(false);
-                            break;
-                        } else {
-                            $this->listen(true);
-                            $this->listen(true);
+
+                        $timerProcessId = pcntl_fork();
+                        if ($timerProcessId === 0) {
+                            $timer = new Timer();
+                            $timer->launch();
+                            exit;
                         }
+
+                        $httpProcessId = pcntl_fork();
+                        if ($httpProcessId === 0) {
+                            $http = new \Cclilshy\PRipple\Built\Http\Service();
+                            $http->launch();
+                            exit;
+                        }
+
+                        $serviceInfo->info([
+                            'httpProcessId'  => $httpProcessId,
+                            'timerProcessId' => $timerProcessId
+                        ]);
                     }
                 } else {
                     Console::pdebug("[Dispatcher] server is running!");
@@ -107,13 +123,12 @@ class Control
                 break;
             case 'help':
             default:
-                echo 'sb';
                 # code...
                 break;
         }
     }
 
-    private function connectDispatcher(): void
+    private function connectDispatcher(): bool
     {
         try {
             $socket                 = SocketUnix::connect(Dispatcher::$controlServiceUnixAddress);
@@ -121,8 +136,9 @@ class Control
             $this->dispatcherSocket->setBlock();
         } catch (Exception $e) {
             Console::debug("[Control]", $e->getMessage());
-            die;
+            return false;
         }
+        return true;
     }
 
     public function getServiceInfo(string $name): void
@@ -203,7 +219,6 @@ class Control
         $subscriberMaxLen = 0;
         foreach ($eventSubscribersArray as $publisher => $events) {
             foreach ($events as $event => $subscribers) {
-                var_dump($subscribers);
                 $subscriberList   = implode(", ", array_keys($subscribers));
                 $subscriberTypes  = implode(", ", array_values($subscribers));
                 $subscriberMaxLen = max($subscriberMaxLen, strlen($subscriberList) + strlen($subscriberTypes) + 3); // add 3 for parentheses and comma
