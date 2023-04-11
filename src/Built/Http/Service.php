@@ -17,8 +17,6 @@ use Cclilshy\PRipple\Built\Http\Event as HttpRequestEvent;
 
 class Service extends ServiceBase
 {
-
-
     private array            $requests  = array();
     private array            $transfers = array();
     private HttpRequestEvent $httpRequestEvent;
@@ -51,6 +49,7 @@ class Service extends ServiceBase
 
     public function onConnect(Client $client): void
     {
+        $client->handshake();
         $client->setNoBlock();
     }
 
@@ -88,5 +87,10 @@ class Service extends ServiceBase
         unset($this->transfers[$client->getKeyName()]);
         $this->httpRequestEvent->break($client);
         gc_collect_cycles();
+    }
+
+    public function handshake(string $context, Client $client): void
+    {
+        // TODO: Implement handshake() method.
     }
 }

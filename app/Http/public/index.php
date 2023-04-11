@@ -8,9 +8,3 @@ declare(strict_types=1);
  * @Description: CCPHP
  * Copyright (c) 2022 by cclilshy email: cclilshy@163.com, All Rights Reserved.
  */
-
-use core\Master;
-
-include __DIR__ . '/../../../core/base/autoload.php';
-Master::rouse('ccphp\ccphp');
-Master::rouse('RequestPackage\RequestPackage')->go("PROXY");

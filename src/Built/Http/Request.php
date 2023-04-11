@@ -213,8 +213,8 @@ class Request
      */
     public function setHeader(string $key, string $value): self
     {
-        $key   = trim(strtoupper($key));
-        $value = trim($value);
+        $key                = trim(strtoupper($key));
+        $value              = trim($value);
         $this->header[$key] = $value;
         return $this;
     }
@@ -296,11 +296,6 @@ class Request
             return $this->param['POST'] ?? [];
         }
         return $this->param['POST'][$key] ?? null;
-    }
-
-    public function build(): Request
-    {
-        return new Request((string)$this);
     }
 
     /**
@@ -459,6 +454,8 @@ class Request
             $this->isStatic   = true;
             $this->statusCode = Request::COMPLETE;
             return true;
+        } else {
+            $this->statusCode = Request::COMPLETE;
         }
         return false;
     }

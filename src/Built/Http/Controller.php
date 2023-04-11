@@ -103,4 +103,9 @@ class Controller
         ]);
         Fiber::suspend($event);
     }
+
+    public function dump(...$args): void
+    {
+        return;
+    }
 }

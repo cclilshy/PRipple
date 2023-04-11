@@ -1,4 +1,5 @@
 <?php
+
 namespace Cclilshy\PRipple\Built\Timer;
 
 use SplPriorityQueue;
@@ -6,6 +7,7 @@ use Cclilshy\PRipple\Service\Service;
 use Cclilshy\PRipple\Dispatch\Dispatcher;
 use Cclilshy\PRipple\Dispatch\DataStandard\Event;
 use Cclilshy\PRipple\Communication\Socket\Client;
+use Cclilshy\PRipple\Dispatch\DataStandard\Build;
 
 class Timer extends Service
 {
@@ -39,7 +41,7 @@ class Timer extends Service
 
     public function onConnect(Client $client): void
     {
-
+        $client->handshake();
     }
 
     public function onClose(Client $client): void
@@ -63,7 +65,12 @@ class Timer extends Service
 
     }
 
-    public function onPackage(\Cclilshy\PRipple\Dispatch\DataStandard\Build $package): void
+    public function onPackage(Build $package): void
+    {
+
+    }
+
+    public function handshake(string $context, Client $client): void
     {
 
     }

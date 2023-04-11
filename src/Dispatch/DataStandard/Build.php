@@ -52,14 +52,10 @@ class Build
         }
     }
 
-    public static function unSerialize(string $context): Build
+    public static function unSerialize(string $context): Build|false
     {
         @$res = unserialize($context);
-        if (!$res) {
-            echo $context;
-        } else {
-            return $res;
-        }
+        return $res;
     }
 
     public function serialize(): string

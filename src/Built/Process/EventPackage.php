@@ -8,7 +8,7 @@
 
 namespace Cclilshy\PRipple\Built\Process;
 
-use Cclilshy\Communication\Standard\PackageInterface;
+use Cclilshy\PRipple\Communication\Standard\PackageInterface;
 
 class EventPackage implements PackageInterface
 {
@@ -36,7 +36,7 @@ class EventPackage implements PackageInterface
 
     public function push(string $string): self
     {
-        return $this;;
+        return $this;
     }
 
     public function setActionName(string $actionName): self

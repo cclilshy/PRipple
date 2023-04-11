@@ -50,15 +50,6 @@ class Console
     }
 
     /**
-     * @param mixed ...$args
-     * @return void
-     */
-    public static function debug(...$args): void
-    {
-        self::extracted($args);
-    }
-
-    /**
      * @param $args
      * @return void
      */
@@ -94,6 +85,15 @@ class Console
     public static function printn(string $content): void
     {
         printf($content . PHP_EOL);
+    }
+
+    /**
+     * @param mixed ...$args
+     * @return void
+     */
+    public static function debug(...$args): void
+    {
+        self::extracted($args);
     }
 
     /**
@@ -151,7 +151,7 @@ class Console
     public function brief(string $title, string $content): void
     {
         $maxLength      = $this->getMaxCommandLength();
-        $formattedTitle = str_pad($title, $maxLength, ' ', STR_PAD_RIGHT);
+        $formattedTitle = str_pad($title, $maxLength);
         self::printn("\t\033[34m{$formattedTitle}\t\033[0m \t\t\033[37m {$content} \033[0m");
     }
 

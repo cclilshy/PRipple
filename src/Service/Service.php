@@ -104,7 +104,11 @@ abstract class Service extends ServiceInfo implements ServiceStandard
                             // TODO::客户端消息
                             if ($client = $this->serverSocketManager->getClientBySocket($readSocket)) {
                                 if ($client->read($context)) {
-                                    $this->onMessage($context, $client);
+                                    if ($client->verify) {
+                                        $this->onMessage($context, $client);
+                                    } else {
+                                        $this->handshake($context, $client);
+                                    }
                                 } else {
                                     $this->onClose($client);
                                     $this->serverSocketManager->removeClient($readSocket);
@@ -206,7 +210,16 @@ abstract class Service extends ServiceInfo implements ServiceStandard
         return Dispatcher::AGREE::send($this->dispatcherServerAisle, (string)$package);
     }
 
-    public function createServer(string $socketType, string $address, int|null $port = 0, array|null $options = [])
+    /**
+     * 创建服务
+     *
+     * @param string     $socketType
+     * @param string     $address
+     * @param int|null   $port
+     * @param array|null $options
+     * @return void
+     */
+    public function createServer(string $socketType, string $address, int|null $port = 0, array|null $options = []): void
     {
         $this->socketType    = $socketType;
         $this->serverAddress = $address;
@@ -281,6 +294,12 @@ abstract class Service extends ServiceInfo implements ServiceStandard
         ]);
     }
 
+    /**
+     * 内置事件处理
+     *
+     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Event $event
+     * @return bool
+     */
     public function builtEventHandle(Event $event): bool
     {
         switch ($event->getName()) {

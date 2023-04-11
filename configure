@@ -1,8 +1,11 @@
 #!/usr/bin/env php
 <?php
+
+use Cclilshy\PRipple\Configure;
+
 include __DIR__ . '/vendor/autoload.php';
 
-\Cclilshy\PRipple\Configure::init();
+Configure::init();
 
 $dirs       = [PRIPPLE_CACHE_PATH, PRIPPLE_SOCK_PATH, PRIPPLE_PIPE_PATH, PRIPPLE_RUNTIME_PATH];
 $extensions = ['pcntl', 'sockets', 'posix'];

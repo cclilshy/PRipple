@@ -16,6 +16,8 @@ use Cclilshy\PRipple\Dispatch\DataStandard\Build;
 use Cclilshy\PRipple\Dispatch\DataStandard\Event;
 use Cclilshy\PRipple\Communication\Socket\SocketUnix;
 use Cclilshy\PRipple\Communication\Aisle\SocketAisle;
+use function ob_flush;
+use function ob_start;
 
 class Control
 {
@@ -61,12 +63,12 @@ class Control
                 } else {
                     $this->getServices();
                 }
-                $this->listen(true);
+                $this->listen();
                 break;
             case 'subscribe':
                 $this->connectDispatcher();
                 $this->getSubscribes();
-                $this->listen(true);
+                $this->listen();
                 break;
             case 'listen':
                 $this->connectDispatcher();
@@ -157,7 +159,7 @@ class Control
 
     public function listen(bool|null $oneOff = true): void
     {
-        \ob_start();
+        ob_start();
         $int = null;
         while (true) {
             try {
@@ -272,7 +274,7 @@ class Control
 
         $this->lastLine    = $this->currentLine;
         $this->messageLine = $this->lastLine;
-        \ob_flush();
+        ob_flush();
         $this->seekCursor($this->currentLine);
     }
 
@@ -377,7 +379,7 @@ class Control
 
         $this->lastLine    = $this->currentLine;
         $this->messageLine = $this->lastLine;
-        \ob_flush();
+        ob_flush();
         $this->seekCursor($this->currentLine);
     }
 
@@ -421,7 +423,7 @@ class Control
         // 清空当前终端行
         echo "\033[2K\033[1;32mStatus:\033[0m {$message}";
         $this->currentLine = $this->messageLine;
-        \ob_flush();
+        ob_flush();
     }
 
     public function getSubscribes(): void

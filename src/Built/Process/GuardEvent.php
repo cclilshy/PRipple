@@ -8,10 +8,9 @@
 
 namespace Cclilshy\PRipple\Built\Process;
 
-use Cclilshy\Console;
-use Cclilshy\Communication\Aisle\Fifo;
-use Cclilshy\Communication\Agreement\CCL;
-use Cclilshy\Communication\Standard\AgreementInterface;
+use Exception;
+use Cclilshy\PRipple\Console;
+use Cclilshy\PRipple\Communication\Agreement\CCL;
 use Cclilshy\PRipple\Built\Process\Standard\EventInterface;
 
 class GuardEvent
@@ -41,6 +40,7 @@ class GuardEvent
      */
     public static function link(string $name, ?bool $destroy = false): EventInterface|false
     {
+        return false;
     }
 
     public function killAll(): int
@@ -82,6 +82,9 @@ class GuardEvent
         $this->siblingsProcessIds[] = $processId;
     }
 
+    /**
+     * @throws \Exception
+     */
     private function listen(): void
     {
         while ($message = CCL::cut($this->aisle)) {
@@ -90,11 +93,10 @@ class GuardEvent
                 $arguments = $event->getArguments();
                 $result    = call_user_func_array([$this, $action], $arguments);
                 CCL::send($this->aisle, serialize($result));
-                continue;
             } else {
-                Console::pred("Error: Build unserialize failed");
+                Console::pred("Error: Build un serialize failed");
             }
         }
-        throw new \Exception("Error Processing Request");
+        throw new Exception("Error Processing Request");
     }
 }

@@ -7,13 +7,57 @@
  */
 
 namespace Cclilshy\PRipple\Communication\Socket;
-
 use Cclilshy\PRipple\Communication\Aisle\SocketAisle;
 
 class Client extends SocketAisle
 {
-    public function __construct(mixed $socket, Manager $manager)
+    public string    $verifyBuffer;
+    public string    $socketType;
+    public bool      $verify;
+    public string    $cache;
+    public \stdClass $info;
+
+    public function __construct(mixed $socket, string $type, Manager $manager)
     {
         parent::__construct($socket, $manager);
+        $this->socketType   = $type;
+        $this->verifyBuffer = '';
+        $this->verify       = false;
+        $this->info         = new \stdClass();
+        $this->cache        = '';
+    }
+
+    /**
+     * 客户端数据缓存区
+     *
+     * @param string|null $context
+     * @return string
+     */
+    public function cache(string|null $context = null): string
+    {
+        if ($context !== null) {
+            $this->cache .= $context;
+        }
+        return $this->cache;
+    }
+
+    /**
+     * 建立握手
+     *
+     * @return void
+     */
+    public function handshake(): void
+    {
+        $this->verify = true;
+    }
+
+    /**
+     * 屏蔽客户端
+     *
+     * @return void
+     */
+    public function disable(): void
+    {
+        $this->manager->removeClient($this->socket);
     }
 }

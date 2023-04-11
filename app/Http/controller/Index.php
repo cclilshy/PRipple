@@ -10,6 +10,8 @@ namespace app\Http\controller;
 
 use Cclilshy\PRipple\Built\Http\Request;
 use Cclilshy\PRipple\Built\Http\Controller;
+use function ob_start;
+use function ob_get_clean;
 
 class Index extends Controller
 {
@@ -27,10 +29,9 @@ class Index extends Controller
     public function upload(): string
     {
         if ($this->request->isUpload) {
-            \ob_start();
+            ob_start();
             var_dump($this->response);
-
-            return \ob_get_clean();
+            return ob_get_clean();
         } else {
             return $this;
         }

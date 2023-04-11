@@ -15,15 +15,16 @@ class Manager
 {
     private mixed  $entranceSocket;
     private array  $clientSockets;
-    private array  $clientInfos;
+    private array  $clients;
     private array  $identityHashMap;
     private array  $bufferClientList;
     private array  $bufferSocketList;
     private string $socketType;
 
-    public function __construct(mixed $entranceSocket)
+    public function __construct(mixed $entranceSocket, string $socketType)
     {
         $this->entranceSocket = $entranceSocket;
+        $this->socketType     = $socketType;
     }
 
     /**
@@ -36,10 +37,10 @@ class Manager
         switch ($type) {
             case SocketInet::class:
                 $server = SocketInet::create($address, $port, SOCK_STREAM, $options);
-                return new self($server);
+                return new self($server, $type);
             case SocketUnix::class:
                 $server = SocketUnix::create($address);
-                return new self($server);
+                return new self($server, $type);
             default:
                 return false;
         }
@@ -81,7 +82,7 @@ class Manager
     {
         $name                       = Manager::getNameBySocket($clientSocket);
         $this->clientSockets[$name] = $clientSocket;
-        $this->clientInfos[$name]   = new Client($clientSocket, $this);
+        $this->clients[$name]       = new Client($clientSocket, $this->socketType, $this);
         return $name;
     }
 
@@ -163,7 +164,7 @@ class Manager
      */
     public function getClientByName(string $name): Client|null
     {
-        return $this->clientInfos[$name] ?? null;
+        return $this->clients[$name] ?? null;
     }
 
     /**
@@ -194,14 +195,14 @@ class Manager
         /**
          * @var \Cclilshy\PRipple\Communication\Aisle\SocketAisle $clientAisle
          */
-        if ($clientAisle = $this->clientInfos[$name] ?? null) {
+        if ($clientAisle = $this->clients[$name] ?? null) {
             $clientAisle->release();
             $this->removeClientWithBufferedData($clientAisle);
             $identity = $clientAisle->getIdentity();
             if (isset($this->identityHashMap[$identity])) {
                 unset($this->identityHashMap[$identity]);
             }
-            unset($this->clientInfos[$name]);
+            unset($this->clients[$name]);
         }
     }
 
@@ -298,6 +299,6 @@ class Manager
 
     public function getClients(): array|null
     {
-        return $this->clientInfos ?? null;
+        return $this->clients ?? null;
     }
 }

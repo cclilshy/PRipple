@@ -21,7 +21,13 @@ interface ServiceStandard
      */
     public function initialize(): void;
 
+    /**
+     * 心跳
+     *
+     * @return void
+     */
     public function heartbeat(): void;
+
     /**
      * 处理原生消息包
      *
@@ -38,6 +44,12 @@ interface ServiceStandard
      */
     public function onEvent(Event $event): void;
 
+    /**
+     * 新连接时触发
+     *
+     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @return void
+     */
     public function onConnect(Client $client): void;
 
     /**
@@ -49,5 +61,20 @@ interface ServiceStandard
      */
     public function onMessage(string $context, Client $client): void;
 
-    public function onClose(Client $client);
+    /**
+     * 当连接断开时触发
+     *
+     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @return void
+     */
+    public function onClose(Client $client): void;
+
+    /**
+     * 对于未通过握手的请求会触发
+     *
+     * @param string                                        $context
+     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @return void
+     */
+    public function handshake(string $context, Client $client): void;
 }
