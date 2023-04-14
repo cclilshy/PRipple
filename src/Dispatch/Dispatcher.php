@@ -68,7 +68,7 @@ class Dispatcher
      */
     private static function initPublicEventList(): void
     {
-        self::$subscribeManager = new subscribeManager();
+        self::$subscribeManager = new SubscribeManager();
         //TODO::公共事件
     }
 

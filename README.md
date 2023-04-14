@@ -13,6 +13,9 @@
 ```bash
 git clone https://github.com/cclilshy/PRipple # 科学版
 git clone https://gitee.com/cclilshy/PRipple # 社会版
+
+cd PRipple
+composer install
 ```
 
 ## 运行
