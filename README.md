@@ -2,16 +2,21 @@
 
 > 一款由以订阅发布模式开发的 纯事件驱动型的PHP高并发/异步框架
 
-## 简介
-
-> PHP在套接字性能上可以有和编译语言相当的性能,但不可忽略的:相对于Redis等其他中间件来说,PHP拥有更多的轮子,更强大的数据处理和渲染的能力
-> 在PHP8之后引入了Fiber(纤程)/强类型等特性, 为PHP提供了更规范的异步调度标准. 已经是时候让PHP摆脱传统的堵塞IO,摆脱需要靠多进程来解决堵塞问题了
-> 在PRipple中,你可以轻松实现无需借助Apache/Nginx的挂起进程运行Http应用, 内置的数组型缓存在内存中持久性缓存,
-> sleep进程时让出资源以供其他任务
-> 内置的数据库连接池,Http与WebSocket应用无缝互相依赖
-
 ## 环境要求
 
 - OS Linux
 - PHP 8.2+
 - 依赖扩展 `posix` `pcntl` `sockets`
+
+## 安装
+
+```bash
+git clone https://github.com/cclilshy/PRipple # 科学版
+git clone https://gitee.com/cclilshy/PRipple # 社会版
+```
+
+## 运行
+
+```bash
+bin/pripple dth
+```
