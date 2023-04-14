@@ -22,6 +22,7 @@ class Index extends Controller
 
     public function index(): string
     {
+        $this->sleep(3);
         $this->assign('name', 'PRipple');
         return $this;
     }

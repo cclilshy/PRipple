@@ -43,15 +43,19 @@ class Control
     public function __destruct()
     {
         if (isset($this->dispatcherSocket)) {
-            $this->dispatcherSocket->release();
+            $this->dispatcherSocket->close();
         }
     }
-
 
     public function main($argv, $console): void
     {
         if (count($argv) < 2) {
-            printf("Please Enter The Correct Parameter.\n\033[32m dth\033[0m help\n");
+            $console->printn("Please Enter The Correct Parameter.");
+            $console->brief("service", '查看服务');
+            $console->brief("subscribe", '');
+            $console->brief("listen", '调试监听');
+            $console->brief("start", '启动调度器');
+            $console->brief("stop", '结束调度器');
             return;
         }
         $option = $argv[1];
@@ -82,23 +86,24 @@ class Control
                         $event = new Event("control", 'termination', null);
                         $build = new Build('control', null, $event);
                         Dispatcher::AGREE::send($this->dispatcherSocket, $build->serialize());
-                    } else {
-                        $serviceInfo->release();
+                        return;
                     }
+                    $serviceInfo->release();
                 }
                 break;
             case 'start':
                 if ($serviceInfo = ServiceInfo::create('dispatcher')) {
+                    $serviceInfo->setLock();
                     $pid = pcntl_fork();
                     if ($pid === 0) {
+                        Dispatcher::$serviceInfo = $serviceInfo;
                         Dispatcher::launch();
                         exit;
                     } elseif ($pid === -1) {
                         Console::pdebug("[Dispatcher] start failed!");
                     } else {
-                        sleep(1);
+                        $serviceInfo->pipe->clone()->lock();
                         $this->connectDispatcher();
-
                         $timerProcessId = pcntl_fork();
                         if ($timerProcessId === 0) {
                             $timer = new Timer();
@@ -205,7 +210,6 @@ class Control
     private function formatEventSubscribersTable(array $eventSubscribersArray): array
     {
         $data = [];
-
         if (empty($eventSubscribersArray)) {
             $data['header'] = [
                 ['Publisher', 14],
@@ -221,8 +225,8 @@ class Control
         $subscriberMaxLen = 0;
         foreach ($eventSubscribersArray as $publisher => $events) {
             foreach ($events as $event => $subscribers) {
-                $subscriberList   = implode(", ", array_keys($subscribers));
-                $subscriberTypes  = implode(", ", array_values($subscribers));
+                $subscriberList = implode(", ", array_keys($subscribers));
+                @$subscriberTypes = implode(", ", array_values($subscribers));
                 $subscriberMaxLen = max($subscriberMaxLen, strlen($subscriberList) + strlen($subscriberTypes) + 3); // add 3 for parentheses and comma
             }
         }
@@ -238,7 +242,7 @@ class Control
             foreach ($events as $event => $subscribers) {
                 $subscriberList = '';
                 foreach ($subscribers as $subscriber => $type) {
-                    $subscriberList .= "{$subscriber}({$type}), ";
+                    @$subscriberList .= "{$subscriber}({$type}), ";
                 }
                 $subscriberList = rtrim($subscriberList, ", ");
                 $body[]         = [$publisher, $event, $subscriberList];

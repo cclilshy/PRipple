@@ -55,10 +55,6 @@ class Console
      */
     public static function extracted($args): void
     {
-        // if (!Config::get('console.debug')) {
-        //     return;
-        // }
-        // $args    = func_get_args();
         $content = '';
         foreach ($args as $index => $arg) {
             if (is_array($arg) || is_object($arg)) {
@@ -71,7 +67,6 @@ class Console
             }
         }
 
-        //        self::pred('[DEBUG][' . date('H:i:s') . ']' . $content);
         $_micrometer = explode(' ', microtime());
         $date        = date("H:i:s", intval($_micrometer[1]));
         $date        .= substr($_micrometer[0], 1);
@@ -124,7 +119,6 @@ class Console
             self::brief('list', '应用列表');
             self::brief('test', '服务器环境自检');
             self::brief('help', '帮助');
-            //            self::brief('run', 'mini server');
             foreach (self::$commands as $key => $item)
                 self::brief($key, $item);
         } elseif ($option === 'test') {

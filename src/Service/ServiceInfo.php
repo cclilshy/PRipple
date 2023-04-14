@@ -115,4 +115,13 @@ class ServiceInfo
         return true;
     }
 
+    public function setLock(): bool
+    {
+        return $this->pipe->lock();
+    }
+
+    public function unLock(): bool
+    {
+        return $this->pipe->unlock();
+    }
 }

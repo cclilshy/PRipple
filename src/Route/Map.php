@@ -93,6 +93,5 @@ class Map
     public function __sleep()
     {
         return ['type', 'className', 'action'];
-        // TODO: Implement __sleep() method.
     }
 }

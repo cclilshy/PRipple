@@ -6,6 +6,12 @@ use Cclilshy\PRipple\Communication\Socket\Client;
 
 class Accept
 {
+    /**
+     * 初次接收客户时尝试识别握手数据
+     *
+     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @return bool
+     */
     public static function accept(Client $client): bool
     {
         $client->read($context);
@@ -25,6 +31,7 @@ class Accept
      */
     public static function verify(string $buffer): array|false
     {
+        var_dump($buffer);
         return false;
     }
 }

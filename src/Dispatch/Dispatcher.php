@@ -17,15 +17,17 @@ use Cclilshy\PRipple\Communication\Socket\Manager as SocketManager;
 // 事件调度
 class Dispatcher
 {
-    const AGREE             = CCL::class;
-    const LOCAL_STREAM_TYPE = SocketUnix::class;
-    const MSF_CONTROL       = 1;
-    const MSF_HANDLER       = 2;
-    const PD_SUBSCRIBE      = 'PD_SUBSCRIBE';
-    const PD_SUBSCRIBE_UN   = 'PD_SUBSCRIBE_UN';
-    const FORMAT_BUILD      = 1;
-    const FORMAT_EVENT      = 2;
-    const FORMAT_MESSAGE    = 3;
+    const AGREE               = CCL::class;
+    const LOCAL_STREAM_TYPE   = SocketUnix::class;
+    const MSF_CONTROL         = 1;
+    const MSF_HANDLER         = 2;
+    const PD_SUBSCRIBE        = 'PD_SUBSCRIBE';
+    const PD_SUBSCRIBE_UN     = 'PD_SUBSCRIBE_UN';
+    const PE_DISPATCHER_CLOSE = 'PE_DISPATCHER_CLOSE';
+
+    const FORMAT_BUILD   = 1;
+    const FORMAT_EVENT   = 2;
+    const FORMAT_MESSAGE = 3;
 
     public static string $handleServiceUnixAddress  = PRIPPLE_SOCK_PATH . FS . 'dispatcher_handle' . SocketAisle::EXT;
     public static string $controlServiceUnixAddress = PRIPPLE_SOCK_PATH . FS . 'dispatcher_control' . SocketAisle::EXT;
@@ -36,6 +38,7 @@ class Dispatcher
     private static SocketManager    $controlSocketManager;
     private static array            $servers;
     private static int              $lastUpdateStatusTime = 0;
+    public static ServiceInfo       $serviceInfo;
 
     /**
      * 启动
@@ -97,6 +100,7 @@ class Dispatcher
      */
     private static function listen(): void
     {
+        Dispatcher::$serviceInfo->unLock();
         while (true) {
             $readList = array_merge([
                 self::$controlSocketManager->getEntranceSocket(),
@@ -131,7 +135,7 @@ class Dispatcher
                                         self::handleControlMessage($readSocket);
                                     } catch (Exception $e) {
                                         self::$controlSocketManager->removeClient($readSocket);
-                                        Console::debug("[Dispatcher]", "控制器退出" . $e->getMessage());
+                                        Console::debug("[Dispatcher]", "Controller exit," . $e->getMessage());
                                     }
                                     break;
                                 default:
@@ -167,7 +171,7 @@ class Dispatcher
             $event     = $package->getEvent();
 
             if ($event) {
-                Console::debug($event->getPublisher() . " 发布了 " . $event->getName() . " 事件");
+                Console::debug($event->getPublisher() . " release " . $event->getName() . " event");
                 // 处理调度器内置事件
                 if (self::handleBuiltEvent($event, $client)) {
                     return;
@@ -175,7 +179,6 @@ class Dispatcher
                 // 订阅者列表
                 $subscribers = self::$subscribeManager->getSubscribesByPublishAndEvent($publisher, $event->getName());
                 // 通知订阅事件
-                //                var_dump($subscribers);
                 foreach ($subscribers as $subscriber => $options) {
                     if ($subscriber === 'count') {
                         continue;
@@ -251,13 +254,13 @@ class Dispatcher
         $client->setNoBlock();
         if (!$service = self::getServiceByName($event->getPublisher())) {
             $service = new Service($event->getPublisher(), $client);
-            $msg     = "[Dispatcher]" . $event->getPublisher() . ' 上线';
+            $msg     = "[Dispatcher]" . $event->getPublisher() . ' online';
 
             Console::debug($msg);
             self::$servers[$event->getPublisher()] = $service;
             $service->setState(Service::STATE_START);
         } else {
-            $msg = "[Dispatcher]" . $event->getPublisher() . ' 重连';
+            $msg = "[Dispatcher]" . $event->getPublisher() . ' reconnect';
             Console::debug($msg);
 
             $service->handleServiceOnReconnect($client);
@@ -372,7 +375,7 @@ class Dispatcher
      */
     private static function handleServiceOnBlack(Client $client, string $message): void
     {
-        $msg = '[Dispatcher]' . '断开连接' . $message;
+        $msg = '[Dispatcher]' . 'link on block' . $message;
         self::noticeControl($msg, true);
         Console::debug($msg);
         if ($service = self::getServiceByName($client->getIdentity())) {
@@ -414,20 +417,18 @@ class Dispatcher
                 Dispatcher::AGREE::sendWithInt($client, $event->serialize(), Dispatcher::FORMAT_EVENT);
                 break;
             case 'termination':
-                foreach (self::$handlerSocketManager->getClientSockets() ?? [] as $socket) {
-                    self::$handlerSocketManager->removeClient($socket);
-                }
-                foreach (self::$controlSocketManager->getClientSockets() ?? [] as $socket) {
-                    self::$controlSocketManager->removeClient($socket);
-                }
-                // Console::debug("[Dispatcher]", 'close.');
                 if ($serviceInfo = ServiceInfo::load('dispatcher')) {
-                    $info = $serviceInfo->info();
-                    posix_kill($info['httpProcessId'], SIGKILL);
-                    posix_kill($info['timerProcessId'], SIGKILL);
+                    foreach (Dispatcher::$socketHashMap as $socketHash => $socketType) {
+                        if (Dispatcher::MSF_HANDLER === $socketType) {
+                            $client = Dispatcher::$handlerSocketManager->getClientByName($socketHash);
+                            $event  = new Event('', Dispatcher::PE_DISPATCHER_CLOSE, null);
+                            $build  = new Build('', null, $event);
+                            Dispatcher::notice($client->getIdentity(), $build, self::FORMAT_EVENT);
+                        }
+                    }
                     $serviceInfo->release();
                 }
-
+                Console::pdebug("[Dispatcher]", "closed");
                 exit;
             default:
                 # code...

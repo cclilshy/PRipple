@@ -137,26 +137,6 @@ abstract class Service extends ServiceInfo implements ServiceStandard
     private function registerErrorHandler(): void
     {
         return;
-        // set_exception_handler(function (mixed $error) {
-        //     Console::debug("[Service]", $error->getMessage(), $error->getFile(), $error->getLine());
-        //     if (property_exists($this, 'errorHandler')) {
-        //         return $this->errorHandler($error);
-        //     }
-        //     return false;
-        // });
-
-        // set_error_handler(function ($errno, $errStr, $errFile, $errLine) {
-        //     if ($errFile === __FILE__ && $errLine === $this->selectBlockLine) {
-        //         Console::debug(PHP_EOL, "[Subscribe]", '[' . $this->publish . '] Close.');
-        //         die;
-        //     } else {
-        //         Console::debug("[Subscribe]", $errStr, $errFile, $errLine);
-        //     }
-        //     if (property_exists($this, 'errorHandler')) {
-        //         return $this->errorHandler($errno, $errStr, $errFile, $errLine);
-        //     }
-        //     return false;
-        // });
     }
 
     private function reConnectDispatcher(): bool
@@ -240,7 +220,7 @@ abstract class Service extends ServiceInfo implements ServiceStandard
             $context = Dispatcher::AGREE::cutWithInt($this->dispatcherServerAisle, $messageType);
         } catch (Exception $exception) {
             do {
-                Console::debug("[Server]", "Dispatcher close reconnect ...");
+                Console::debug("[Server]", "Dispatcher is block,reconnect ...");
                 sleep(1);
             } while (!$this->reConnectDispatcher());
             return;
@@ -255,6 +235,7 @@ abstract class Service extends ServiceInfo implements ServiceStandard
                 break;
             case Dispatcher::FORMAT_EVENT:
                 $event = unserialize($context);
+                $this->builtEventHandle($event);
                 $this->onEvent($event);
                 break;
         }
@@ -300,12 +281,16 @@ abstract class Service extends ServiceInfo implements ServiceStandard
      * @param \Cclilshy\PRipple\Dispatch\DataStandard\Event $event
      * @return bool
      */
+
     public function builtEventHandle(Event $event): bool
     {
         switch ($event->getName()) {
             case Service::PC_CLOSE:
                 $this->dispatcherServerAisle->release();
                 $this->noticeClose();
+                exit;
+
+            case Dispatcher::PE_DISPATCHER_CLOSE:
                 exit;
             default:
                 return false;

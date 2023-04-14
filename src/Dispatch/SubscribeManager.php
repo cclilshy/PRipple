@@ -24,7 +24,7 @@ class SubscribeManager
         if (!isset($this->subscribes[$publish][$eventName]['count'])) {
             $this->subscribes[$publish][$eventName]['count'] = 0;
         }
-        $msg = "[Subscribe]" . "{$subscriber} 订阅了 > {$publish} 的 `{$eventName}` 事件";
+        $msg = "[Subscribe]" . "{$subscriber} on subscribe > {$publish}r `{$eventName}` event";
         Console::debug($msg);
         Dispatcher::noticeControl($msg, true);
     }
@@ -57,7 +57,7 @@ class SubscribeManager
         if ($eventName) {
             if (isset($this->subscribes[$publish][$eventName][$subscriber])) {
                 unset($this->subscribes[$publish][$eventName][$subscriber]);
-                $msg = "[Subscribe]" . "{$subscriber} 取消订阅了 > {$publish} 的 `{$eventName}` 事件";
+                $msg = "[Subscribe]" . "{$subscriber} un subscribe > {$publish}r `{$eventName}` event";
                 Console::debug($msg);
                 Dispatcher::noticeControl($msg, true);
             }
@@ -65,7 +65,7 @@ class SubscribeManager
             foreach ($this->subscribes as $eventName => $_) {
                 if (isset($this->subscribes[$publish][$eventName][$subscriber])) {
                     unset($this->subscribes[$publish][$eventName][$subscriber]);
-                    $msg = ("[Subscribe]" . "{$subscriber} 取消订阅了 > {$publish} 的 `{$eventName}` 事件");
+                    $msg = ("[Subscribe]" . "{$subscriber} un subscribe > {$publish}r `{$eventName}` event");
                     Console::debug($msg);
                     Dispatcher::noticeControl($msg, true);
                 }

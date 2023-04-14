@@ -128,7 +128,7 @@ class CCL implements AgreementInterface
         $length = '';
         do {
             if (!$aisle->read($symbol, 1)) {
-                throw new Exception("[CCL]无法解析空报文");
+                throw new Exception("[CCL]Context is empty");
             }
             if ($symbol === '#') {
 
