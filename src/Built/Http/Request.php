@@ -15,16 +15,16 @@ use Cclilshy\PRipple\Statistics;
 use Cclilshy\PRipple\Route\Route;
 use Cclilshy\PRipple\Communication\Socket\Client;
 use Cclilshy\PRipple\Communication\Aisle\SocketAisle;
-use function Cclilshy\PRipple\Built\Http\str_contains;
-use function Cclilshy\PRipple\Built\Http\str_starts_with;
+use function str_contains;
+use function str_starts_with;
 
 /**
  *
  */
 class Request
 {
-    public const INVALID = -1;
-    public const COMPLETE = 2;
+    public const INVALID    = -1;
+    public const COMPLETE   = 2;
     public const INCOMPLETE = -1;
     public string      $path;
     public string      $method;                                 // 请求URI

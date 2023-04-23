@@ -112,7 +112,7 @@ class Controller
      */
     public function sleep(int $time): void
     {
-        $event = new \src\Dispatch\DataStandard\Event($this->request->getHash(), 'sleep', [
+        $event = new \Cclilshy\PRipple\Dispatch\DataStandard\Event($this->request->getHash(), 'sleep', [
             'time' => $time,
         ]);
         Fiber::suspend($event);
