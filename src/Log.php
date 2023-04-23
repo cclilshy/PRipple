@@ -35,8 +35,12 @@ class Log
      */
     public static function realTimeOutput(string $content): void
     {
-        Dispatcher::print($content);
-        Log::insert($content);
+        if (PRipple::config('debug')) {
+            Dispatcher::print($content);
+        }
+        if (PRipple::config('record_log')) {
+            Log::insert($content);
+        }
     }
 
     /**
@@ -48,6 +52,11 @@ class Log
     public static function print(string $content): void
     {
         Console::printn($content);
+    }
+
+    public static function pdebug(...$args): void
+    {
+        call_user_func_array([Console::class, 'pdebug'], $args);
     }
 
     /**

@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace Cclilshy\PRipple\Dispatch;
 
 use Cclilshy\PRipple\Log;
-use Cclilshy\PRipple\Console;
 use Cclilshy\PRipple\Dispatch\DataStandard\Event;
 
 /**
@@ -37,7 +36,6 @@ class SubscribeManager
             $this->subscribes[$publish][$eventName]['count'] = 0;
         }
         $msg = "[Subscribe]" . "{$subscriber} on subscribe  {$publish} {$eventName} event";
-        Console::debug($msg);
         Log::realTimeOutput($msg, true);
     }
 
@@ -70,7 +68,6 @@ class SubscribeManager
             if (isset($this->subscribes[$publish][$eventName][$subscriber])) {
                 unset($this->subscribes[$publish][$eventName][$subscriber]);
                 $msg = "[Subscribe]" . "{$subscriber} un subscribe {$publish} {$eventName} event";
-                Console::debug($msg);
                 Log::realTimeOutput($msg, true);
             }
         } else {
@@ -78,7 +75,6 @@ class SubscribeManager
                 if (isset($this->subscribes[$publish][$eventName][$subscriber])) {
                     unset($this->subscribes[$publish][$eventName][$subscriber]);
                     $msg = ("[Subscribe]" . "{$subscriber} un subscribe {$publish} `{$eventName}` event");
-                    Console::debug($msg);
                     Log::realTimeOutput($msg, true);
                 }
             }

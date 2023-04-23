@@ -21,5 +21,5 @@ composer install
 ## 运行
 
 ```bash
-bin/pripple dth
+bin/pripple dth start
 ```

@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace Cclilshy\PRipple\Communication\Socket;
 
-use Cclilshy\PRipple\Console;
+use Cclilshy\PRipple\Log;
 use Cclilshy\PRipple\Communication\Aisle\SocketAisle;
 
 /**
@@ -156,7 +156,7 @@ class Manager
      * 通过套接字获取客户端
      *
      * @param mixed $clientSocket
-     * @return \src\Communication\Socket\Client|null
+     * @return \Cclilshy\PRipple\Communication\Socket\Client|null
      */
     public function getClientBySocket(mixed $clientSocket): Client|null
     {
@@ -168,7 +168,7 @@ class Manager
      * 通过名称获取客户端
      *
      * @param string $name
-     * @return \src\Communication\Socket\Client|null
+     * @return \Cclilshy\PRipple\Communication\Socket\Client|null
      */
     public function getClientByName(string $name): Client|null
     {
@@ -179,7 +179,7 @@ class Manager
      * 通过身份标识获取客户端
      *
      * @param string $name
-     * @return \src\Communication\Socket\Client|null
+     * @return \Cclilshy\PRipple\Communication\Socket\Client|null
      */
     public function getClientByIdentity(string $name): Client|null
     {
@@ -201,7 +201,7 @@ class Manager
         }
 
         /**
-         * @var \src\Communication\Aisle\SocketAisle $clientAisle
+         * @var SocketAisle $clientAisle
          */
         if ($clientAisle = $this->clients[$name] ?? null) {
             $clientAisle->release();
@@ -281,7 +281,7 @@ class Manager
             foreach ($buffers as $socket) {
                 $client = $this->getClientBySocket($socket);
                 if ($len = $client->write("")) {
-                    Console::debug('[SocketServer]', $client->getKeyName(), "成功推送缓冲数据>{$len}");
+                    Log::pdebug('[SocketServer]', $client->getKeyName(), "成功推送缓冲数据>{$len}");
                 }
             }
         }

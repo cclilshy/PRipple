@@ -49,7 +49,9 @@ class Console
      */
     public static function pdebug(...$args): void
     {
-        self::extracted($args);
+        if (PRipple::config('debug') === true) {
+            self::extracted($args);
+        }
     }
 
     /**

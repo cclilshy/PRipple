@@ -10,8 +10,9 @@ declare(strict_types=1);
 namespace Cclilshy\PRipple\Dispatch;
 
 use Exception;
-use Cclilshy\PRipple\Console;
-use Cclilshy\PRipple\Built\Timer\Timer;
+use Cclilshy\PRipple\Log;
+use Cclilshy\PRipple\PRipple;
+use Cclilshy\PRipple\Route\Route;
 use Cclilshy\PRipple\Service\ServiceInfo;
 use Cclilshy\PRipple\Dispatch\DataStandard\Build;
 use Cclilshy\PRipple\Dispatch\DataStandard\Event;
@@ -115,31 +116,17 @@ class Control
                         Dispatcher::launch();
                         exit;
                     } elseif ($pid === -1) {
-                        Console::pdebug("[Dispatcher] start failed!");
+                        Log::pdebug("[Dispatcher] start failed!");
                     } else {
                         $serviceInfo->pipe->clone()->lock();
                         $this->connectDispatcher();
-                        $timerProcessId = pcntl_fork();
-                        if ($timerProcessId === 0) {
-                            $timer = new Timer();
-                            $timer->launch();
-                            exit;
+                        foreach (Route::getServices() as $serviceName => $service) {
+                            PRipple::registerService($service->instantiation());
                         }
-
-                        $httpProcessId = pcntl_fork();
-                        if ($httpProcessId === 0) {
-                            $http = new \Cclilshy\PRipple\Built\Http\Service();
-                            $http->launch();
-                            exit;
-                        }
-
-                        $serviceInfo->info([
-                            'httpProcessId'  => $httpProcessId,
-                            'timerProcessId' => $timerProcessId
-                        ]);
+                        PRipple::go();
                     }
                 } else {
-                    Console::pdebug("[Dispatcher] server is running!");
+                    Log::pdebug("[Dispatcher] server is running!");
                 }
 
                 break;
@@ -160,7 +147,7 @@ class Control
             $this->dispatcherSocket = SocketAisle::create($socket);
             $this->dispatcherSocket->setBlock();
         } catch (Exception $e) {
-            Console::debug("[Control]", $e->getMessage());
+            Log::pdebug("[Control]", $e->getMessage());
             return false;
         }
         return true;
@@ -230,7 +217,7 @@ class Control
                     }
                 }
             } catch (Exception $e) {
-                echo "Dispatcher close . " . $e->getMessage() . "\n";
+                Log::print("Dispatcher close . " . $e->getMessage() . "\n");
                 exit;
             }
         }
@@ -500,12 +487,5 @@ class Control
         $event = new Event('control', 'getSubscribes', null);
         $build = new Build('dispatcher', null, $event);
         Dispatcher::AGREE::send($this->dispatcherSocket, $build->serialize());
-    }
-
-    /**
-     * @return void
-     */
-    private function flushPrint(): void
-    {
     }
 }

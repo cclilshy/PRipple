@@ -20,10 +20,11 @@ namespace Cclilshy\PRipple\Route;
  * @method static options(string $string, string $string1)
  * @method static cron(string $string, string $string1)
  * @method static static (string $path)
+ * @method static service(string $string, string $string1)
  */
 class Route
 {
-    public const METHODS = ['get', 'post', 'put', 'patch', 'delete', 'options', 'console', 'cron', 'static'];
+    public const METHODS = ['get', 'post', 'put', 'patch', 'delete', 'options', 'console', 'cron', 'static', 'service'];
     private static array $map = [];
 
     /**
@@ -150,5 +151,15 @@ class Route
     public static function getConsoles(): array
     {
         return self::$map['CONSOLE'] ?? [];
+    }
+
+    /**
+     * 获取所有注册的服务列表
+     *
+     * @return array
+     */
+    public static function getServices(): array
+    {
+        return self::$map['SERVICE'] ?? [];
     }
 }

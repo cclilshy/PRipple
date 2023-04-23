@@ -55,7 +55,7 @@ class Map
     public function run(...$vars): mixed
     {
         if ($this->type == 'Controller') {
-            return call_user_func([new $this->className(...$vars), $this->action], ...$vars);
+            return call_user_func([new $this->className($vars[0] ?? null), $this->action], ...$vars);
         } elseif ($this->type === 'Static') {
             $request    = $vars[0];
             $response   = new Response($request);
@@ -69,6 +69,15 @@ class Map
         } else {
             return call_user_func_array($this->callable, ...$vars);
         }
+    }
+
+
+    public function instantiation(mixed $initParam = null): object|false
+    {
+        if ($this->type !== 'Controller' || !isset($this->className)) {
+            return false;
+        }
+        return new $this->className($initParam);
     }
 
     /**

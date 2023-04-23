@@ -33,7 +33,7 @@ class Guardian
     public static function create(): string|false
     {
         $handler = function ($action, $data, $ipc) {
-            Console::pdebug('[Guardian(' . posix_getpid() . ')] ' . $action . ':' . json_encode($data));
+            Log::pdebug('[Guardian(' . posix_getpid() . ')] ' . $action . ':' . json_encode($data));
             switch ($action) {
                 case 'new':
                     $ipc->space->add($data['pid']);

@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace Cclilshy\PRipple\Service;
 
 use Exception;
-use Cclilshy\PRipple\Console;
 use Cclilshy\PRipple\Dispatch\Dispatcher;
 use Cclilshy\PRipple\Dispatch\DataStandard\Build;
 use Cclilshy\PRipple\Dispatch\DataStandard\Event;
@@ -70,7 +69,7 @@ abstract class Service extends ServiceInfo implements ServiceStandard
                 $this->serverSocketManager = Manager::createServer($this->socketType, $this->serverAddress, $this->serverPort, $this->socketOptions);
             }
         } catch (Exception $e) {
-            Console::debug("[Service]", $e->getMessage());
+            Log::pdebug("[Service]", $e->getMessage());
             return;
         }
 
@@ -90,7 +89,7 @@ abstract class Service extends ServiceInfo implements ServiceStandard
                     $socketName = Manager::getNameBySocket($readSocket);
                     switch ($readSocket) {
                         case $this->serverSocketManager->getEntranceSocket():
-                            // TODO::有新的客户端链接
+                            // TODO:有新的客户端链接
                             $name                             = $this->serverSocketManager->accept($readSocket);
                             $this->socketTypeMap[$socketName] = 'client';
                             if ($client = $this->serverSocketManager->getClientByName($name)) {
@@ -99,10 +98,10 @@ abstract class Service extends ServiceInfo implements ServiceStandard
                             break;
                         case $this->dispatcherServer:
                             $this->handlerDispatcherMessage();
-                            // TODO::调度器发来通知
+                            // TODO:调度器发来通知
                             break;
                         default:
-                            // TODO::客户端消息
+                            // TODO:客户端消息
                             if ($client = $this->serverSocketManager->getClientBySocket($readSocket)) {
                                 if ($client->read($context)) {
                                     if ($client->verify) {
@@ -152,7 +151,7 @@ abstract class Service extends ServiceInfo implements ServiceStandard
             $this->noticeStart();
             return true;
         } catch (Exception $e) {
-            Console::debug("[Subscribe]", $e->getMessage());
+            Log::pdebug("[Subscribe]", $e->getMessage());
             return false;
         }
     }
@@ -224,7 +223,7 @@ abstract class Service extends ServiceInfo implements ServiceStandard
             $context = Dispatcher::AGREE::cutWithInt($this->dispatcherServerAisle, $messageType);
         } catch (Exception $exception) {
             do {
-                Console::debug("[Server]", "Dispatcher is block,reconnect ...");
+                Log::pdebug("[Server]", "Dispatcher is block,reconnect ...");
                 sleep(1);
             } while (!$this->reConnectDispatcher());
             return;

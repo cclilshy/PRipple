@@ -79,7 +79,7 @@ class Tree extends ServerAbstract implements Module
      */
     public function handle($ipc, $action, $data): void
     {
-        Console::pdebug('[MESSAGE] ' . json_encode(func_get_args()));
+        Log::pdebug('[MESSAGE] ' . json_encode(func_get_args()));
         switch ($action) {
             case 'new':
                 if ($node = $this->findNodeByPid($data['ppid'])) {

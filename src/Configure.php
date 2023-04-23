@@ -37,6 +37,7 @@ class Configure
             Route::init();
             Config::init();
             Log::init();
+            PRipple::init();
         } else {
             die("environmental self test failed" . PHP_EOL);
         }

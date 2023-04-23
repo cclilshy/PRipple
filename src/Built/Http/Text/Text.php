@@ -34,7 +34,7 @@ class Text
      */
     public static function statistics(string $content, Request $request, Statistics $statistics): string
     {
-        if (Config::get('http.debug') === true && $request->isAjax() === false) {
+        if ($request->isAjax() === false) {
             $statistics->record('endTime', microtime(true));
             $general = [
                 'timeLength' => $statistics->endTime - $statistics->startTime,
@@ -49,9 +49,7 @@ class Text
             $plaster->assign('general', $general);
             $plaster->assign('gets', $request->get());
             $plaster->assign('posts', $request->post());
-
             $statisticsHtml = Http::getBuiltTemplate('statistics');
-
             $content .= PHP_EOL . $plaster->apply($statisticsHtml);
         }
         return $content;
