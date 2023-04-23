@@ -16,6 +16,7 @@ use Cclilshy\PRipple\Route\Route;
  */
 class Configure
 {
+    const NEED_EXTENDS = ['pcntl', 'sockets', 'posix'];
     /**
      * @return void
      */
@@ -52,6 +53,10 @@ class Configure
         if (@!is_dir($path) && @!mkdir($path, 0744, true)) {
             die('create path ' . $path . ' failed' . PHP_EOL);
         }
+
+        if (!is_readable($path) || !is_writable($path)) {
+            die("the path does not have read and write permissions '{$path}' \n");
+        }
     }
 
     /**
@@ -69,6 +74,11 @@ class Configure
         Configure::initPath(PRIPPLE_SOCK_PATH);
         Configure::initPath(PRIPPLE_LOG_PATH);
         Configure::initPath(PRIPPLE_LANG_PATH);
+        foreach (Configure::NEED_EXTENDS as $extend) {
+            if (!extension_loaded($extend)) {
+                die("not extend : " . $extend . "\n");
+            }
+        }
         return true;
     }
 }
