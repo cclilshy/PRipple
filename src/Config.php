@@ -13,6 +13,9 @@ namespace Cclilshy\PRipple;
 use stdClass;
 
 
+/**
+ *
+ */
 class Config
 {
     protected static array $config = [];

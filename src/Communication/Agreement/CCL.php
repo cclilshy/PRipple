@@ -15,6 +15,9 @@ use Exception;
 use Cclilshy\PRipple\Communication\Standard\AgreementInterface;
 use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 
+/**
+ *
+ */
 class CCL implements AgreementInterface
 {
     /**
@@ -45,6 +48,11 @@ class CCL implements AgreementInterface
         // 报文长度#正文长度PACK正文
     }
 
+    /**
+     * @param \Cclilshy\PRipple\Communication\Standard\CommunicationInterface $aisle
+     * @param string                                                          $context
+     * @return bool
+     */
     private static function sendRawContext(CommunicationInterface $aisle, string $context): bool
     {
         return $aisle->write($context) !== false;

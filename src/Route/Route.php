@@ -9,6 +9,7 @@ declare(strict_types=1);
  */
 
 namespace Cclilshy\PRipple\Route;
+
 /**
  * @method static console(string $string, string $string1)
  * @method static get(string $string, string $string1)
@@ -34,6 +35,10 @@ class Route
         Route::loadPath($path);
     }
 
+    /**
+     * @param string $path
+     * @return void
+     */
     public static function loadPath(string $path): void
     {
         if (is_dir($path)) {

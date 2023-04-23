@@ -1,9 +1,14 @@
 <?php
+declare(strict_types=1);
 
 namespace Cclilshy\PRipple\Service;
 
+use Cclilshy\PRipple\Config;
 use Cclilshy\PRipple\FileSystem\Pipe;
 
+/**
+ *
+ */
 class ServiceInfo
 {
     public string     $name;
@@ -11,15 +16,21 @@ class ServiceInfo
     public int        $pid;
     public Pipe|false $pipe;
     public array      $data;
+    public array      $config;
 
     /**
      * @param string $name
      */
     public function __construct(string $name)
     {
-        $this->name = $name;
+        $this->name   = $name;
+        $this->config = Config::get($name) ?? [];
     }
 
+    /**
+     * @param string|null $name
+     * @return false|self
+     */
     public static function load(string|null $name = ''): self|false
     {
         if (!$name) {
@@ -62,6 +73,10 @@ class ServiceInfo
     }
 
 
+    /**
+     * @param string|null $name
+     * @return false|self
+     */
     public static function create(string|null $name): self|false
     {
         if (!$name) {
@@ -71,6 +86,9 @@ class ServiceInfo
         return $server->initCreate();
     }
 
+    /**
+     * @return false|$this|self
+     */
     public function initCreate(): self|false
     {
         if ($this->pipe = Pipe::create($this->name)) {
@@ -115,13 +133,28 @@ class ServiceInfo
         return true;
     }
 
+    /**
+     * @return bool
+     */
     public function setLock(): bool
     {
         return $this->pipe->lock();
     }
 
+    /**
+     * @return bool
+     */
     public function unLock(): bool
     {
         return $this->pipe->unlock();
+    }
+
+    /**
+     * @param $name
+     * @return mixed
+     */
+    public function __get($name): mixed
+    {
+        return $this->config[$name] ?? null;
     }
 }

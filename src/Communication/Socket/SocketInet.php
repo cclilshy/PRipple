@@ -11,6 +11,9 @@ namespace Cclilshy\PRipple\Communication\Socket;
 
 use Exception;
 
+/**
+ *
+ */
 class SocketInet
 {
     /**

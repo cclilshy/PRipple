@@ -18,6 +18,9 @@ namespace Cclilshy\PRipple\Built\Process;
 use Exception;
 
 
+/**
+ *
+ */
 class Node
 {
     // 哈希表索引

@@ -17,6 +17,9 @@ use Cclilshy\PRipple\Statistics;
 use Cclilshy\PRipple\Built\Http\Text\Text;
 use Cclilshy\PRipple\Built\Http\Text\Plaster;
 
+/**
+ *
+ */
 class Controller
 {
     protected Event      $http;
@@ -45,6 +48,9 @@ class Controller
         return $this->display();
     }
 
+    /**
+     * @return string|false
+     */
     public function display(): string|false
     {
         // TODO: Implement __toString() method.
@@ -77,6 +83,10 @@ class Controller
     }
 
 
+    /**
+     * @param array|string $data
+     * @return string
+     */
     public function json(array|string $data): string
     {
         if (is_array($data)) {
@@ -96,14 +106,22 @@ class Controller
         $this->response->setHeader($key, $value);
     }
 
+    /**
+     * @param int $time
+     * @return void
+     */
     public function sleep(int $time): void
     {
-        $event = new \Cclilshy\PRipple\Dispatch\DataStandard\Event($this->request->getHash(), 'sleep', [
+        $event = new \src\Dispatch\DataStandard\Event($this->request->getHash(), 'sleep', [
             'time' => $time,
         ]);
         Fiber::suspend($event);
     }
 
+    /**
+     * @param ...$args
+     * @return void
+     */
     public function dump(...$args): void
     {
         return;

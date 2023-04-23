@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /*
  * @Author: cclilshy jingnigg@gmail.com
  * @Date: 2023-03-22 15:36:03
@@ -11,6 +12,9 @@ namespace Cclilshy\PRipple\Communication\Socket;
 use Cclilshy\PRipple\Console;
 use Cclilshy\PRipple\Communication\Aisle\SocketAisle;
 
+/**
+ *
+ */
 class Manager
 {
     private mixed  $entranceSocket;
@@ -21,6 +25,10 @@ class Manager
     private array  $bufferSocketList;
     private string $socketType;
 
+    /**
+     * @param mixed  $entranceSocket
+     * @param string $socketType
+     */
     public function __construct(mixed $entranceSocket, string $socketType)
     {
         $this->entranceSocket = $entranceSocket;
@@ -148,7 +156,7 @@ class Manager
      * 通过套接字获取客户端
      *
      * @param mixed $clientSocket
-     * @return \Cclilshy\PRipple\Communication\Socket\Client|null
+     * @return \src\Communication\Socket\Client|null
      */
     public function getClientBySocket(mixed $clientSocket): Client|null
     {
@@ -160,7 +168,7 @@ class Manager
      * 通过名称获取客户端
      *
      * @param string $name
-     * @return \Cclilshy\PRipple\Communication\Socket\Client|null
+     * @return \src\Communication\Socket\Client|null
      */
     public function getClientByName(string $name): Client|null
     {
@@ -171,7 +179,7 @@ class Manager
      * 通过身份标识获取客户端
      *
      * @param string $name
-     * @return \Cclilshy\PRipple\Communication\Socket\Client|null
+     * @return \src\Communication\Socket\Client|null
      */
     public function getClientByIdentity(string $name): Client|null
     {
@@ -193,7 +201,7 @@ class Manager
         }
 
         /**
-         * @var \Cclilshy\PRipple\Communication\Aisle\SocketAisle $clientAisle
+         * @var \src\Communication\Aisle\SocketAisle $clientAisle
          */
         if ($clientAisle = $this->clients[$name] ?? null) {
             $clientAisle->release();
@@ -297,6 +305,9 @@ class Manager
         return false;
     }
 
+    /**
+     * @return array|null
+     */
     public function getClients(): array|null
     {
         return $this->clients ?? null;

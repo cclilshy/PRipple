@@ -17,6 +17,9 @@ use Cclilshy\PRipple\Statistics;
 use Cclilshy\PRipple\Built\Http\Response;
 use Cclilshy\PRipple\Built\Http\Text\Text;
 
+/**
+ *
+ */
 class Map
 {
     public string $type;

@@ -13,6 +13,9 @@ namespace Cclilshy\PRipple;
 use Cclilshy\PRipple\Route\Route;
 
 
+/**
+ *
+ */
 class Console
 {
     public const RESERVED = ['help', 'test', 'list', 'run'];
@@ -69,8 +72,8 @@ class Console
 
         $_micrometer = explode(' ', microtime());
         $date        = date("H:i:s", intval($_micrometer[1]));
-        $date        .= substr($_micrometer[0], 1);
-        self::printn("\033[33m[DEBUG][" . posix_getpid() . '][' . $date . "]{$content}\033[0m");
+        $date        .= substr($_micrometer[0], 1, 5);
+        self::printn("\033[33m[" . posix_getpid() . '][' . $date . "]{$content}\033[0m");
     }
 
     /**
@@ -105,7 +108,6 @@ class Console
      */
     public function run(): void
     {
-        self::inspection();
         global $argc;
         global $argv;
         $option     = $argv[1] ?? 'help';
@@ -122,19 +124,8 @@ class Console
             foreach (self::$commands as $key => $item)
                 self::brief($key, $item);
         } elseif ($option === 'test') {
-            self::inspection(true);
+            Configure::inspection();
         }
-    }
-
-    /**
-     * 运行环境自检
-     *
-     * @param bool $print
-     * @return bool
-     */
-    private static function inspection(bool $print = false): bool
-    {
-        return true;
     }
 
     /**

@@ -10,6 +10,9 @@ declare(strict_types=1);
 
 namespace Cclilshy\PRipple;
 
+/**
+ *
+ */
 class Statistics
 {
     public array $loadFiles = [];       // 加载的文件

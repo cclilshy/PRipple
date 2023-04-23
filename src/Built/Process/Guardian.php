@@ -12,6 +12,9 @@ namespace Cclilshy\PRipple\Built\Process;
 
 use Cclilshy\Console;
 
+/**
+ *
+ */
 class Guardian
 {
     // 兄弟进程ID

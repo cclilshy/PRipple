@@ -17,6 +17,9 @@ use Cclilshy\PRipple\Dispatch\Dispatcher;
 use Cclilshy\PRipple\Built\Http\Text\Text;
 use Cclilshy\PRipple\Communication\Socket\Client;
 
+/**
+ *
+ */
 class Event
 {
     public array   $tasks        = array();
@@ -24,11 +27,18 @@ class Event
     public array   $arrayHashMap = array();
     public Service $httpService;
 
+    /**
+     * @param \Cclilshy\PRipple\Built\Http\Service $httpService
+     */
     public function __construct(Service $httpService)
     {
         $this->httpService = $httpService;
     }
 
+    /**
+     * @param \Cclilshy\PRipple\Built\Http\Request $request
+     * @return void
+     */
     public function access(Request $request): void
     {
         $client                                                         = $request->clientSocket;

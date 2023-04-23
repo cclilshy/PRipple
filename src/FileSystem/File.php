@@ -1,10 +1,14 @@
 <?php
+declare(strict_types=1);
 
 namespace Cclilshy\PRipple\FileSystem;
 
+/**
+ *
+ */
 class File
 {
-    const EXT = '.tmp';
+    public const EXT = '.tmp';
     // 文件后缀
 
     private mixed $file;
@@ -14,6 +18,10 @@ class File
 
     // 指针位置
 
+    /**
+     * @param string $path
+     * @param string $mode
+     */
     public function __construct(string $path, string $mode)
     {
         $this->file = fopen($path, $mode);

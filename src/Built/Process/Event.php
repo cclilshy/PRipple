@@ -14,7 +14,11 @@ use Exception;
 use Cclilshy\Console;
 use Cclilshy\Pripple\FileSystemPipe;
 use Cclilshy\Pripple\FileSystemFifo;
+use Cclilshy\PRipple\Built\Process\Pipe;
+use Cclilshy\PRipple\Built\Process\Fifo;
 use Cclilshy\PRipple\Built\Process\Standard\EventInterface as EventFactory;
+use function Cclilshy\PRipple\Built\Process\phppack;
+use const Cclilshy\PRipple\Built\Process\Event;
 
 /**
  * function stop() 由调用者发起，停止监视者服务
@@ -133,7 +137,7 @@ class Event implements EventFactory
                 }
                 $context = serialize($result);
                 // 将校验长度加入报文头
-                $context    = pack('L', strlen($context)) . $context;
+                $context    = Event . phppack('L', strlen($context)) . $context;
                 $contextLen = strlen($context);
                 // 发送报文
                 $this->common->write($context);
@@ -222,7 +226,7 @@ class Event implements EventFactory
         }
         $context    = serialize(func_get_args());
         $contextLen = strlen($context);
-        $context    = pack('L', strlen($context)) . $context;
+        $context    = Event . phppack('L', strlen($context)) . $context;
         $this->common->write($context);
         $this->notice->write($contextLen . PHP_EOL);
         $length = $this->sender->fgets();

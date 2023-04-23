@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /*
  * @Author: cclilshy jingnigg@gmail.com
  * @Date: 2023-03-22 01:15:45
@@ -22,9 +23,9 @@ use Cclilshy\PRipple\Communication\Socket\SocketUnix;
  */
 abstract class Service extends ServiceInfo implements ServiceStandard
 {
-    const PS_START = 'PS_START';
-    const PS_CLOSE = 'PS_CLOSE';
-    const PC_CLOSE = 'PC_CLOSE';
+    public const PS_START = 'PS_START';
+    public const PS_CLOSE = 'PS_CLOSE';
+    public const PC_CLOSE = 'PC_CLOSE';
 
     public Manager     $serverSocketManager;
     public SocketAisle $dispatcherServerAisle;
@@ -139,6 +140,9 @@ abstract class Service extends ServiceInfo implements ServiceStandard
         return;
     }
 
+    /**
+     * @return bool
+     */
     private function reConnectDispatcher(): bool
     {
         try {
@@ -242,6 +246,38 @@ abstract class Service extends ServiceInfo implements ServiceStandard
     }
 
     /**
+     * 内置事件处理
+     *
+     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Event $event
+     * @return bool
+     */
+
+    public function builtEventHandle(Event $event): bool
+    {
+        switch ($event->getName()) {
+            case Service::PC_CLOSE:
+                $this->dispatcherServerAisle->release();
+                $this->noticeClose();
+                exit;
+
+            case Dispatcher::PE_DISPATCHER_CLOSE:
+                exit;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * 通知调度器关闭
+     *
+     * @return bool
+     */
+    public function noticeClose(): bool
+    {
+        return $this->publishEvent(Service::PS_CLOSE, null);
+    }
+
+    /**
      * 声明订阅
      *
      * @param string     $publisher 订阅的发布者
@@ -273,37 +309,5 @@ abstract class Service extends ServiceInfo implements ServiceStandard
             'publish' => $publisher,
             'event'   => $eventName,
         ]);
-    }
-
-    /**
-     * 内置事件处理
-     *
-     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Event $event
-     * @return bool
-     */
-
-    public function builtEventHandle(Event $event): bool
-    {
-        switch ($event->getName()) {
-            case Service::PC_CLOSE:
-                $this->dispatcherServerAisle->release();
-                $this->noticeClose();
-                exit;
-
-            case Dispatcher::PE_DISPATCHER_CLOSE:
-                exit;
-            default:
-                return false;
-        }
-    }
-
-    /**
-     * 通知调度器关闭
-     *
-     * @return bool
-     */
-    public function noticeClose(): bool
-    {
-        return $this->publishEvent(Service::PS_CLOSE, null);
     }
 }

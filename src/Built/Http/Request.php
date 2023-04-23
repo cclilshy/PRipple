@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /*
  * @Author: cclilshy jingnigg@gmail.com
  * @Date: 2023-03-21 13:18:59
@@ -14,12 +15,17 @@ use Cclilshy\PRipple\Statistics;
 use Cclilshy\PRipple\Route\Route;
 use Cclilshy\PRipple\Communication\Socket\Client;
 use Cclilshy\PRipple\Communication\Aisle\SocketAisle;
+use function Cclilshy\PRipple\Built\Http\str_contains;
+use function Cclilshy\PRipple\Built\Http\str_starts_with;
 
+/**
+ *
+ */
 class Request
 {
-    const INVALID    = -1;
-    const COMPLETE   = 2;
-    const INCOMPLETE = -1;
+    public const INVALID = -1;
+    public const COMPLETE = 2;
+    public const INCOMPLETE = -1;
     public string      $path;
     public string      $method;                                 // 请求URI
     public string      $version;                                // 请求方法
@@ -43,6 +49,9 @@ class Request
     public Response    $response;
     public SocketAisle $clientSocket;
 
+    /**
+     * @param string $name
+     */
     public function __construct(string $name)
     {
         $this->statistics = new Statistics();
@@ -52,6 +61,10 @@ class Request
         $this->response   = new Response($this);
     }
 
+    /**
+     * @param string $name
+     * @return self
+     */
     public static function create(string $name): self
     {
         return new self($name);
@@ -111,13 +124,17 @@ class Request
         return $this->pushBody($context);
     }
 
+    /**
+     * @param string $context
+     * @return false|$this|self
+     */
     public function pushBody(string $context): self|false
     {
         // 写入
         if (!isset($this->method)) {    // 没有方法
             $context = $this->buffer($context);
             // 解析HTTP报文过程
-            if (str_contains($context, "\r\n\r\n")) {
+            if (\str_contains($context, "\r\n\r\n")) {
                 $_                = explode("\r\n\r\n", $context);
                 $headerContext    = $_[0];
                 $bodyContext      = $_[1];
@@ -137,7 +154,7 @@ class Request
                             $_ = explode(':', $item);
                             $this->setHeader($_[0], $_[1] ?? '');
                         }
-                        if (isset($this->header['CONTENT-TYPE']) && str_starts_with(strtoupper($this->header['CONTENT-TYPE']), 'MULTIPART/FORM-DATA')) {
+                        if (isset($this->header['CONTENT-TYPE']) && \str_starts_with(strtoupper($this->header['CONTENT-TYPE']), 'MULTIPART/FORM-DATA')) {
                             $this->parseUploadInfo();
                         }
                     }
@@ -174,6 +191,10 @@ class Request
         return $this->buffer .= $context;
     }
 
+    /**
+     * @param int $statusCode
+     * @return $this
+     */
     public function signStatusCode(int $statusCode): self
     {
         $this->statusCode = $statusCode;
@@ -219,6 +240,9 @@ class Request
         return $this;
     }
 
+    /**
+     * @return void
+     */
     public function parseUploadInfo(): void
     {
         $this->isUpload = true;
@@ -411,11 +435,17 @@ class Request
         return $this->hash;
     }
 
+    /**
+     * @return bool
+     */
     public function complete(): bool
     {
         return $this->statusCode === Request::COMPLETE;
     }
 
+    /**
+     * @return string|null
+     */
     public function getPath(): string|null
     {
         return $this->path ?? null;
@@ -460,6 +490,9 @@ class Request
         return false;
     }
 
+    /**
+     * @return \Cclilshy\PRipple\Route\Map|null
+     */
     public function getRoute(): Map|null
     {
         return $this->route ?? null;
@@ -489,6 +522,10 @@ class Request
         ];
     }
 
+    /**
+     * @param \Cclilshy\PRipple\Communication\Socket\Client $socket
+     * @return void
+     */
     public function setClientSocket(Client $socket): void
     {
         $this->clientSocket = $socket;

@@ -1,9 +1,13 @@
 <?php
+declare(strict_types=1);
 
 namespace Cclilshy\PRipple\Built\WebSocket;
 
 use Cclilshy\PRipple\Communication\Socket\Client;
 
+/**
+ *
+ */
 class Accept
 {
     /**

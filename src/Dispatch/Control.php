@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /*
  * @Author: cclilshy jingnigg@gmail.com
  * @Date: 2023-03-29 10:38:31
@@ -19,6 +20,9 @@ use Cclilshy\PRipple\Communication\Aisle\SocketAisle;
 use function ob_flush;
 use function ob_start;
 
+/**
+ *
+ */
 class Control
 {
     private SocketAisle $dispatcherSocket;
@@ -35,11 +39,17 @@ class Control
     {
     }
 
+    /**
+     * @return string
+     */
     public static function register(): string
     {
         return '主程序';
     }
 
+    /**
+     *
+     */
     public function __destruct()
     {
         if (isset($this->dispatcherSocket)) {
@@ -47,6 +57,11 @@ class Control
         }
     }
 
+    /**
+     * @param $argv
+     * @param $console
+     * @return void
+     */
     public function main($argv, $console): void
     {
         if (count($argv) < 2) {
@@ -135,6 +150,9 @@ class Control
         }
     }
 
+    /**
+     * @return bool
+     */
     private function connectDispatcher(): bool
     {
         try {
@@ -148,6 +166,10 @@ class Control
         return true;
     }
 
+    /**
+     * @param string $name
+     * @return void
+     */
     public function getServiceInfo(string $name): void
     {
         $event = new Event('control', 'getServiceInfo', $name);
@@ -155,6 +177,9 @@ class Control
         Dispatcher::AGREE::send($this->dispatcherSocket, $build->serialize());
     }
 
+    /**
+     * @return void
+     */
     public function getServices(): void
     {
         $event = new Event('control', 'getServices', null);
@@ -162,6 +187,10 @@ class Control
         Dispatcher::AGREE::send($this->dispatcherSocket, $build->serialize());
     }
 
+    /**
+     * @param bool|null $oneOff
+     * @return void
+     */
     public function listen(bool|null $oneOff = true): void
     {
         ob_start();
@@ -207,6 +236,10 @@ class Control
         }
     }
 
+    /**
+     * @param array $eventSubscribersArray
+     * @return array
+     */
     private function formatEventSubscribersTable(array $eventSubscribersArray): array
     {
         $data = [];
@@ -253,6 +286,10 @@ class Control
         return $data;
     }
 
+    /**
+     * @param array $table
+     * @return void
+     */
     private function updateSubscribersTable(array $table): void
     {
         if (empty($table['header']) || empty($table['body'])) {
@@ -282,6 +319,11 @@ class Control
         $this->seekCursor($this->currentLine);
     }
 
+    /**
+     * @param array  $tableArray
+     * @param string $tableName
+     * @return string
+     */
     private function getOutputContentByTableArray(array $tableArray, string $tableName): string
     {
         if (empty($tableArray['header'])) {
@@ -315,6 +357,10 @@ class Control
         return $output;
     }
 
+    /**
+     * @param int $line
+     * @return void
+     */
     private function seekCursor(int $line): void
     {
         $count = $line - $this->currentLine;
@@ -328,6 +374,10 @@ class Control
         $this->currentLine = $line;
     }
 
+    /**
+     * @param array $services
+     * @return array
+     */
     private function formatServicesTable(array $services): array
     {
         $data = [];
@@ -358,6 +408,10 @@ class Control
         return $data;
     }
 
+    /**
+     * @param array $table
+     * @return void
+     */
     private function updateServicesTable(array $table): void
     {
         if (empty($table['header']) || empty($table['body'])) {
@@ -387,6 +441,10 @@ class Control
         $this->seekCursor($this->currentLine);
     }
 
+    /**
+     * @param mixed $service
+     * @return void
+     */
     private function showServiceInfo(mixed $service): void
     {
         if ($service == null) {
@@ -415,6 +473,10 @@ class Control
         echo "  activeTime: " . $service->socket->getActiveTime() . "\n";
     }
 
+    /**
+     * @param string $message
+     * @return void
+     */
     public function printMessage(string $message): void
     {
         if ($this->messageLine > 0) {
@@ -430,6 +492,9 @@ class Control
         ob_flush();
     }
 
+    /**
+     * @return void
+     */
     public function getSubscribes(): void
     {
         $event = new Event('control', 'getSubscribes', null);
@@ -437,6 +502,9 @@ class Control
         Dispatcher::AGREE::send($this->dispatcherSocket, $build->serialize());
     }
 
+    /**
+     * @return void
+     */
     private function flushPrint(): void
     {
     }

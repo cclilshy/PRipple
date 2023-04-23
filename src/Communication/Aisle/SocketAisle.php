@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /*
  * @Author: cclilshy jingnigg@gmail.com
  * @Date: 2023-03-16 22:33:59
@@ -14,9 +15,12 @@ use Cclilshy\PRipple\FileSystem\File;
 use Cclilshy\PRipple\Communication\Socket\Manager;
 use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 
+/**
+ *
+ */
 class SocketAisle implements CommunicationInterface
 {
-    const EXT = '.sock';
+    public const EXT = '.sock';
     public Manager            $manager;        // 用户地址
     protected readonly string $address;        // 在管理器中的键名
     protected readonly string $keyName;        // 用户连接时
@@ -577,6 +581,9 @@ class SocketAisle implements CommunicationInterface
         return $this->cacheLength;
     }
 
+    /**
+     * @return string[]
+     */
     public function __sleep()
     {
         return [

@@ -10,9 +10,12 @@ declare(strict_types=1);
 
 namespace Cclilshy\PRipple\FileSystem;
 
+/**
+ *
+ */
 class Fifo
 {
-    const EXT = '.fifo';
+    public const EXT = '.fifo';
     private mixed  $stream;
     private string $name;
     private string $path;

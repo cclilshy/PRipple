@@ -16,6 +16,9 @@ namespace Cclilshy\PRipple\Communication\Standard;
 
 use stdClass;
 
+/**
+ *
+ */
 interface AgreementInterface
 {
 

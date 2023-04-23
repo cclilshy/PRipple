@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /*
  * @Author: cclilshy jingnigg@gmail.com
  * @Date: 2023-03-21 19:46:17
@@ -10,9 +11,14 @@ namespace Cclilshy\PRipple\Built\Process;
 
 use Exception;
 use Cclilshy\PRipple\Console;
+use Cclilshy\PRipple\Built\Process\Fifo;
 use Cclilshy\PRipple\Communication\Agreement\CCL;
+use Cclilshy\PRipple\Built\Process\AgreementInterface;
 use Cclilshy\PRipple\Built\Process\Standard\EventInterface;
 
+/**
+ *
+ */
 class GuardEvent
 {
     private string             $name;
@@ -43,6 +49,9 @@ class GuardEvent
         return false;
     }
 
+    /**
+     * @return int
+     */
     public function killAll(): int
     {
         $count = 0;
@@ -52,6 +61,10 @@ class GuardEvent
         return $count;
     }
 
+    /**
+     * @param int $processId
+     * @return bool
+     */
     public function kill(int $processId): bool
     {
         if ($this->sendSiganl($processId, SIGKILL)) {
@@ -61,6 +74,11 @@ class GuardEvent
         return false;
     }
 
+    /**
+     * @param int $processId
+     * @param int $signal
+     * @return bool
+     */
     public function sendSiganl(int $processId, int $signal): bool
     {
         if (in_array($processId, $this->siblingsProcessIds)) {
@@ -69,6 +87,10 @@ class GuardEvent
         return false;
     }
 
+    /**
+     * @param int $processId
+     * @return void
+     */
     public function removeSibling(int $processId): void
     {
         $key = array_search($processId, $this->siblingsProcessIds);
@@ -77,6 +99,10 @@ class GuardEvent
         }
     }
 
+    /**
+     * @param int $processId
+     * @return void
+     */
     public function addSibling(int $processId): void
     {
         $this->siblingsProcessIds[] = $processId;

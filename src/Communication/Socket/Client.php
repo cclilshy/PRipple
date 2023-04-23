@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /*
  * @Author: cclilshy jingnigg@gmail.com
  * @Date: 2023-03-23 12:42:40
@@ -7,8 +8,12 @@
  */
 
 namespace Cclilshy\PRipple\Communication\Socket;
+
 use Cclilshy\PRipple\Communication\Aisle\SocketAisle;
 
+/**
+ *
+ */
 class Client extends SocketAisle
 {
     public string    $verifyBuffer;
@@ -17,6 +22,12 @@ class Client extends SocketAisle
     public string    $cache;
     public \stdClass $info;
 
+    /**
+     * @param mixed                                          $socket
+     * @param string                                         $type
+     * @param \Cclilshy\PRipple\Communication\Socket\Manager $manager
+     * @throws \Exception
+     */
     public function __construct(mixed $socket, string $type, Manager $manager)
     {
         parent::__construct($socket, $manager);

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /*
  * @Author: cclilshy jingnigg@gmail.com
  * @Date: 2023-03-25 12:24:44
@@ -12,11 +13,14 @@ use Cclilshy\PRipple\FileSystem\File;
 use Cclilshy\PRipple\Communication\Socket\Client;
 use Cclilshy\PRipple\Communication\Aisle\FileAisle;
 
+/**
+ *
+ */
 class Service
 {
-    const STATE_CLOSE  = 'STATE_CLOSE';
-    const STATE_EXPECT = 'STATE_EXPECT';
-    const STATE_START  = 'STATE_START';
+    public const STATE_CLOSE = 'STATE_CLOSE';
+    public const STATE_EXPECT = 'STATE_EXPECT';
+    public const STATE_START  = 'STATE_START';
 
     public string $cacheFilePath;
     // 长缓存文件
@@ -37,6 +41,10 @@ class Service
 
     // 标准套接字
 
+    /**
+     * @param string                                        $publish
+     * @param \Cclilshy\PRipple\Communication\Socket\Client $socket
+     */
     public function __construct(string $publish, Client $socket)
     {
         $this->name          = $publish;
@@ -124,6 +132,9 @@ class Service
         $this->state = $state;
     }
 
+    /**
+     * @return string[]
+     */
     public function __sleep()
     {
         return ['cacheFilePath', 'name', 'cacheCount', 'state', 'socket'];

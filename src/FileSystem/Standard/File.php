@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace Cclilshy\PRipple\FileSystem\Standard;
 
+/**
+ *
+ */
 interface File
 {
     public const STP = PRIPPLE_PIPE_PATH;

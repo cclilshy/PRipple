@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /*
  * @Author: cclilshy jingnigg@gmail.com
  * @Date: 2023-03-16 22:33:59
@@ -12,12 +13,18 @@ namespace Cclilshy\PRipple\Communication\Aisle;
 use Cclilshy\PRipple\FileSystem\File;
 use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 
+/**
+ *
+ */
 class FileAisle implements CommunicationInterface
 {
-    const EXT = '.pipe';
+    public const EXT = '.pipe';
 
     private File $file;
 
+    /**
+     * @param mixed $file
+     */
     public function __construct(mixed $file)
     {
         $this->file = $file;

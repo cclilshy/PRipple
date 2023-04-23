@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /*
  * @Author: cclilshy jingnigg@gmail.com
  * @Date: 2023-03-27 13:07:08
@@ -24,6 +25,10 @@ class Sign
     // 暂时不知道有什么用
     public int $count;
 
+    /**
+     * @param string $name
+     * @param mixed  $info
+     */
     public function __construct(string $name, mixed $info)
     {
         $this->name  = $name;

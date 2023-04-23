@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /*
  * @Author: cclilshy jingnigg@gmail.com
  * @Date: 2023-03-16 22:33:59
@@ -12,11 +13,17 @@ namespace Cclilshy\PRipple\Communication\Aisle;
 use Cclilshy\PRipple\FileSystem\Fifo;
 use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 
+/**
+ *
+ */
 class FifoAisle implements CommunicationInterface
 {
-    const EXT = '.pipe';
+    public const EXT = '.pipe';
     private Fifo $file;
 
+    /**
+     * @param mixed $file
+     */
     public function __construct(mixed $file)
     {
         $this->file = $file;
@@ -69,6 +76,9 @@ class FifoAisle implements CommunicationInterface
         return $this->file->write($context);
     }
 
+    /**
+     * @return bool
+     */
     public function release(): bool
     {
         $this->file->release();

@@ -19,6 +19,9 @@ use Cclilshy\PRipple\Built\Http\Request;
 // And Guide To The Destination According To The Routing Static Method Can Be Called Anywhere
 
 
+/**
+ *
+ */
 class Text
 {
     /**

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /*
  * @Author: cclilshy jingnigg@gmail.com
  * @Date: 2023-03-27 13:07:08
@@ -8,19 +9,65 @@
 
 namespace Cclilshy\PRipple;
 
+use Cclilshy\PRipple\Route\Route;
+
+/**
+ *
+ */
 class Configure
 {
+    /**
+     * @return void
+     */
     public static function init(): void
     {
         define('UL', '_');
         define('FS', DIRECTORY_SEPARATOR);
         define('BS', '\\');
-        define('PRIPPLE_ROOT_PATH', realpath(__DIR__ . FS . '../'));
+        define('PRIPPLE_ROOT_PATH', realpath(__DIR__ . '/../'));
+        define('PRIPPLE_APP_PATH', realpath(PRIPPLE_ROOT_PATH . '/app'));
         define('PRIPPLE_RUNTIME_PATH', PRIPPLE_ROOT_PATH . '/runtime');
-        define('PRIPPLE_APP_PATH', PRIPPLE_ROOT_PATH . '/app');
         define('PRIPPLE_CONF_PATH', PRIPPLE_ROOT_PATH . '/config');
         define('PRIPPLE_PIPE_PATH', PRIPPLE_RUNTIME_PATH . '/pipe');
         define('PRIPPLE_CACHE_PATH', PRIPPLE_RUNTIME_PATH . '/cache');
         define('PRIPPLE_SOCK_PATH', PRIPPLE_RUNTIME_PATH . '/sock');
+        define('PRIPPLE_LOG_PATH', PRIPPLE_RUNTIME_PATH . '/log');
+        define('PRIPPLE_LANG_PATH', PRIPPLE_CONF_PATH . '/lang');
+        if (Configure::inspection()) {
+            Route::init();
+            Config::init();
+            Log::init();
+        } else {
+            die("environmental self test failed" . PHP_EOL);
+        }
+    }
+
+    /**
+     * @param string $path
+     * @return void
+     */
+    public static function initPath(string $path): void
+    {
+        if (@!is_dir($path) && @!mkdir($path, 0744, true)) {
+            die('create path ' . $path . ' failed' . PHP_EOL);
+        }
+    }
+
+    /**
+     * 运行环境自检
+     *
+     * @return bool
+     */
+    public static function inspection(): bool
+    {
+        Configure::initPath(PRIPPLE_APP_PATH);
+        Configure::initPath(PRIPPLE_CONF_PATH);
+        Configure::initPath(PRIPPLE_RUNTIME_PATH);
+        Configure::initPath(PRIPPLE_PIPE_PATH);
+        Configure::initPath(PRIPPLE_CACHE_PATH);
+        Configure::initPath(PRIPPLE_SOCK_PATH);
+        Configure::initPath(PRIPPLE_LOG_PATH);
+        Configure::initPath(PRIPPLE_LANG_PATH);
+        return true;
     }
 }

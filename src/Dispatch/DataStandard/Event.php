@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /*
  * @Author: cclilshy jingnigg@gmail.com
  * @Date: 2023-03-22 03:45:56
@@ -8,6 +9,9 @@
 
 namespace Cclilshy\PRipple\Dispatch\DataStandard;
 
+/**
+ *
+ */
 class Event
 {
     protected string $publisher;
@@ -35,11 +39,18 @@ class Event
         $this->timestamp  = $timestamp ?? time();
     }
 
+    /**
+     * @param string $context
+     * @return false|self
+     */
     public static function unSerialize(string $context): self|false
     {
         return unserialize($context);
     }
 
+    /**
+     * @return string
+     */
     public function getPublisher(): string
     {
         return $this->publisher;

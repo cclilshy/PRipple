@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /*
  * @Author: cclilshy jingnigg@gmail.com
  * @Date: 2023-03-21 20:46:42
@@ -11,6 +12,9 @@ namespace Cclilshy\PRipple\Dispatch\DataStandard;
 // 消息包
 use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 
+/**
+ *
+ */
 class Build
 {
     public array                 $signatures = array();     // 签名
@@ -42,6 +46,7 @@ class Build
      *
      * @param string                                                          $agreement @ 协议类
      * @param \Cclilshy\PRipple\Communication\Standard\CommunicationInterface $aisle     @ 通道实体
+     * @return \Cclilshy\PRipple\Dispatch\DataStandard\Build|false
      */
     public static function getBuildByAgreement(string $agreement, CommunicationInterface $aisle): Build|false
     {
@@ -52,12 +57,19 @@ class Build
         }
     }
 
+    /**
+     * @param string $context
+     * @return \Cclilshy\PRipple\Dispatch\DataStandard\Build|false
+     */
     public static function unSerialize(string $context): Build|false
     {
         @$res = unserialize($context);
         return $res;
     }
 
+    /**
+     * @return string
+     */
     public function serialize(): string
     {
         return $this->__toString();
@@ -104,6 +116,9 @@ class Build
     }
 
 
+    /**
+     * @return string
+     */
     public function getTargetHandlerName(): string
     {
         return $this->targetHandlerName;

@@ -9,6 +9,10 @@ declare(strict_types=1);
  */
 
 namespace Cclilshy\PRipple\Built\Http;
+
+/**
+ *
+ */
 class Response
 {
     public mixed $client;

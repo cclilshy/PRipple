@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Cclilshy\PRipple\Built\Timer;
 
@@ -9,6 +10,9 @@ use Cclilshy\PRipple\Dispatch\DataStandard\Event;
 use Cclilshy\PRipple\Communication\Socket\Client;
 use Cclilshy\PRipple\Dispatch\DataStandard\Build;
 
+/**
+ *
+ */
 class Timer extends Service
 {
     // 使用 SplPriorityQueue 保存任务队列
@@ -20,11 +24,17 @@ class Timer extends Service
         $this->taskQueue = new SplPriorityQueue();
     }
 
+    /**
+     * @return void
+     */
     public function initialize(): void
     {
         $this->subscribe('HttpService', 'sleep', Dispatcher::FORMAT_EVENT);
     }
 
+    /**
+     * @return void
+     */
     public function heartbeat(): void
     {
         $now = time();
@@ -39,16 +49,38 @@ class Timer extends Service
         }
     }
 
+    /**
+     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @return void
+     */
     public function onConnect(Client $client): void
     {
         $client->handshake();
     }
 
+    /**
+     * @param string                                        $context
+     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @return void
+     */
+    public function handshake(string $context, Client $client): void
+    {
+
+    }
+
+    /**
+     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @return void
+     */
     public function onClose(Client $client): void
     {
 
     }
 
+    /**
+     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Event $event
+     * @return void
+     */
     public function onEvent(Event $event): void
     {
         if ($event->getName() == 'sleep') {
@@ -60,17 +92,21 @@ class Timer extends Service
         }
     }
 
+    /**
+     * @param string                                        $context
+     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @return void
+     */
     public function onMessage(string $context, Client $client): void
     {
 
     }
 
+    /**
+     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Build $package
+     * @return void
+     */
     public function onPackage(Build $package): void
-    {
-
-    }
-
-    public function handshake(string $context, Client $client): void
     {
 
     }

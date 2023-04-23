@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /*
  * @Author: cclilshy jingnigg@gmail.com
  * @Date: 2023-03-21 20:32:14
@@ -12,6 +13,9 @@ use Cclilshy\PRipple\Communication\Socket\Client;
 use Cclilshy\PRipple\Dispatch\DataStandard\Build;
 use Cclilshy\PRipple\Dispatch\DataStandard\Event;
 
+/**
+ *
+ */
 interface ServiceStandard
 {
     /**
