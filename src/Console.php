@@ -74,7 +74,7 @@ class Console
 
         $_micrometer = explode(' ', microtime());
         $date        = date("H:i:s", intval($_micrometer[1]));
-        $date        .= substr($_micrometer[0], 1, 5);
+        $date        .= substr($_micrometer[0], 1);
         self::printn("\033[33m[" . posix_getpid() . '][' . $date . "]{$content}\033[0m");
     }
 

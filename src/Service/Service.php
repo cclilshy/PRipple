@@ -114,7 +114,7 @@ abstract class Service extends ServiceInfo implements ServiceStandard
                             // TODO:客户端消息
                             if ($client = $this->serverSocketManager->getClientBySocket($readSocket)) {
                                 if ($client->verify) {
-                                    if ($client->read($context)) {
+                                    if ($context = $client->getPlaintext()) {
                                         $this->onMessage($context, $client);
                                     } else {
                                         $this->onClose($client);

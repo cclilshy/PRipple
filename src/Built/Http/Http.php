@@ -10,11 +10,11 @@ use Cclilshy\PRipple\Route\Route;
  */
 class Http
 {
-    public const ROOT_PATH = PRIPPLE_ROOT_PATH . '/app/Http';
-    public const PUBLIC_PATH = Http::ROOT_PATH . '/public';
-    public const TEMPLATE_PATH = Http::ROOT_PATH . '/template';
-    public const ROUTE_PATH    = Http::ROOT_PATH . '/route';
-    public const BUILT_ROUTE_PATH = __DIR__ . '/.built/route';
+    public const ROOT_PATH           = PRIPPLE_ROOT_PATH . '/app/Http';
+    public const PUBLIC_PATH         = Http::ROOT_PATH . '/public';
+    public const TEMPLATE_PATH       = Http::ROOT_PATH . '/template';
+    public const ROUTE_PATH          = Http::ROOT_PATH . '/route';
+    public const BUILT_ROUTE_PATH    = __DIR__ . '/.built/route';
     public const BUILT_TEMPLATE_PATH = __DIR__ . '/.built/template';
 
     /**

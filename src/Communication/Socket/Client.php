@@ -16,11 +16,12 @@ use Cclilshy\PRipple\Communication\Aisle\SocketAisle;
  */
 class Client extends SocketAisle
 {
-    public string    $verifyBuffer;
-    public string    $socketType;
-    public bool      $verify;
-    public string    $cache;
-    public \stdClass $info;
+    public string $verifyBuffer;
+    public string $socketType;
+    public bool   $verify;
+    public string $cache;
+    public mixed  $info;
+    public string $agree;
 
     /**
      * @param mixed                                          $socket
@@ -55,20 +56,60 @@ class Client extends SocketAisle
     /**
      * 建立握手
      *
+     * @param string|null $agree
      * @return true
      */
-    public function handshake(): true
+    public function handshake(string|null $agree = null): true
     {
+        if ($agree) {
+            $this->agree = $agree;
+        }
         return $this->verify = true;
     }
 
     /**
-     * 屏蔽客户端
+     * 切断客户端连接
      *
      * @return void
      */
-    public function disable(): void
+    public function cutConnect(): void
     {
         $this->manager->removeClient($this->socket);
     }
+
+    /**
+     * 清空缓存区
+     *
+     * @return void
+     */
+    public function cleanCache(): void
+    {
+        $this->cache = '';
+    }
+
+    public function getPlaintext(): string|false
+    {
+        $this->read($context);
+        if (isset($this->agree)) {
+            if ($result = call_user_func([$this->agree, 'parse'], $this->cache($context))) {
+                $this->cleanCache();
+                return $result;
+            }
+        } else {
+            return $context;
+        }
+        return false;
+    }
+
+    /**
+     * 通过协议发送
+     *
+     * @param string $context
+     * @return bool
+     */
+    public function sendWithAgree(string $context): bool
+    {
+        return call_user_func([$this->agree, 'send'], $this, $context);
+    }
+
 }

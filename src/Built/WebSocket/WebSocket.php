@@ -68,12 +68,6 @@ abstract class WebSocket extends Service
      */
     public function handshake(Client $client): bool|null
     {
-        $client->read($context);
-        if ($info = Accept::verify($client->cache($context))) {
-            $client->info = (object)$info;
-            return $client->handshake();
-        } else {
-            return null;
-        }
+        return Accept::accept($client);
     }
 }

@@ -67,6 +67,4 @@ interface AgreementInterface
      * @return string|false
      */
     public static function corrective(CommunicationInterface $aisle): string|false;
-
-
 }

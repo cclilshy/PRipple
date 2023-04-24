@@ -12,13 +12,13 @@ namespace Cclilshy\PRipple\Built\Http;
 use Cclilshy\PRipple\Dispatch\DataStandard\Event;
 use Cclilshy\PRipple\Dispatch\DataStandard\Build;
 use Cclilshy\PRipple\Communication\Socket\Client;
+use Cclilshy\PRipple\Communication\Communication;
 use Cclilshy\PRipple\Service\Service as ServiceBase;
-use Cclilshy\PRipple\Communication\Socket\SocketInet;
 use Cclilshy\PRipple\Built\Http\Event as HttpRequestEvent;
 
 /**
- * @property int  $listen_port
- * @property string  $listen_address
+ * @property int    $listen_port
+ * @property string $listen_address
  */
 class Service extends ServiceBase
 {
@@ -38,7 +38,7 @@ class Service extends ServiceBase
     public function initialize(): void
     {
         Http::init();
-        $this->createServer(SocketInet::class, $this->listen_address, $this->listen_port, [SO_REUSEADDR => 1]);
+        $this->createServer(Communication::INET, $this->config('listen_address'), $this->config('listen_port'), [SO_REUSEADDR => 1]);
     }
 
     /**

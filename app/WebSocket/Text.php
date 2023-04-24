@@ -37,7 +37,6 @@ class Text extends WebSocketBase
      */
     public function onConnect(Client $client): void
     {
-        var_dump($client, 'onconnect');
     }
 
     /**
@@ -46,7 +45,6 @@ class Text extends WebSocketBase
      */
     public function onClose(Client $client): void
     {
-        var_dump($client, 'onclose');
     }
 
     /**
@@ -56,7 +54,7 @@ class Text extends WebSocketBase
      */
     public function onMessage(string $context, Client $client): void
     {
-        var_dump($context);
+        $client->sendWithAgree("recv you say : {$context}");
     }
 
     /**

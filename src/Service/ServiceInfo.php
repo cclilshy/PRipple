@@ -153,6 +153,15 @@ class ServiceInfo
      * @param $name
      * @return mixed
      */
+    public function config($name): mixed
+    {
+        return $this->$name;
+    }
+
+    /**
+     * @param $name
+     * @return mixed
+     */
     public function __get($name): mixed
     {
         return $this->config[$name] ?? null;

@@ -54,11 +54,6 @@ class Log
         Console::printn($content);
     }
 
-    public static function pdebug(...$args): void
-    {
-        call_user_func_array([Console::class, 'pdebug'], $args);
-    }
-
     /**
      * 写入日志
      *
@@ -68,5 +63,10 @@ class Log
     public static function insert(string $content): void
     {
         fwrite(Log::$logFile, $content . PHP_EOL);
+    }
+
+    public static function pdebug(...$args): void
+    {
+        call_user_func_array([Console::class, 'pdebug'], $args);
     }
 }

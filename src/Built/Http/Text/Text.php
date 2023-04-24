@@ -50,7 +50,7 @@ class Text
             $plaster->assign('gets', $request->get());
             $plaster->assign('posts', $request->post());
             $statisticsHtml = Http::getBuiltTemplate('statistics');
-            $content .= PHP_EOL . $plaster->apply($statisticsHtml);
+            $content        .= PHP_EOL . $plaster->apply($statisticsHtml);
         }
         return $content;
     }
