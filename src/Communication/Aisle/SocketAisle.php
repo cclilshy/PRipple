@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace Cclilshy\PRipple\Communication\Aisle;
 
 use Exception;
+use Cclilshy\PRipple\Config;
 use Cclilshy\PRipple\FileSystem\File;
 use Cclilshy\PRipple\Communication\Socket\Manager;
 use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
@@ -78,7 +79,7 @@ class SocketAisle implements CommunicationInterface
         if (File::exists($this->cacheFilePath)) {
             unlink($this->cacheFilePath);
         }
-        if ($cacheFile = File::create($this->cacheFilePath, 'r+')) {
+        if (getrusage()['ru_nfile'] < Config::get('pripple.max_file_handle') && $cacheFile = File::create($this->cacheFilePath, 'r+')) {
             $this->cacheFile = FileAisle::create($cacheFile);
         } else {
             throw new Exception("无法创建套接字缓存缓冲文件,请检查目录权限 " . $this->cacheFilePath);
