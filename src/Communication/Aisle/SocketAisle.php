@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace Cclilshy\PRipple\Communication\Aisle;
 
 use Exception;
+use Cclilshy\PRipple\Log;
 use Cclilshy\PRipple\Config;
 use Cclilshy\PRipple\FileSystem\File;
 use Cclilshy\PRipple\Communication\Socket\Manager;
@@ -53,6 +54,7 @@ class SocketAisle implements CommunicationInterface
     protected string $name;        // 自定义的名称
     protected string $identity;    // 自定义身份标识
     protected int    $activeTime;  // 上次活跃时间
+    protected bool $openCache = false;
 
     /**
      * @throws \Exception
@@ -63,14 +65,13 @@ class SocketAisle implements CommunicationInterface
         if ($manager) {
             $this->manager = $manager;
         }
-        $this->address    = $address;
-        $this->port       = $port ?? 0;
-        $this->keyName    = spl_object_hash($socket);
-        $this->createTime = time();
-        $this->socket     = $socket;
-        $this->name       = '';
-        $this->activeTime = time();
-
+        $this->address             = $address;
+        $this->port                = $port ?? 0;
+        $this->keyName             = spl_object_hash($socket);
+        $this->createTime          = time();
+        $this->socket              = $socket;
+        $this->name                = '';
+        $this->activeTime          = time();
         $this->sendBufferSize      = socket_get_option($socket, SOL_SOCKET, SO_SNDBUF);
         $this->receiveBufferSize   = socket_get_option($socket, SOL_SOCKET, SO_RCVBUF);
         $this->sendLowWaterSize    = socket_get_option($socket, SOL_SOCKET, SO_SNDLOWAT);
@@ -79,11 +80,17 @@ class SocketAisle implements CommunicationInterface
         if (File::exists($this->cacheFilePath)) {
             unlink($this->cacheFilePath);
         }
-        if (getrusage()['ru_nfile'] < Config::get('pripple.max_file_handle') && $cacheFile = File::create($this->cacheFilePath, 'r+')) {
-            $this->cacheFile = FileAisle::create($cacheFile);
+        if (count(get_resources()) < Config::get('pripple.max_file_handle')) {
+            if ($cacheFile = File::create($this->cacheFilePath, 'r+')) {
+                $this->cacheFile = FileAisle::create($cacheFile);
+                $this->openCache = true;
+            } else {
+                throw new Exception("无法创建套接字缓存缓冲文件,请检查目录权限 " . $this->cacheFilePath);
+            }
         } else {
-            throw new Exception("无法创建套接字缓存缓冲文件,请检查目录权限 " . $this->cacheFilePath);
+            Log::pdebug('超过最大进程文件句柄数量');
         }
+
     }
 
     /**
@@ -109,7 +116,6 @@ class SocketAisle implements CommunicationInterface
     {
         return false;
     }
-
 
     /**
      * 获取在管理器中的键名
@@ -369,7 +375,7 @@ class SocketAisle implements CommunicationInterface
         }
 
         // 处理缓存文件数据
-        if ($this->cacheLength > 0) {
+        if ($this->openCache && $this->cacheLength > 0) {
             $this->cacheFile->adjustPoint($this->cachePoint);
             while ($this->cacheLength > 0 && $this->cacheFile->read($cacheContextFragment, min($this->sendBufferSize, $this->cacheLength))) {
                 if (!$handledLength = socket_send($this->socket, $cacheContextFragment, strlen($cacheContextFragment), 0)) {
@@ -410,6 +416,9 @@ class SocketAisle implements CommunicationInterface
      */
     public function cacheToFile(string $context): void
     {
+        if (!$this->openCache) {
+            return;
+        }
         $this->cacheFile->adjustPoint(0, SEEK_END);
         $this->cacheFile->write($context);
         $this->cacheLength += strlen($context);
@@ -466,9 +475,11 @@ class SocketAisle implements CommunicationInterface
     public function release(): bool
     {
         $this->close();
-        $this->cacheFile->close();
-        $this->cacheFile->release();
-        unlink($this->cacheFilePath);
+        if ($this->openCache) {
+            $this->cacheFile->close();
+            $this->cacheFile->release();
+            unlink($this->cacheFilePath);
+        }
         return true;
     }
 
@@ -516,7 +527,7 @@ class SocketAisle implements CommunicationInterface
         $handledLengthCount += $this->send($this->sendBuffer);
 
         // 处理缓存文件数据
-        if ($this->cacheLength > 0) {
+        if ($this->openCache && $this->cacheLength > 0) {
             $this->cacheFile->adjustPoint($this->cachePoint);
             $cacheContextFragment = '';
             while ($this->cacheLength > 0 && $this->cacheFile->read($cacheContextFragment, min($this->sendBufferSize, $this->cacheLength))) {

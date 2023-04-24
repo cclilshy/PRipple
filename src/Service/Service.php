@@ -75,6 +75,9 @@ abstract class Service extends ServiceInfo implements ServiceStandard
         }
 
         while (true) {
+            if (memory_get_usage() > strToBytes(ini_get('memory_limit')) * 0.7) {
+                gc_collect_cycles();
+            }
             $readList = array($this->dispatcherServer);
             if ($this->isServer) {
                 $readList = array_merge($readList, [$this->serverSocketManager->getEntranceSocket()], $this->serverSocketManager->getClientSockets() ?? []);
