@@ -23,3 +23,8 @@ composer install
 ```bash
 bin/pripple dth start
 ```
+
+## Plan
+> 性能元凶
+* Fiber
+* 资源回收

@@ -38,7 +38,10 @@ class Service extends ServiceBase
     public function initialize(): void
     {
         Http::init();
-        $this->createServer(Communication::INET, $this->config('listen_address'), $this->config('listen_port'), [SO_REUSEADDR => 1]);
+        $this->createServer(Communication::INET, $this->config('listen_address'), $this->config('listen_port'), [
+            SO_REUSEADDR => 1,
+            TCP_NODELAY  => 1
+        ]);
     }
 
     /**

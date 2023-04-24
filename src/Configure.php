@@ -35,6 +35,7 @@ class Configure
         define('PRIPPLE_SOCK_PATH', PRIPPLE_RUNTIME_PATH . '/sock');
         define('PRIPPLE_LOG_PATH', PRIPPLE_RUNTIME_PATH . '/log');
         define('PRIPPLE_LANG_PATH', PRIPPLE_CONF_PATH . '/lang');
+        include __DIR__ . '/Common.php';
         if (Configure::inspection()) {
             Route::init();
             Config::init();
