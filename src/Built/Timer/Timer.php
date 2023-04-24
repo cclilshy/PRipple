@@ -55,17 +55,16 @@ class Timer extends Service
      */
     public function onConnect(Client $client): void
     {
-        $client->handshake();
+
     }
 
     /**
-     * @param string                                        $context
      * @param \Cclilshy\PRipple\Communication\Socket\Client $client
-     * @return void
+     * @return bool|null
      */
-    public function handshake(string $context, Client $client): void
+    public function handshake(Client $client): bool|null
     {
-
+        return $client->handshake();
     }
 
     /**

@@ -59,11 +59,11 @@ class Controller
         $function                   = $templateInfo['function'];
         $controllerName             = strtolower(substr($class, strrpos($class, '\\') + 1));
         $functionToTemplateFileName = strtolower(preg_replace('/([A-Z])/', '$0_', $function));
-        $templatePath               = Http::TEMPLATE_PATH . FS . $controllerName . FS . $functionToTemplateFileName . '.' . Config::get('http.template_extension');
+        $templatePath               = Http::TEMPLATE_PATH . FS . $controllerName . FS . $functionToTemplateFileName . '.' . Config::get('HttpService.template_extension');
         if (file_exists($templatePath)) {
             $template = file_get_contents($templatePath);
             $html     = $this->plaster->apply($template, $this->assign);
-            if (Config::get('http.debug')) {
+            if (Config::get('HttpService.debug')) {
                 $html = Text::statistics($html, $this->request, $this->statistics);
             }
             return $html;

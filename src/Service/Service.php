@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Cclilshy\PRipple\Service;
 
 use Exception;
+use Cclilshy\PRipple\Log;
 use Cclilshy\PRipple\Dispatch\Dispatcher;
 use Cclilshy\PRipple\Dispatch\DataStandard\Build;
 use Cclilshy\PRipple\Dispatch\DataStandard\Event;
@@ -93,7 +94,16 @@ abstract class Service extends ServiceInfo implements ServiceStandard
                             $name                             = $this->serverSocketManager->accept($readSocket);
                             $this->socketTypeMap[$socketName] = 'client';
                             if ($client = $this->serverSocketManager->getClientByName($name)) {
-                                $this->onConnect($client);
+                                switch ($this->handshake($client)) {
+                                    case null:
+                                        break;
+                                    case false:
+                                        $this->serverSocketManager->removeClient($readSocket);
+                                        break;
+                                    case true:
+                                        $this->onConnect($client);
+                                        break;
+                                }
                             }
                             break;
                         case $this->dispatcherServer:
@@ -103,15 +113,15 @@ abstract class Service extends ServiceInfo implements ServiceStandard
                         default:
                             // TODO:客户端消息
                             if ($client = $this->serverSocketManager->getClientBySocket($readSocket)) {
-                                if ($client->read($context)) {
-                                    if ($client->verify) {
+                                if ($client->verify) {
+                                    if ($client->read($context)) {
                                         $this->onMessage($context, $client);
                                     } else {
-                                        $this->handshake($context, $client);
+                                        $this->onClose($client);
+                                        $this->serverSocketManager->removeClient($readSocket);
                                     }
                                 } else {
-                                    $this->onClose($client);
-                                    $this->serverSocketManager->removeClient($readSocket);
+                                    $this->handshake($client);
                                 }
                             }
                     }
@@ -125,6 +135,7 @@ abstract class Service extends ServiceInfo implements ServiceStandard
                     $this->dispatcherServerAisle->write("");
                 }
                 $this->heartbeat();
+                gc_collect_cycles();
             }
         }
     }

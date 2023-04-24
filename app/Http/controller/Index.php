@@ -10,8 +10,6 @@ namespace app\Http\controller;
 
 use Cclilshy\PRipple\Built\Http\Request;
 use Cclilshy\PRipple\Built\Http\Controller;
-use function ob_start;
-use function ob_get_clean;
 
 class Index extends Controller
 {
@@ -22,6 +20,7 @@ class Index extends Controller
 
     public function index(): string
     {
+        $this->sleep(5);
         $this->assign('name', 'PRipple');
         return $this;
     }
@@ -29,12 +28,9 @@ class Index extends Controller
     public function upload(): string
     {
         if ($this->request->isUpload) {
-            ob_start();
-            var_dump($this->response);
-            return ob_get_clean();
+            return json_encode($this->response);
         } else {
             return $this;
         }
-
     }
 }

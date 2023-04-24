@@ -22,7 +22,7 @@ class Accept
         $buffer = $client->cache($context);
         if ($identityInfo = self::verify($buffer)) {
             $client->info = (object)$identityInfo;
-            $client->handshake();
+            return $client->handshake();
         }
         return false;
     }

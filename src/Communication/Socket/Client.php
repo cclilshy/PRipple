@@ -55,11 +55,11 @@ class Client extends SocketAisle
     /**
      * 建立握手
      *
-     * @return void
+     * @return true
      */
-    public function handshake(): void
+    public function handshake(): true
     {
-        $this->verify = true;
+        return $this->verify = true;
     }
 
     /**

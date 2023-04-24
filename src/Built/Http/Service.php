@@ -17,7 +17,8 @@ use Cclilshy\PRipple\Communication\Socket\SocketInet;
 use Cclilshy\PRipple\Built\Http\Event as HttpRequestEvent;
 
 /**
- *
+ * @property int  $listen_port
+ * @property string  $listen_address
  */
 class Service extends ServiceBase
 {
@@ -37,7 +38,7 @@ class Service extends ServiceBase
     public function initialize(): void
     {
         Http::init();
-        $this->createServer(SocketInet::class, '0.0.0.0', 2222, [SO_REUSEADDR => 1]);
+        $this->createServer(SocketInet::class, $this->listen_address, $this->listen_port, [SO_REUSEADDR => 1]);
     }
 
     /**
@@ -71,18 +72,17 @@ class Service extends ServiceBase
      */
     public function onConnect(Client $client): void
     {
-        $client->handshake();
         $client->setNoBlock();
     }
 
     /**
-     * @param string                                        $context
      * @param \Cclilshy\PRipple\Communication\Socket\Client $client
-     * @return void
+     * @return bool|null
      */
-    public function handshake(string $context, Client $client): void
+    public function handshake(Client $client): bool|null
     {
         // TODO: Implement handshake() method.
+        return $client->handshake();
     }
 
     /**

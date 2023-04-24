@@ -76,9 +76,8 @@ interface ServiceStandard
     /**
      * 对于未通过握手的请求会触发
      *
-     * @param string                                        $context
      * @param \Cclilshy\PRipple\Communication\Socket\Client $client
-     * @return void
+     * @return bool|null
      */
-    public function handshake(string $context, Client $client): void;
+    public function handshake(Client $client): bool|null;
 }

@@ -303,6 +303,6 @@ class Plaster
     {
         $executeEmbedTemplateFile = trim($arguments[1], '"\'');
         //        $executeEmbedTemplateContent
-        return file_get_contents(Http::TEMPLATE_PATH . FS . $executeEmbedTemplateFile . '.' . \Cclilshy\PRipple\Config::get('http.template_extension'));
+        return file_get_contents(Http::TEMPLATE_PATH . FS . $executeEmbedTemplateFile . '.' . \Cclilshy\PRipple\Config::get('HttpService.template_extension'));
     }
 }

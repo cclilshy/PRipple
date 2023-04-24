@@ -433,10 +433,11 @@ class Dispatcher
                 if ($serviceInfo = ServiceInfo::load('dispatcher')) {
                     foreach (Dispatcher::$socketHashMap as $socketHash => $socketType) {
                         if (Dispatcher::MSF_HANDLER === $socketType) {
-                            $client = Dispatcher::$handlerSocketManager->getClientByName($socketHash);
-                            $event  = new Event('Dispatcher', Dispatcher::PE_DISPATCHER_CLOSE, null);
-                            $build  = new Build('Dispatcher', null, $event);
-                            Dispatcher::notice($client->getIdentity(), $build, Dispatcher::FORMAT_EVENT);
+                            if ($client = Dispatcher::$handlerSocketManager->getClientByName($socketHash)) {
+                                $event = new Event('Dispatcher', Dispatcher::PE_DISPATCHER_CLOSE, null);
+                                $build = new Build('Dispatcher', null, $event);
+                                Dispatcher::notice($client->getIdentity(), $build, Dispatcher::FORMAT_EVENT);
+                            }
                         }
                     }
                     $serviceInfo->release();
