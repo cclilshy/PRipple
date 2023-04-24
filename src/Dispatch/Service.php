@@ -18,7 +18,7 @@ use Cclilshy\PRipple\Communication\Aisle\FileAisle;
  */
 class Service
 {
-    public const STATE_CLOSE = 'STATE_CLOSE';
+    public const STATE_CLOSE  = 'STATE_CLOSE';
     public const STATE_EXPECT = 'STATE_EXPECT';
     public const STATE_START  = 'STATE_START';
 

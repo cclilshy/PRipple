@@ -40,20 +40,6 @@ class Client extends SocketAisle
     }
 
     /**
-     * 客户端数据缓存区
-     *
-     * @param string|null $context
-     * @return string
-     */
-    public function cache(string|null $context = null): string
-    {
-        if ($context !== null) {
-            $this->cache .= $context;
-        }
-        return $this->cache;
-    }
-
-    /**
      * 建立握手
      *
      * @param string|null $agree
@@ -77,16 +63,6 @@ class Client extends SocketAisle
         $this->manager->removeClient($this->socket);
     }
 
-    /**
-     * 清空缓存区
-     *
-     * @return void
-     */
-    public function cleanCache(): void
-    {
-        $this->cache = '';
-    }
-
     public function getPlaintext(): string|false
     {
         $this->read($context);
@@ -99,6 +75,30 @@ class Client extends SocketAisle
             return $context;
         }
         return false;
+    }
+
+    /**
+     * 客户端数据缓存区
+     *
+     * @param string|null $context
+     * @return string
+     */
+    public function cache(string|null $context = null): string
+    {
+        if ($context !== null) {
+            $this->cache .= $context;
+        }
+        return $this->cache;
+    }
+
+    /**
+     * 清空缓存区
+     *
+     * @return void
+     */
+    public function cleanCache(): void
+    {
+        $this->cache = '';
     }
 
     /**

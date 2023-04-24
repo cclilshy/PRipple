@@ -23,16 +23,16 @@ use Cclilshy\PRipple\Communication\Socket\Manager as SocketManager;
  */
 class Dispatcher
 {
-    public const AGREE = CCL::class;
-    public const LOCAL_STREAM_TYPE = SocketUnix::class;
-    public const MSF_CONTROL       = 1;
-    public const MSF_HANDLER = 2;
-    public const PD_SUBSCRIBE = 'PD_SUBSCRIBE';
-    public const PD_SUBSCRIBE_UN = 'PD_SUBSCRIBE_UN';
+    public const AGREE               = CCL::class;
+    public const LOCAL_STREAM_TYPE   = SocketUnix::class;
+    public const MSF_CONTROL         = 1;
+    public const MSF_HANDLER         = 2;
+    public const PD_SUBSCRIBE        = 'PD_SUBSCRIBE';
+    public const PD_SUBSCRIBE_UN     = 'PD_SUBSCRIBE_UN';
     public const PE_DISPATCHER_CLOSE = 'PE_DISPATCHER_CLOSE';
-    public const FORMAT_BUILD = 1;
-    public const FORMAT_EVENT = 2;
-    public const FORMAT_MESSAGE = 3;
+    public const FORMAT_BUILD        = 1;
+    public const FORMAT_EVENT        = 2;
+    public const FORMAT_MESSAGE      = 3;
 
     public static string            $handleServiceUnixAddress  = PRIPPLE_SOCK_PATH . FS . 'dispatcher_handle' . SocketAisle::EXT;
     public static string            $controlServiceUnixAddress = PRIPPLE_SOCK_PATH . FS . 'dispatcher_control' . SocketAisle::EXT;
@@ -285,34 +285,6 @@ class Dispatcher
         return Dispatcher::$servers[$name] ?? null;
     }
 
-    public static function print(string $message, bool|null $upStatus = false): void
-    {
-        if (isset(Dispatcher::$controlSocketManager)) {
-            if ($list = Dispatcher::$controlSocketManager->getClientSockets()) {
-                foreach ($list as $controlSocket) {
-                    $client = Dispatcher::$controlSocketManager->getClientBySocket($controlSocket);
-                    if ($upStatus || Dispatcher::$lastUpdateStatusTime + 10 < time()) {
-                        Dispatcher::updateStatus($client);
-                    }
-                    Dispatcher::AGREE::sendWithInt($client, $message, Dispatcher::FORMAT_MESSAGE);
-                }
-            }
-        }
-    }
-
-    /**
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
-     * @return void
-     */
-    public static function updateStatus(Client $client): void
-    {
-        Dispatcher::$lastUpdateStatusTime = time();
-        $event                      = new Event('dispatcher', 'services', Dispatcher::$servers);
-        Dispatcher::AGREE::sendWithInt($client, $event->serialize(), Dispatcher::FORMAT_EVENT);
-        $event = new Event('dispatcher', 'subscribes', Dispatcher::$subscribeManager->getSubscribes());
-        Dispatcher::AGREE::sendWithInt($client, $event->serialize(), Dispatcher::FORMAT_EVENT);
-    }
-
     /**
      * 服务套接字声明关闭
      *
@@ -449,6 +421,34 @@ class Dispatcher
                 # code...
                 break;
         }
+    }
+
+    public static function print(string $message, bool|null $upStatus = false): void
+    {
+        if (isset(Dispatcher::$controlSocketManager)) {
+            if ($list = Dispatcher::$controlSocketManager->getClientSockets()) {
+                foreach ($list as $controlSocket) {
+                    $client = Dispatcher::$controlSocketManager->getClientBySocket($controlSocket);
+                    if ($upStatus || Dispatcher::$lastUpdateStatusTime + 10 < time()) {
+                        Dispatcher::updateStatus($client);
+                    }
+                    Dispatcher::AGREE::sendWithInt($client, $message, Dispatcher::FORMAT_MESSAGE);
+                }
+            }
+        }
+    }
+
+    /**
+     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @return void
+     */
+    public static function updateStatus(Client $client): void
+    {
+        Dispatcher::$lastUpdateStatusTime = time();
+        $event                            = new Event('dispatcher', 'services', Dispatcher::$servers);
+        Dispatcher::AGREE::sendWithInt($client, $event->serialize(), Dispatcher::FORMAT_EVENT);
+        $event = new Event('dispatcher', 'subscribes', Dispatcher::$subscribeManager->getSubscribes());
+        Dispatcher::AGREE::sendWithInt($client, $event->serialize(), Dispatcher::FORMAT_EVENT);
     }
 
     /**

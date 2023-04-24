@@ -17,6 +17,7 @@ use Cclilshy\PRipple\Route\Route;
 class Configure
 {
     const NEED_EXTENDS = ['pcntl', 'sockets', 'posix'];
+
     /**
      * @return void
      */
@@ -45,21 +46,6 @@ class Configure
     }
 
     /**
-     * @param string $path
-     * @return void
-     */
-    public static function initPath(string $path): void
-    {
-        if (@!is_dir($path) && @!mkdir($path, 0744, true)) {
-            die('create path ' . $path . ' failed' . PHP_EOL);
-        }
-
-        if (!is_readable($path) || !is_writable($path)) {
-            die("the path does not have read and write permissions '{$path}' \n");
-        }
-    }
-
-    /**
      * 运行环境自检
      *
      * @return bool
@@ -80,5 +66,20 @@ class Configure
             }
         }
         return true;
+    }
+
+    /**
+     * @param string $path
+     * @return void
+     */
+    public static function initPath(string $path): void
+    {
+        if (@!is_dir($path) && @!mkdir($path, 0744, true)) {
+            die('create path ' . $path . ' failed' . PHP_EOL);
+        }
+
+        if (!is_readable($path) || !is_writable($path)) {
+            die("the path does not have read and write permissions '{$path}' \n");
+        }
     }
 }
