@@ -25,7 +25,7 @@ class Request
 {
     public const INVALID    = -1;
     public const COMPLETE   = 2;
-    public const INCOMPLETE = -1;
+    public const INCOMPLETE = 1;
     public string      $path;
     public string      $method;                                 // Request the URI
     public string      $version;                                // Request method
@@ -33,6 +33,7 @@ class Request
     public mixed       $socket;                                 // Client address
     public array       $header;                                 // Client sockets
     public array       $fileInfo;                               // Request header content
+    public array       $uploadBaseInfo;                         // Upload Base Info
     public int         $bodyLength = 0;                         // File information
     public string      $body;                                   // Body length
     public array       $param      = array();                   // BODY
@@ -123,14 +124,12 @@ class Request
     {
         if (!isset($this->method)) {
             $context = $this->buffer($context);
-            if (str_contains($context, "\r\n\r\n")) {
+            if ($headerEnd = strpos($context, "\r\n\r\n")) {
                 //TODO: valid request
-                $_                = explode("\r\n\r\n", $context);
-                $headerContext    = $_[0];
-                $this->body       = $_[1];
-                $this->bodyLength = strlen($this->body);
-                $headerLines      = explode("\r\n", $headerContext);
-                $base             = array_shift($headerLines);
+                $headerContext = substr($context, 0, $headerEnd);
+                $this->body    = substr($context, $headerEnd + 4);
+                $headerLines   = explode("\r\n", $headerContext);
+                $base          = array_shift($headerLines);
                 if (count($base = explode(' ', $base)) !== 3) {
                     //TODO:: method url and version not is valid
                     $this->signStatusCode(Request::INVALID);
@@ -139,6 +138,7 @@ class Request
                     $this->setMethod($base[0]);
                     $this->setPath($base[1]);
                     $this->setVersion($base[2]);
+                    $this->bodyLength = strlen($this->body);
                     foreach ($headerLines as $item) {
                         $lineParam                         = explode(':', $item);
                         $this->header[trim($lineParam[0])] = trim($lineParam[1]);
@@ -146,14 +146,42 @@ class Request
                     if ($this->method === 'GET') {
                         $this->signStatusCode(Request::COMPLETE);
                         return $this;
+                    } elseif (str_starts_with($contentType = $this->header('Content-Type'), 'multipart/form-data')) {
+                        $this->isUpload = true;
+                        $uploadBaseInfo = explode(';', $contentType);
+                        $_arr           = array();
+                        foreach ($uploadBaseInfo as $item) {
+                            $itemInfo                  = explode('=', $item);
+                            $_arr[ltrim($itemInfo[0])] = $itemInfo[1] ?? '';
+                        }
+                        if (!$this->uploadBaseInfo['boundary'] = $_arr['boundary'] ?? null) {
+                            //TODO: not find boundary
+                            $this->signStatusCode(Request::INVALID);
+                        }
+                        $this->uploadBaseInfo['status'] = 'prepare';
+                        // TODO: prepare recv file content
+                        $this->bodyLength = strlen($this->body);
+                        if (!$this->nextUpload(explode("\r\n", $this->body))) {
+                            $this->signStatusCode(Request::INVALID);
+                        } elseif ($this->bodyLength === intval($this->header('Content-Length'))) {
+                            $this->signStatusCode(Request::COMPLETE);
+                        } else {
+                            $this->signStatusCode(Request::INCOMPLETE);
+                        }
                     }
                 }
             } else {
                 $this->buffer($context);
             }
         } elseif ($this->method === 'POST') {
-            $this->body .= $context;
-            if (strlen($this->body) === $this->bodyLength) {
+            $this->body       .= $context;
+            $this->bodyLength += strlen($context);
+            if ($this->isUpload) {
+                if (!$this->nextUpload(explode("\r\n", $this->body))) {
+                    $this->signStatusCode(Request::INVALID);
+                }
+            }
+            if ($this->bodyLength === $this->header('Content-Length')) {
                 $this->signStatusCode(Request::COMPLETE);
             }
         }
@@ -182,7 +210,7 @@ class Request
     }
 
     /**
-     * 设置方法
+     * Set the method
      *
      * @param string $method
      * @return $this
@@ -194,7 +222,7 @@ class Request
     }
 
     /**
-     * 设置版本
+     * Set the version
      *
      * @param string $version
      * @return $this
@@ -206,7 +234,7 @@ class Request
     }
 
     /**
-     * 设置请求头
+     * Set the request header
      *
      * @param string $key
      * @param string $value
@@ -223,17 +251,87 @@ class Request
     /**
      * @return void
      */
-    public function parseUploadInfo(): void
+    private function initUploadBaseInfo(): void
     {
-        $this->isUpload = true;
-        do {
-            $path = PRIPPLE_CACHE_PATH . '/' . md5(microtime(true) . rand(1, 9));
-        } while (file_exists($path));
-        $this->fileStream = fopen($path, 'a+');
-        $this->setFile($path);
-        fwrite($this->fileStream, $this->body);
-        $this->bodyLength = strlen($this->body);
-        $this->body       = '';
+        $contentType                      = $this->header('Content-Type');
+        $this->uploadBaseInfo['boundary'] = substr($contentType, strpos($contentType, 'boundary=') + 9);
+    }
+
+    /**
+     * @return void
+     */
+    private function processCurrentPart(): void
+    {
+        if ($this->param['currentPartIndex'] < count($this->param['parts'])) {
+            $part          = $this->param['parts'][$this->param['currentPartIndex']];
+            $headerAndData = explode("\r\n\r\n", $part, 2);
+
+            if (count($headerAndData) !== 2) {
+                // Invalid part
+                $this->signStatusCode(self::INVALID);
+                return;
+            }
+
+            $header = $headerAndData[0];
+            $data   = $headerAndData[1];
+
+            $this->param['currentPartIndex']++;
+        } else {
+            // All parts processed
+            $this->signStatusCode(self::COMPLETE);
+        }
+    }
+
+    /**
+     * continue parse upload context
+     *
+     * @param array $lines
+     * @return bool
+     */
+    private function nextUpload(array $lines): bool
+    {
+        while ($streamLine = array_shift($lines)) {
+            if ($this->uploadBaseInfo['status'] === 'prepare') {
+                if (str_starts_with($streamLine, '--' . $this->uploadBaseInfo['boundary'])) {
+                    $theFileInfo                    = array();
+                    $this->uploadBaseInfo['status'] = 'transfer';
+                    $dispositionAndName             = explode(';', array_shift($lines));
+                    $disposition                    = explode(':', $dispositionAndName[0])[1];
+                    $name                           = explode('=', $dispositionAndName[1])[1];
+                    $fileName                       = explode('=', $dispositionAndName[2])[1];
+                    $contentType                    = explode(':', array_shift($lines))[1] ?? '';
+                    array_shift($lines);
+                    $theFileInfo['disposition']                = ltrim($disposition);
+                    $theFileInfo['name']                       = trim($name, '" ');
+                    $theFileInfo['fileName']                   = trim($fileName, '" ');
+                    $theFileInfo['contentType']                = ltrim($contentType);
+                    $this->uploadBaseInfo['currentFilePath']   = PRIPPLE_CACHE_PATH . FS . md5(microtime(true) . rand(1, 9));
+                    $this->uploadBaseInfo['currentFileStream'] = fopen($this->uploadBaseInfo['currentFilePath'], 'a+');
+                    $theFileInfo['path']                       = $this->uploadBaseInfo['currentFilePath'];
+                    $this->uploadBaseInfo['files'][]           = $theFileInfo;
+                } else {
+                    return false;
+                }
+            } elseif ($this->uploadBaseInfo['status'] = 'transfer') {
+                if (str_contains('--' . $this->uploadBaseInfo['boundary'] . '--', $streamLine)) {
+                    if ('--' . $this->uploadBaseInfo['boundary'] . '--' === $streamLine) {
+                        //TODO: a file upload completed
+                        $this->uploadBaseInfo['status'] = 'prepare';
+                        fclose($this->uploadBaseInfo['currentFileStream']);
+                        return $this->nextUpload($lines);
+                    } else {
+                        $this->body = $streamLine;
+                        return true;
+                    }
+                } else {
+                    fwrite($this->uploadBaseInfo['currentFileStream'], $streamLine);
+                }
+            } else {
+                return false;
+            }
+        }
+        $this->body = '';
+        return true;
     }
 
     /**
@@ -244,9 +342,7 @@ class Request
      */
     public function setFile(string $path): self
     {
-        if ($this->isUpload) {
-            $this->fileInfo = pathinfo($path);
-        }
+        $this->fileInfo = pathinfo($path);
         return $this;
     }
 

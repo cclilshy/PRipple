@@ -20,7 +20,7 @@ class Index extends Controller
 
     public function index(): string
     {
-        return 'Hello World';
+        return 'hello world';
         $this->assign('name', 'PRipple');
         return $this;
     }
@@ -28,7 +28,7 @@ class Index extends Controller
     public function upload(): string
     {
         if ($this->request->isUpload) {
-            return json_encode($this->response);
+            return json_encode($this->request->uploadBaseInfo ?? []);
         } else {
             return $this;
         }

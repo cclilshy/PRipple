@@ -124,7 +124,6 @@ class Service extends ServiceBase
         } else {
             $request = $this->requests[$clientName];
         }
-
         $request->push($context);
         if ($request->getStatusCode() === Request::COMPLETE) {
             $this->httpRequestEvent->access($request);
