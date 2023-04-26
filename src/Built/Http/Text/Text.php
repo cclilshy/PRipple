@@ -25,7 +25,7 @@ use Cclilshy\PRipple\Built\Http\Request;
 class Text
 {
     /**
-     * 响应模板插入调试面板
+     * Responsive templates inserted into the debug panel
      *
      * @param string                               $content
      * @param \Cclilshy\PRipple\Built\Http\Request $request
@@ -56,7 +56,7 @@ class Text
     }
 
     /**
-     * 由错误模板接手请求
+     * The error template takes over the request
      *
      * @param int                                  $errno
      * @param string                               $erst

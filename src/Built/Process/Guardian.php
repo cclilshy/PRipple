@@ -10,21 +10,19 @@ declare(strict_types=1);
 
 namespace Cclilshy\PRipple\Built\Process;
 
-use Cclilshy\Console;
-
 /**
  *
  */
 class Guardian
 {
-    // 兄弟进程ID
+    // sibling process ID
     public array $processIds = [];
 
-    // 忽略父进程的存亡自我销毁
+    // Ignore the life and death of the parent process self-destruct
     public bool $guard = false;
 
     /**
-     * 创建一个守护程序并返回IPC名称
+     * Create a daemon and return the IPC name
      *
      * @return string | false
      * @throws \Exception
@@ -48,7 +46,7 @@ class Guardian
                     break;
             }
 
-            // 当父进程退出时且所有兄弟进程结束时，自我释放
+            // Self-release when the parent process exits and all sibling processes end
             if (count($ipc->space->processIds) === 0 && (posix_getppid() === 1 || $ipc->space->guard)) {
                 return 'quit';
             }

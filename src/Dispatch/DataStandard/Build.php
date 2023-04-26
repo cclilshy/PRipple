@@ -63,8 +63,7 @@ class Build
      */
     public static function unSerialize(string $context): Build|false
     {
-        @$res = unserialize($context);
-        return $res;
+        return unserialize($context);
     }
 
     /**

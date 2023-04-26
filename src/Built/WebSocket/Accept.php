@@ -12,7 +12,7 @@ use function str_contains;
 class Accept
 {
     /**
-     * 初次接收客户时尝试识别握手数据
+     * Attempts to recognize handshake data when receiving a client for the first time
      *
      * @param \Cclilshy\PRipple\Communication\Socket\Client $client
      * @return bool

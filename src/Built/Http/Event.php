@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 /*
  * @Author: cclilshy jingnigg@gmail.com
@@ -22,7 +21,7 @@ use Cclilshy\PRipple\Communication\Socket\Client;
  */
 class Event
 {
-    public array   $tasks        = array();
+    public array   $fibers       = array();
     public array   $requests     = array();
     public array   $arrayHashMap = array();
     public Service $httpService;
@@ -44,35 +43,49 @@ class Event
         $client                                                         = $request->clientSocket;
         $this->requests[$request->getHash()]                            = $request;
         $this->arrayHashMap[$client->getKeyName()][$request->getHash()] = 1;
-        $this->tasks[$request->getHash()]                               = new Fiber(function () use ($request) {
-            if ($request->isStatic()) {
-                $response = $request->route->run($request);
+        if ($this->httpService->config('fiber') === true) {
+            $this->fibers[$request->getHash()] = new Fiber(function () use ($request) {
+                $this->goController($request);
+            });
+            $event                             = $this->fibers[$request->getHash()]->start();
+        } else {
+            $response = $this->goController($request);
+            $event    = new \Cclilshy\PRipple\Dispatch\DataStandard\Event($request->getHash(), 'response', $response);
+        }
+        $this->extracted($event);
+    }
+
+    public function goController(Request $request): Response
+    {
+        if ($request->isStatic()) {
+            $response = $request->route->run($request);
+        } else {
+            if (!isset($request->route)) {
+                $result = (Text::htmlErrorPage(404, "Not match Route '{$request->path}'", __FILE__, __LINE__, $request, $request->statistics));
             } else {
-                if (!isset($request->route)) {
-                    $result = (Text::htmlErrorPage(404, "Not match Route '{$request->path}'", __FILE__, __LINE__, $request, $request->statistics));
-                } else {
-                    switch ($request->route->type) {
-                        case 'Controller':
-                            $className = $request->route->className;
-                            $_         = new $className($request);
-                            $result    = call_user_func([$_, $request->route->action], $request);
-                            break;
-                        case 'Closure':
-                            $request->route = Route::guide($request->method(), $request->path);
-                            $result         = call_user_func($request->route->callable, $request);
-                            break;
-                        default:
-                            $result = '';
-                            break;
-                    }
+                switch ($request->route->type) {
+                    case 'Controller':
+                        $className = $request->route->className;
+                        $_         = new $className($request);
+                        $result    = call_user_func([$_, $request->route->action], $request);
+                        break;
+                    case 'Closure':
+                        $request->route = Route::guide($request->method(), $request->path);
+                        $result         = call_user_func($request->route->callable, $request);
+                        break;
+                    default:
+                        $result = '';
+                        break;
                 }
-                $response = $request->response->setBody($result);
             }
+            $response = $request->response->setBody($result);
+        }
+        if ($this->httpService->config('fiber') === true) {
             $event = new \Cclilshy\PRipple\Dispatch\DataStandard\Event($request->getHash(), 'response', $response);
             Fiber::suspend($event);
-        });
-        $event                                                          = $this->tasks[$request->getHash()]->start();
-        $this->extracted($event);
+        } else {
+            return $response;
+        }
     }
 
 
@@ -88,7 +101,7 @@ class Event
                 $request  = $response->request;
                 $client   = $request->clientSocket;
                 $client->write($response->__toString());
-                unset($this->tasks[$request->getHash()]);
+                unset($this->fibers[$request->getHash()]);
                 unset($this->arrayHashMap[$client->getKeyName()][$request->getHash()]);
                 unset($this->requests[$request->getHash()]);
                 break;
@@ -109,7 +122,7 @@ class Event
                     $name = $event->getName();
                     list($type, $hash) = explode(':', $name);
                     if ($type === 'sleep') {
-                        if ($task = $this->tasks[$hash] ?? null) {
+                        if ($task = $this->fibers[$hash] ?? null) {
                             $event = $task->resume();
                             $this->extracted($event);
                         }

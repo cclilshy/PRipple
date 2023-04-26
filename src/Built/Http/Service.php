@@ -22,9 +22,15 @@ use Cclilshy\PRipple\Built\Http\Event as HttpRequestEvent;
  */
 class Service extends ServiceBase
 {
-    private array            $requests  = array();
-    private array            $transfers = array();
+    private array $requests = array();
+
+    // transfers
+    private array $transfers = array();
+    // Transmission queue, where upload requests are placed in a transmission queue
+    // and the controller is no longer notified
+
     private HttpRequestEvent $httpRequestEvent;
+    private array            $vestigial = array();
 
     public function __construct()
     {
@@ -49,7 +55,10 @@ class Service extends ServiceBase
      */
     public function heartbeat(): void
     {
-        // $this->httpRequestEvent->handle();
+        foreach ($this->vestigial as $name) {
+            unset($this->requests[$name]);
+            unset($this->transfers[$name]);
+        }
     }
 
     /**
@@ -84,8 +93,15 @@ class Service extends ServiceBase
      */
     public function handshake(Client $client): bool|null
     {
-        // TODO: Implement handshake() method.
         return $client->handshake();
+        $client->read($context);
+        if (strpos($client->cache($context), "\r\n\r\n")) {
+            // TODO: Implement handshake() method.
+            $client->info = new Request($client->getName());
+            return $client->handshake();
+        } else {
+            $client->cache($context);
+        }
     }
 
     /**
@@ -97,28 +113,25 @@ class Service extends ServiceBase
     {
         $clientName = $client->getKeyName();
         if ($transfer = $this->transfers[$clientName] ?? null) {
-            if (!$transfer->push($context) || $transfer->getStatusCode() == Request::COMPLETE) {
+            if (!$transfer->push($context) || $transfer->getStatusCode() === Request::COMPLETE) {
                 unset($this->transfers[$clientName]);
             }
             return;
-        } elseif (!$request = $this->requests[$clientName] ?? null) {
+        } elseif (!isset($this->requests[$clientName]) || $this->requests[$clientName]->getStatusCode() === Request::COMPLETE) {
             $request                     = new Request($clientName);
             $this->requests[$clientName] = $request;
             $request->setClientSocket($client);
+        } else {
+            $request = $this->requests[$clientName];
         }
 
         $request->push($context);
-
-        if ($request->getStatusCode() == Request::COMPLETE) {
+        if ($request->getStatusCode() === Request::COMPLETE) {
             $this->httpRequestEvent->access($request);
-            unset($this->requests[$clientName]);
-            unset($this->transfers[$clientName]);
         } elseif ($request->isUpload === true) {
             $this->httpRequestEvent->access($request);
             $this->transfers[$clientName] = $request;
-            unset($this->requests[$clientName]);
         }
-
     }
 
     /**
@@ -127,9 +140,7 @@ class Service extends ServiceBase
      */
     public function onClose(Client $client): void
     {
-        unset($this->requests[$client->getKeyName()]);
-        unset($this->transfers[$client->getKeyName()]);
+        $this->vestigial[] = $client->getKeyName();
         $this->httpRequestEvent->break($client);
-        gc_collect_cycles();
     }
 }

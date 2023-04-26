@@ -21,7 +21,7 @@ class SocketInet
      */
     public static function create(string $address, int $port, int|null $type = SOCK_STREAM, array|null $options = []): mixed
     {
-        @$server = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+        $server = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         if (!$server) {
             throw new Exception('无法创建INET套接字,请关闭正在运行的进程');
         }

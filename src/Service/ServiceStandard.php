@@ -19,21 +19,21 @@ use Cclilshy\PRipple\Dispatch\DataStandard\Event;
 interface ServiceStandard
 {
     /**
-     * 服务启动后执行
+     * execute after the service starts
      *
      * @return void
      */
     public function initialize(): void;
 
     /**
-     * 心跳
+     * heartbeat
      *
      * @return void
      */
     public function heartbeat(): void;
 
     /**
-     * 处理原生消息包
+     * Handle native message packets
      *
      * @param \Cclilshy\PRipple\Dispatch\DataStandard\Build $package
      * @return void
@@ -41,7 +41,7 @@ interface ServiceStandard
     public function onPackage(Build $package): void;
 
     /**
-     * 处理事件类型消息
+     * Handle event type messages
      *
      * @param \Cclilshy\PRipple\Dispatch\DataStandard\Event $event
      * @return void
@@ -49,7 +49,7 @@ interface ServiceStandard
     public function onEvent(Event $event): void;
 
     /**
-     * 新连接时触发
+     * Fired when a new connection is made
      *
      * @param \Cclilshy\PRipple\Communication\Socket\Client $client
      * @return void
@@ -57,7 +57,7 @@ interface ServiceStandard
     public function onConnect(Client $client): void;
 
     /**
-     * 处理服务器报文
+     * Process server packets
      *
      * @param string                                        $context
      * @param \Cclilshy\PRipple\Communication\Socket\Client $client
@@ -66,7 +66,7 @@ interface ServiceStandard
     public function onMessage(string $context, Client $client): void;
 
     /**
-     * 当连接断开时触发
+     * Triggered when the connection is disconnected
      *
      * @param \Cclilshy\PRipple\Communication\Socket\Client $client
      * @return void
@@ -74,7 +74,7 @@ interface ServiceStandard
     public function onClose(Client $client): void;
 
     /**
-     * 对于未通过握手的请求会触发
+     * Triggers for requests that fail the handshake
      *
      * @param \Cclilshy\PRipple\Communication\Socket\Client $client
      * @return bool|null

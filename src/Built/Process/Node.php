@@ -10,10 +10,10 @@ declare(strict_types=1);
 
 namespace Cclilshy\PRipple\Built\Process;
 
-// 用于管理进程树
-// 任何入口都是从根部顺下
-// 任何进程都可以向任何进程发送消息
-// 任何进程都可以向任何进程发送信号
+// for managing process trees
+// Any entry is from the root down
+// Any process can send a message to any process
+// can send a signal to any process
 
 use Exception;
 

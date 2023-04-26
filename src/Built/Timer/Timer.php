@@ -15,7 +15,7 @@ use Cclilshy\PRipple\Dispatch\DataStandard\Build;
  */
 class Timer extends Service
 {
-    // 使用 SplPriorityQueue 保存任务队列
+    // Use SplPriorityQueue to hold the task queue
     private SplPriorityQueue $taskQueue;
 
     public function __construct()
@@ -86,7 +86,7 @@ class Timer extends Service
             $sleepData = $event->getData();
             $sleepTime = $sleepData['time'];
 
-            // 将任务添加到队列中
+            // Add task to queue
             $this->taskQueue->insert(['time' => time() + $sleepTime, 'event' => $event], -time() - $sleepTime);
         }
     }

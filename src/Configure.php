@@ -47,7 +47,7 @@ class Configure
     }
 
     /**
-     * 运行环境自检
+     * run environment self test
      *
      * @return bool
      */

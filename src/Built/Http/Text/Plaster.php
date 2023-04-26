@@ -19,7 +19,7 @@ use function substr;
 use function is_string;
 use function htmlspecialchars;
 
-// 应用层级, 用于模板的解析, 以及模板的渲染
+// Application level, used for template parsing and template rendering
 class Plaster
 {
     private static $regexs = array(

@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Cclilshy\PRipple\Route;
 
 // Loading layer record all routing information configured by the system
-// 用于储存路由的导向
+// Guide for storing routes
 
 use Cclilshy\PRipple\Statistics;
 use Cclilshy\PRipple\Built\Http\Response;
@@ -28,7 +28,7 @@ class Map
     public mixed  $callable;
 
     /**
-     * 创建一个导向，支持类::静态函数/类名->方法/匿名函数
+     * Create a guide that supports class::static function class name -> method anonymous function
      *
      * @param string        $type
      * @param string        $className

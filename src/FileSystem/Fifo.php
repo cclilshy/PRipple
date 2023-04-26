@@ -48,7 +48,7 @@ class Fifo
 
 
     /**
-     * 创建管道
+     * Create a pipeline
      *
      * @param string $name
      * @return bool
@@ -60,7 +60,7 @@ class Fifo
 
 
     /**
-     * 连接管道
+     * Connect the pipes
      *
      * @param string $name
      * @return Fifo|false
@@ -77,7 +77,7 @@ class Fifo
 
 
     /**
-     * 向管道写入数据
+     * Write data to the pipeline
      *
      * @param string $context
      * @return int
@@ -88,7 +88,7 @@ class Fifo
     }
 
     /**
-     * 读取一行内容
+     * Read a row
      *
      * @return string
      */
@@ -99,7 +99,7 @@ class Fifo
 
 
     /**
-     * 读指定长度内容
+     * Reads the contents of the specified length
      *
      * @param int $length
      * @return string
@@ -110,7 +110,7 @@ class Fifo
     }
 
     /**
-     * 获取整个管道内容
+     * Get the entire pipeline content
      *
      * @return string
      */
@@ -121,7 +121,7 @@ class Fifo
 
 
     /**
-     * 销毁管道
+     * Destroy the pipe
      *
      * @return void
      */
@@ -134,7 +134,7 @@ class Fifo
     }
 
     /**
-     * 关闭管道
+     * Close the pipe
      *
      * @return void
      */
@@ -146,7 +146,7 @@ class Fifo
     }
 
     /**
-     * 设置堵塞模式
+     * Set the jam mode
      *
      * @param bool $bool
      * @return bool
@@ -158,7 +158,7 @@ class Fifo
 
 
     /**
-     * 获取当前管道名称
+     * Gets the current pipeline name
      *
      * @return string
      */

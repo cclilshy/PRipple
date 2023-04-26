@@ -10,16 +10,12 @@ declare(strict_types=1);
 
 namespace Cclilshy\PRipple\Built\Http;
 
-/**
- *
- */
 class Response
 {
     public mixed $client;
     public int   $statusCode = 400;
     public array $header;
     public float $version;
-
     public string  $charset     = 'utf-8';
     public string  $contentType = 'text/html';
     public string  $body;
@@ -67,14 +63,6 @@ class Response
     public function getHash(): string
     {
         return $this->hash;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function __sleep()
-    {
-        return ['name', 'statusCode', 'header', 'version', 'charset', 'contentType', 'body', 'hash'];
     }
 
     /**
@@ -178,14 +166,6 @@ class Response
     /**
      * @return string
      */
-    public function __toString(): string
-    {
-        return $this->getFullHttpContext();
-    }
-
-    /**
-     * @return string
-     */
     public function getFullHttpContext(): string
     {
         return $this->getHttpHeaderContext() . $this->getHttpBodyContext();
@@ -228,7 +208,6 @@ class Response
         return strlen($this->body);
     }
 
-
     /**
      * @param $name
      * @return mixed
@@ -236,5 +215,21 @@ class Response
     public function __get($name)
     {
         return $this->$name;
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return $this->getFullHttpContext();
+    }
+
+    /**
+     * @return string[]
+     */
+    public function __sleep()
+    {
+        return ['name', 'statusCode', 'header', 'version', 'charset', 'contentType', 'body', 'hash'];
     }
 }

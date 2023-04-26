@@ -15,14 +15,14 @@ namespace Cclilshy\PRipple;
  */
 class Statistics
 {
-    public array $loadFiles = [];       // 加载的文件
-    public array $posts     = [];       // 所有POST内容
-    public array $gets      = [];       // 所有GET内容
-    public array $sqlps     = [];       // SQL查询记录
-    public float $memory;               // 内存用量
-    public float $maxMemory;            // 内存峰值
-    public float $startTime = 0;        // 运行时时间，在对象创建时会自动创建
-    public float $endTime   = 0;        // 结尾时间
+    public array $loadFiles = [];       // loaded files
+    public array $posts     = [];       // All POST content
+    public array $gets      = [];       // All GET content
+    public array $sqlps     = [];       // SQL query records
+    public float $memory;               // memory usage
+    public float $maxMemory;            // memory peak
+    public float $startTime = 0;        // Runtime time, which is automatically created when the object is created
+    public float $endTime   = 0;        // end time
     public mixed $space;
 
     public function __construct()
@@ -32,7 +32,7 @@ class Statistics
     }
 
     /**
-     * 记录指定数据
+     * Record specified data
      *
      * @param string|null $type
      * @param mixed       $data
@@ -52,7 +52,7 @@ class Statistics
 
         }
 
-        // 每次记录时会重新载入这些值
+        // These values are reloaded each time you lo
         $this->loadFiles = get_included_files();
         $this->endTime   = microtime(true);
         $this->memory    = memory_get_usage();

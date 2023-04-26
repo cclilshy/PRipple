@@ -28,7 +28,7 @@ class Route
     private static array $map = [];
 
     /**
-     * 加载所有路由文件
+     * load all routing files
      */
     public static function init(): void
     {
@@ -53,7 +53,7 @@ class Route
     }
 
     /**
-     * 在允许的方法内定义路由
+     * define routes within allowed methods
      *
      * @param $name
      * @param $arguments
@@ -87,7 +87,7 @@ class Route
     }
 
     /**
-     * 组合方法定义路由
+     * composite methods define routes
      *
      * @param $methods
      * @param $uri
@@ -102,7 +102,7 @@ class Route
     }
 
     /**
-     * 模拟访问执行
+     * simulated access execution
      *
      * @param $method
      * @param $entrance
@@ -115,7 +115,7 @@ class Route
     }
 
     /**
-     * 根据入口匹配路由Map
+     * match the route map according to the entry
      *
      * @param string $method
      * @param string $entrance
@@ -127,7 +127,7 @@ class Route
         $method   = strtoupper($method);
         $depth    = explode('/', $entrance);
         $target   = &self::$map[$method];
-        // 遍历$depth数组，逐级访问$target中的键
+        // Traverse the depth array, accessing the keys in Target step by step
         if ($method === 'STATIC' && isset(self::$map['STATIC'][$depth[0]])) {
             return self::$map['STATIC'][$depth[0]];
         }
@@ -135,16 +135,16 @@ class Route
             if (isset($target[$key])) {
                 $target = &$target[$key];
             } else {
-                // 如果当前键不存在，直接返回null
+                // If the current key does not exist, null is returned directly
                 return null;
             }
         }
-        // 返回找到的映射，或者null（如果没有找到）
+        // Returns the map found, or null if not found
         return $target instanceof Map ? $target : null;
     }
 
     /**
-     * 获取所有Console路由
+     * get all console routes
      *
      * @return array
      */
@@ -154,7 +154,7 @@ class Route
     }
 
     /**
-     * 获取所有注册的服务列表
+     * get a list of all registered services
      *
      * @return array
      */

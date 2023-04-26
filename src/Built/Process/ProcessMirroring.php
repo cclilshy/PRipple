@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 namespace Cclilshy\PRipple\Built\Process;
 
-// 进程镜像，用于储存用户自定义调用栈序，可反化加载调用栈
+// Process mirroring, used to store user-defined call stack sequences, which can reversely load the call stack
 
 
 /**

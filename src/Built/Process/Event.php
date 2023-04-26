@@ -21,21 +21,21 @@ use function Cclilshy\PRipple\Built\Process\phppack;
 use const Cclilshy\PRipple\Built\Process\Event;
 
 /**
- * function stop() 由调用者发起，停止监视者服务
- * function release() 应当由监视者发起，释放管道文件
- * function close() 调用者发起，主动关闭调用，不影响监视者运行
+ * function stop() Initiated by the caller to stop the watcher service
+ * function release() Should be initiated by a watcher to release pipeline files
+ * function close() Initiated by the caller, the call is actively closed without affecting the operation of the monitor
  */
 class Event implements EventFactory
 {
-    public mixed  $space;    // 允许在初始化时用户自定义的对象
-    private mixed $observer; // 监控函数
+    public mixed  $space;    // allows user defined objects at initialization time
+    private mixed $observer; // Monitor functions
 
-    private int    $observerProcessId; //监控进程ID
-    private string $name;              // IPC名称
+    private int    $observerProcessId; //Monitor the process ID
+    private string $name;              // IPC name
 
-    private Fifo $sender;     // 本进程
-    private Fifo $notice;     // 目标进程
-    private Fifo $common;     // 公共管道
+    private Fifo $sender;     // This process
+    private Fifo $notice;     // Target process
+    private Fifo $common;     // Public pipes
     private Pipe $lock;
 
     /**
@@ -220,13 +220,13 @@ class Event implements EventFactory
     public function call(): mixed
     {
         $lock = $this->lock->clone();
-        @$_ = $lock->lock();
+        $_    = $lock->lock();
         if (!$_) {
             throw new Exception("管道被破坏");
         }
         $context    = serialize(func_get_args());
         $contextLen = strlen($context);
-        $context    = Event . phppack('L', strlen($context)) . $context;
+        $context    = pack('L', strlen($context)) . $context;
         $this->common->write($context);
         $this->notice->write($contextLen . PHP_EOL);
         $length = $this->sender->fgets();

@@ -120,9 +120,9 @@ class Console
             $map->run($argv, $this);
         } elseif ($option === 'help' || $option === 'list') {
             self::printn("\033[32mPRipple is successfully initialized. Procedure \033[0m");
-            self::brief('list', '应用列表');
-            self::brief('test', '服务器环境自检');
-            self::brief('help', '帮助');
+            self::brief('list', 'ApplicationList');
+            self::brief('test', 'Server environment self-test');
+            self::brief('help', 'Help');
             foreach (self::$commands as $key => $item)
                 self::brief($key, $item);
         } elseif ($option === 'test') {

@@ -45,7 +45,7 @@ class Control
      */
     public static function register(): string
     {
-        return '主程序';
+        return 'main program';
     }
 
     /**
@@ -67,11 +67,11 @@ class Control
     {
         if (count($argv) < 2) {
             $console->printn("Please Enter The Correct Parameter.");
-            $console->brief("service", '查看服务');
+            $console->brief("service", 'view service');
             $console->brief("subscribe", '');
-            $console->brief("listen", '调试监听');
-            $console->brief("start", '启动调度器');
-            $console->brief("stop", '结束调度器');
+            $console->brief("listen", 'debug monitor');
+            $console->brief("start", 'start the scheduler');
+            $console->brief("stop", 'end scheduler');
             return;
         }
         $option = $argv[1];
@@ -352,10 +352,8 @@ class Control
     {
         $count = $line - $this->currentLine;
         if ($count > 0) {
-            // 光标下移
             echo "\033[{$count}B";
         } elseif ($count < 0) {
-            // 光标上移
             echo "\033[{$count}A";
         }
         $this->currentLine = $line;
@@ -473,7 +471,7 @@ class Control
             $this->messageLine = $this->currentLine;
         }
 
-        // 清空当前终端行
+        // Clears the current terminal row
         echo "\033[2K\033[1;32mStatus:\033[0m {$message}";
         $this->currentLine = $this->messageLine;
         ob_flush();

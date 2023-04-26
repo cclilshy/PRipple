@@ -9,14 +9,14 @@ namespace Cclilshy\PRipple\FileSystem;
 class File
 {
     public const EXT = '.tmp';
-    // 文件后缀
+    // File suffix
 
     private mixed $file;
-    // 文件实体
+    // File entity
 
     private int $point = 0;
 
-    // 指针位置
+    // Pointer position
 
     /**
      * @param string $path
@@ -28,10 +28,10 @@ class File
     }
 
     /**
-     * 创建文件
+     * Create a file
      *
-     * @param string $path 文件路径
-     * @param string $mode 打开模式
+     * @param string $path File path
+     * @param string $mode Open mode
      * @return self|false
      */
     public static function create(string $path, string $mode): self|false
@@ -45,7 +45,7 @@ class File
     }
 
     /**
-     * 文件是否存在
+     * Whether the file exists
      *
      * @param string $path
      * @return bool
@@ -56,7 +56,7 @@ class File
     }
 
     /**
-     * 打开文件
+     * Open the file
      *
      * @param string $path
      * @param string $mode
@@ -72,7 +72,7 @@ class File
     }
 
     /**
-     * 读并跟随指针
+     * Read and follow the pointer
      *
      * @param int $length
      * @return string|false
@@ -85,7 +85,7 @@ class File
     }
 
     /**
-     * 从指定位置开始读指定长度内容
+     * Reads content of the specified length starting at the specified position
      *
      * @param int $start
      * @param int $length
@@ -98,7 +98,7 @@ class File
     }
 
     /**
-     * 调整指针到指定位置
+     * Adjusts the pointer to the specified position
      *
      * @param int      $location
      * @param int|null $whence
@@ -111,9 +111,9 @@ class File
     }
 
     /**
-     * 写入指定内容
+     * Contents of the photocopying specification
      *
-     * @param string $context 指定内容
+     * @param string $context Specification details
      * @return int|false
      */
     public function write(string $context): int|false
@@ -122,7 +122,7 @@ class File
     }
 
     /**
-     * 清空文件
+     * Empty the file
      *
      * @return bool
      */
@@ -133,7 +133,7 @@ class File
     }
 
     /**
-     * 获取文件指针
+     * Gets the file pointer
      *
      * @return int|bool
      */

@@ -40,7 +40,7 @@ class SubscribeManager
     }
 
     /**
-     * 移除一个订阅者
+     * remove a subscriber
      *
      * @param string $subscriber
      * @return void
@@ -55,11 +55,11 @@ class SubscribeManager
     }
 
     /**
-     * 取消订阅
+     * Unsubscribe
      *
-     * @param string      $subscriber 订阅者
-     * @param string      $publish    发布者
-     * @param string|null $eventName  事件名称
+     * @param string      $subscriber Subscriber
+     * @param string      $publish    Publisher
+     * @param string|null $eventName  Case Name
      * @return void
      */
     public function unSubscribes(string $subscriber, string $publish, string|null $eventName = null): void
@@ -82,7 +82,7 @@ class SubscribeManager
     }
 
     /**
-     * 通过发布者和事件获取所有订阅者列表
+     * Get list of all subscribers by publisher and event
      *
      * @param string $publish
      * @param string $event

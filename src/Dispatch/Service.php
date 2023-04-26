@@ -23,23 +23,23 @@ class Service
     public const STATE_START  = 'STATE_START';
 
     public string $cacheFilePath;
-    // 长缓存文件
+    // long cache file
 
     public int $cacheCount = 0;
-    // 暂存区总数
+    // Total number of staging areas
 
     public string $name;
-    // 暂存区名称
+    // Staging area name
 
     public string $state = '';
-    // 状态
+    // State of affairs
 
     public FileAisle $cacheFile;
-    // 长缓存文件
+    // Long cache file
 
     public Client $socket;
 
-    // 标准套接字
+    // standard socket
 
     /**
      * @param string                                        $publish
@@ -59,7 +59,7 @@ class Service
     }
 
     /**
-     * 重新连接触发
+     * Reconnect triggers
      *
      * @param \Cclilshy\PRipple\Communication\Socket\Client $socket
      * @return void
@@ -79,7 +79,7 @@ class Service
     }
 
     /**
-     * 发送数据
+     * Send data
      *
      * @param string $context
      * @param int    $type
@@ -95,7 +95,7 @@ class Service
     }
 
     /**
-     * 写入缓存
+     * Write caching
      *
      * @param string $package
      * @param int    $type
@@ -112,7 +112,7 @@ class Service
     }
 
     /**
-     * 获取服务状态
+     * Get the service status
      *
      * @return string|null
      */
@@ -122,7 +122,7 @@ class Service
     }
 
     /**
-     * 设置状态
+     * Set the status
      *
      * @param string $state
      * @return void

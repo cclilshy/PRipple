@@ -101,7 +101,7 @@ class ServiceInfo
         return false;
     }
 
-    // 设置与保存信息
+    // setting and saving information
 
     /**
      * @return void

@@ -1,30 +1,31 @@
 # PRipple
 
-> 一款由以订阅发布模式开发的 纯事件驱动型的PHP高并发/异步框架
+> A pure event-driven PHP high-concurrency asynchronous framework developed in subscription-publishing mode
 
-## 环境要求
+## Environmental requirements
 
 - OS Linux
 - PHP 8.2+
-- 依赖扩展 `posix` `pcntl` `sockets`
+- PHP-Extension `posix` `pcntl` `sockets`
 
-## 安装
+## Install
 
 ```bash
-git clone https://github.com/cclilshy/PRipple # 科学版
-git clone https://gitee.com/cclilshy/PRipple # 社会版
+git clone https://github.com/cclilshy/PRipple
 
 cd PRipple
 composer install
 ```
 
-## 运行
+## Run
 
 ```bash
 bin/pripple dth start
 ```
 
 ## Plan
-> 性能元凶
+
+> PERFORMANCE CULPRIT
+
 * Fiber
-* 资源回收
+* Recycle

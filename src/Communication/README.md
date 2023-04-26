@@ -1,7 +1,7 @@
-### 目录结构说明
+### Directory Structure Description
 
-- Agreement 协议
-- Aisle 通道
-- Package 包
-- Socket Socket封装
-- Standard 规范
+- Agreement AGREEMENT
+- Aisle passage
+- Package package
+- Socket Socket encapsulation
+- Standard STANDARD

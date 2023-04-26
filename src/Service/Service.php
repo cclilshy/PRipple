@@ -19,7 +19,7 @@ use Cclilshy\PRipple\Communication\Aisle\SocketAisle;
 use Cclilshy\PRipple\Communication\Socket\SocketUnix;
 
 /**
- * 事件处理器开发依赖
+ * event handler development dependencies
  */
 abstract class Service extends ServiceInfo implements ServiceStandard
 {
@@ -41,7 +41,7 @@ abstract class Service extends ServiceInfo implements ServiceStandard
     public bool   $isServer = false;
 
     /**
-     * 服务配置
+     * service configuration
      */
     public function __construct(string|null $name = null)
     {
@@ -55,7 +55,7 @@ abstract class Service extends ServiceInfo implements ServiceStandard
     }
 
     /**
-     * 启动服务
+     * start service
      *
      * @return void
      */
@@ -64,7 +64,7 @@ abstract class Service extends ServiceInfo implements ServiceStandard
         $this->registerErrorHandler();
         try {
             if (!$this->reConnectDispatcher()) {
-                throw new Exception("无法连接调度器,请确认调度器正常启动");
+                throw new Exception("If the scheduler cannot be connected, make sure that the scheduler starts normally");
             }
             if ($this->isServer) {
                 $this->serverSocketManager = Manager::createServer($this->socketType, $this->serverAddress, $this->serverPort, $this->socketOptions);
@@ -75,7 +75,8 @@ abstract class Service extends ServiceInfo implements ServiceStandard
         }
 
         while (true) {
-            if (memory_get_usage() > strToBytes(ini_get('memory_limit')) * 0.7) {
+            if (memory_get_usage() > strToBytes(ini_get('memory_limit')) * 0.8) {
+                $this->heartbeat();
                 gc_collect_cycles();
             }
             $readList = array($this->dispatcherServer);
@@ -93,7 +94,7 @@ abstract class Service extends ServiceInfo implements ServiceStandard
                     $socketName = Manager::getNameBySocket($readSocket);
                     switch ($readSocket) {
                         case $this->serverSocketManager->getEntranceSocket():
-                            // TODO:有新的客户端链接
+                            // TODO:There are new client links
                             $name                             = $this->serverSocketManager->accept($readSocket);
                             $this->socketTypeMap[$socketName] = 'client';
                             if ($client = $this->serverSocketManager->getClientByName($name)) {
@@ -111,12 +112,12 @@ abstract class Service extends ServiceInfo implements ServiceStandard
                             break;
                         case $this->dispatcherServer:
                             $this->handlerDispatcherMessage();
-                            // TODO:调度器发来通知
+                            // TODO:A notification is sent from the scheduler
                             break;
                         default:
-                            // TODO:客户端消息
+                            // TODO:Client messages
                             if ($client = $this->serverSocketManager->getClientBySocket($readSocket)) {
-                                if ($client->verify) {
+                                if (true === $client->verify) {
                                     if ($context = $client->getPlaintext()) {
                                         $this->onMessage($context, $client);
                                     } else {
@@ -144,7 +145,7 @@ abstract class Service extends ServiceInfo implements ServiceStandard
     }
 
     /**
-     * 错误处理器
+     * error handler
      *
      * @return void
      */
@@ -171,7 +172,7 @@ abstract class Service extends ServiceInfo implements ServiceStandard
     }
 
     /**
-     * 通知调度器启动
+     * notify the scheduler to start
      *
      * @return void
      */
@@ -182,11 +183,11 @@ abstract class Service extends ServiceInfo implements ServiceStandard
     }
 
     /**
-     * 发布一个事件
+     * publish an event
      *
-     * @param string      $name    事件名称
-     * @param mixed       $data    事件数据
-     * @param string|null $message 携带消息
+     * @param string      $name    event name
+     * @param mixed       $data    event data
+     * @param string|null $message carry message
      * @return bool
      */
     public function publishEvent(string $name, mixed $data, string|null $message = null): bool
@@ -197,7 +198,7 @@ abstract class Service extends ServiceInfo implements ServiceStandard
     }
 
     /**
-     * 发布一个自定义的信息包
+     * publish a custom information package
      *
      * @param \Cclilshy\PRipple\Dispatch\DataStandard\Build $package
      * @return bool
@@ -208,7 +209,7 @@ abstract class Service extends ServiceInfo implements ServiceStandard
     }
 
     /**
-     * 创建服务
+     * create service
      *
      * @param string     $socketType
      * @param string     $address
@@ -226,7 +227,7 @@ abstract class Service extends ServiceInfo implements ServiceStandard
     }
 
     /**
-     * 处理调度器返回消息
+     * handle scheduler return message
      *
      * @return void
      */
@@ -259,7 +260,7 @@ abstract class Service extends ServiceInfo implements ServiceStandard
     }
 
     /**
-     * 内置事件处理
+     * built in event handling
      *
      * @param \Cclilshy\PRipple\Dispatch\DataStandard\Event $event
      * @return bool
@@ -281,7 +282,7 @@ abstract class Service extends ServiceInfo implements ServiceStandard
     }
 
     /**
-     * 通知调度器关闭
+     * notify the scheduler to close
      *
      * @return bool
      */
@@ -291,11 +292,11 @@ abstract class Service extends ServiceInfo implements ServiceStandard
     }
 
     /**
-     * 声明订阅
+     * statement subscription
      *
-     * @param string     $publisher 订阅的发布者
-     * @param string     $eventName 订阅的事件
-     * @param int        $type      接收的消息类型
+     * @param string     $publisher subscribed publisher
+     * @param string     $eventName subscribed events
+     * @param int        $type      received message type
      * @param array|null $options
      * @return bool
      */
@@ -310,10 +311,10 @@ abstract class Service extends ServiceInfo implements ServiceStandard
     }
 
     /**
-     * 取消订阅
+     * Unsubscribe
      *
-     * @param string      $publisher 取消的订阅者
-     * @param string|null $eventName 取消的订阅事件
+     * @param string      $publisher canceled subscriber
+     * @param string|null $eventName unsubscribed event
      * @return bool
      */
     public function unSubscribe(string $publisher, string|null $eventName = null): bool

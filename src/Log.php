@@ -13,7 +13,7 @@ class Log
     private static mixed $logFile;
 
     /**
-     * 初始化日志
+     * initialization log
      *
      * @return void
      */
@@ -28,7 +28,7 @@ class Log
     }
 
     /**
-     * 通知监控器
+     * notification monitor
      *
      * @param string $content
      * @return void
@@ -44,7 +44,7 @@ class Log
     }
 
     /**
-     * 打印状态
+     * printing status
      *
      * @param string $content
      * @return void
@@ -55,7 +55,7 @@ class Log
     }
 
     /**
-     * 写入日志
+     * write log
      *
      * @param string $content
      * @return void
