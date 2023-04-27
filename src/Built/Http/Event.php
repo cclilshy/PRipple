@@ -15,10 +15,9 @@ use Cclilshy\PRipple\Route\Route;
 use Cclilshy\PRipple\Dispatch\Dispatcher;
 use Cclilshy\PRipple\Built\Http\Text\Text;
 use Cclilshy\PRipple\Communication\Socket\Client;
+use Cclilshy\PRipple\Dispatch\DataStandard\Event as EventStandard;
 
-/**
- *
- */
+
 class Event
 {
     public array   $fibers       = array();
@@ -27,7 +26,7 @@ class Event
     public Service $httpService;
 
     /**
-     * @param \Cclilshy\PRipple\Built\Http\Service $httpService
+     * @param Service $httpService
      */
     public function __construct(Service $httpService)
     {
@@ -35,24 +34,25 @@ class Event
     }
 
     /**
-     * @param \Cclilshy\PRipple\Built\Http\Request $request
+     * @param Request $request
      * @return void
      */
     public function access(Request $request): void
     {
-        $client                                                         = $request->clientSocket;
-        $this->requests[$request->getHash()]                            = $request;
-        $this->arrayHashMap[$client->getKeyName()][$request->getHash()] = 1;
-        if ($this->httpService->config('fiber') === true) {
-            $this->fibers[$request->getHash()] = new Fiber(function () use ($request) {
+        $client = $request->clientSocket;
+        if ($this->httpService->config('fiber')) {
+            $this->requests[$request->getHash()]                            = $request;
+            $this->arrayHashMap[$client->getKeyName()][$request->getHash()] = 1;
+            $this->fibers[$request->getHash()]                              = new Fiber(function () use ($request) {
                 $this->goController($request);
             });
-            $event                             = $this->fibers[$request->getHash()]->start();
+            $event                                                          = $this->fibers[$request->getHash()]->start();
+            $this->extracted($event);
         } else {
             $response = $this->goController($request);
-            $event    = new \Cclilshy\PRipple\Dispatch\DataStandard\Event($request->getHash(), 'response', $response);
+            $client->write($response->__toString());
         }
-        $this->extracted($event);
+
     }
 
     public function goController(Request $request): Response
@@ -80,8 +80,8 @@ class Event
             }
             $response = $request->response->setBody($result);
         }
-        if ($this->httpService->config('fiber') === true) {
-            $event = new \Cclilshy\PRipple\Dispatch\DataStandard\Event($request->getHash(), 'response', $response);
+        if ($this->httpService->config('fiber')) {
+            $event = new EventStandard($request->getHash(), 'response', $response);
             Fiber::suspend($event);
         } else {
             return $response;
@@ -90,10 +90,10 @@ class Event
 
 
     /**
-     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Event $event
+     * @param EventStandard $event
      * @return void
      */
-    public function extracted(\Cclilshy\PRipple\Dispatch\DataStandard\Event $event): void
+    public function extracted(EventStandard $event): void
     {
         switch ($event->getName()) {
             case 'response':

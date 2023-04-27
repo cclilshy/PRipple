@@ -12,9 +12,7 @@ namespace Cclilshy\PRipple\FileSystem;
 
 use Cclilshy\PRipple\FileSystem\Standard\File;
 
-/**
- *
- */
+
 class Pipe implements File
 {
     private        $resource;

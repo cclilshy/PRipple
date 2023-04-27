@@ -18,13 +18,12 @@
 
     .cct-ul {
         margin: 0px;
-        margin-left: 0px;
         position: absolute;
         padding: 0px;
         display: block;
         width: 100%;
-        height: 158px; /* 设置ul的高度为100px */
-        overflow-y: scroll; /* 设置overflow-y为scroll，使ul内的li可以向下滑动 */
+        height: 158px;
+        overflow-y: scroll;
     }
 
     .cct-span {

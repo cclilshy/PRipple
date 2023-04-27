@@ -13,9 +13,7 @@ use Cclilshy\PRipple\FileSystem\File;
 use Cclilshy\PRipple\Communication\Socket\Client;
 use Cclilshy\PRipple\Communication\Aisle\FileAisle;
 
-/**
- *
- */
+
 class Service
 {
     public const STATE_CLOSE  = 'STATE_CLOSE';
@@ -42,8 +40,8 @@ class Service
     // standard socket
 
     /**
-     * @param string                                        $publish
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $socket
+     * @param string $publish
+     * @param Client $socket
      */
     public function __construct(string $publish, Client $socket)
     {
@@ -61,7 +59,7 @@ class Service
     /**
      * Reconnect triggers
      *
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $socket
+     * @param Client $socket
      * @return void
      */
     public function handleServiceOnReconnect(Client $socket): void

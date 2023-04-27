@@ -6,9 +6,7 @@ namespace Cclilshy\PRipple\Service;
 use Cclilshy\PRipple\Config;
 use Cclilshy\PRipple\FileSystem\Pipe;
 
-/**
- *
- */
+
 class ServiceInfo
 {
     public string     $name;

@@ -6,15 +6,13 @@ namespace Cclilshy\PRipple\Built\WebSocket;
 use Cclilshy\PRipple\Communication\Socket\Client;
 use function str_contains;
 
-/**
- *
- */
+
 class Accept
 {
     /**
      * Attempts to recognize handshake data when receiving a client for the first time
      *
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @param Client $client
      * @return bool
      */
     const NEED_HEAD = [

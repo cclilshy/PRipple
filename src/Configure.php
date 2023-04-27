@@ -11,12 +11,10 @@ namespace Cclilshy\PRipple;
 
 use Cclilshy\PRipple\Route\Route;
 
-/**
- *
- */
+
 class Configure
 {
-    const NEED_EXTENDS = ['pcntl', 'sockets', 'posix'];
+    const NEED_EXTENDS = ['pcntl', 'sockets', 'posix', 'fileinfo'];
 
     /**
      * @return void

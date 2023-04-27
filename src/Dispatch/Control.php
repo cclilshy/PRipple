@@ -21,9 +21,7 @@ use Cclilshy\PRipple\Communication\Aisle\SocketAisle;
 use function ob_flush;
 use function ob_start;
 
-/**
- *
- */
+
 class Control
 {
     private SocketAisle $dispatcherSocket;
@@ -102,10 +100,11 @@ class Control
                         $event = new Event("control", 'termination', null);
                         $build = new Build('control', null, $event);
                         Dispatcher::AGREE::send($this->dispatcherSocket, $build->serialize());
-                        return;
+                    } else {
+                        $serviceInfo->release();
                     }
-                    $serviceInfo->release();
                 }
+                Log::print("pripple is stop.");
                 break;
             case 'start':
                 if ($serviceInfo = ServiceInfo::create('dispatcher')) {

@@ -17,9 +17,7 @@ use Cclilshy\PRipple\Statistics;
 use Cclilshy\PRipple\Built\Http\Response;
 use Cclilshy\PRipple\Built\Http\Text\Text;
 
-/**
- *
- */
+
 class Map
 {
     public string $type;
@@ -46,6 +44,33 @@ class Map
         } elseif ($type === 'Static') {
             $this->className = $className;
         }
+    }
+
+    /**
+     * @param $name
+     * @param $arguments
+     * @return mixed
+     */
+    public function __call($name, $arguments)
+    {
+        return call_user_func_array([$this->className, $name], $arguments);
+    }
+
+    /**
+     * @param $name
+     * @return mixed
+     */
+    public function __get($name)
+    {
+        return $this->$name;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function __sleep()
+    {
+        return ['type', 'className', 'action'];
     }
 
     /**
@@ -78,32 +103,5 @@ class Map
             return false;
         }
         return new $this->className($initParam);
-    }
-
-    /**
-     * @param $name
-     * @param $arguments
-     * @return mixed
-     */
-    public function __call($name, $arguments)
-    {
-        return call_user_func_array([$this->className, $name], $arguments);
-    }
-
-    /**
-     * @param $name
-     * @return mixed
-     */
-    public function __get($name)
-    {
-        return $this->$name;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function __sleep()
-    {
-        return ['type', 'className', 'action'];
     }
 }

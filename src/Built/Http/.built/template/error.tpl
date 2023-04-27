@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
@@ -161,12 +161,10 @@
 
         ul {
             list-style: none;
-            margin: 0;
             padding: 8px;
             background-color: #ececec;
             border-radius: 4px;
-            margin-right: 16px;
-            margin-bottom: 16px;
+            margin: 0 16px 16px 0;
         }
 
         li {
@@ -202,35 +200,35 @@
 
 <body>
 <div class="error-container">
-    <div class="error-title">{{ $general['info']['error'] }}</div>
-    <div class="error-file">{{ $general['info']['errFile'] }}({{ $general['info']['errLine'] }})</div>
+    <div class="error-title">{{$general['info']['error']}}</div>
+    <div class="error-file">{{$general['info']['errFile']}}({{$general['info']['errLine']}})</div>
     <div id="detail">
-        <pre><code id="errcode">{{ $general['info']['fileDescribe'] }}</code></pre>
+        <pre><code id="errCode">{{$general['info']['fileDescribe']}}</code></pre>
         <div class="table-container">
             <ul>
                 <li>Files</li>
                 @foreach($files as $item)
-                <li class="cct-li">{{ $item }} ({{ filesize($item)/1000 }} KB)</li>
+                <li class="cct-li">{{$item}} ({{filesize($item)/1000}} KB)</li>
                 @endforeach
             </ul>
             @if(count(array_merge($gets,$posts)) > 0)
             <ul>
                 <li>Input</li>
                 @foreach($gets as $key => $get)
-                <li class="cct-li"> (GET) {{ $key }} : {{$get}}</li>
+                <li class="cct-li"> (GET) {{$key}} : {{$get}}</li>
                 @endforeach
 
                 @foreach($posts as $post)
-                <li class="cct-li"> (POST) {{ $key }} : {{$post}} </li>
+                <li class="cct-li"> (POST) {{$key}} : {{$post}} </li>
                 @endforeach
             </ul>
             @endif
             <ul>
                 <li>Base</li>
-                <li class="cct-li">file Count: {{ $general['fileCount'] }}</li>
-                <li class="cct-li">runtime: {{ $general['timeLength'] }} (second)</li>
-                <li class="cct-li">memory: {{ $general['memory'] }}</li>
-                <li class="cct-li">max memory: {{ $general['maxMemory'] }}</li>
+                <li class="cct-li">file Count: {{$general['fileCount']}}</li>
+                <li class="cct-li">runtime: {{$general['timeLength']}} (second)</li>
+                <li class="cct-li">memory: {{$general['memory']}}</li>
+                <li class="cct-li">max memory: {{$general['maxMemory']}}</li>
             </ul>
             @if(count($sqlps) > 0)
             <ul>
@@ -239,7 +237,6 @@
                 @endforeach
             </ul>
             @endif
-
         </div>
     </div>
 </div>

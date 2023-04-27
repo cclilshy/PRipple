@@ -11,9 +11,7 @@ namespace Cclilshy\PRipple\Communication\Socket;
 
 use Cclilshy\PRipple\Communication\Aisle\SocketAisle;
 
-/**
- *
- */
+
 class Client extends SocketAisle
 {
     public string $verifyBuffer;
@@ -24,9 +22,9 @@ class Client extends SocketAisle
     public string $agree;
 
     /**
-     * @param mixed                                          $socket
-     * @param string                                         $type
-     * @param \Cclilshy\PRipple\Communication\Socket\Manager $manager
+     * @param mixed   $socket
+     * @param string  $type
+     * @param Manager $manager
      * @throws \Exception
      */
     public function __construct(mixed $socket, string $type, Manager $manager)

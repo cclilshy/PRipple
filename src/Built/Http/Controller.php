@@ -15,10 +15,9 @@ use Cclilshy\PRipple\Config;
 use Cclilshy\PRipple\Statistics;
 use Cclilshy\PRipple\Built\Http\Text\Text;
 use Cclilshy\PRipple\Built\Http\Text\Plaster;
+use Cclilshy\PRipple\Dispatch\DataStandard\Event;
 
-/**
- *
- */
+
 class Controller
 {
     protected Event      $http;
@@ -29,7 +28,7 @@ class Controller
     protected array      $assign = [];
 
     /**
-     * @param \Cclilshy\PRipple\Built\Http\Request $base
+     * @param Request $base
      */
     public function __construct(Request $base)
     {
@@ -62,7 +61,7 @@ class Controller
         if (file_exists($templatePath)) {
             $template = file_get_contents($templatePath);
             $html     = $this->plaster->apply($template, $this->assign);
-            if (Config::get('HttpService.debug')) {
+            if (Http::config('debug')) {
                 $html = Text::statistics($html, $this->request, $this->statistics);
             }
             return $html;
@@ -111,18 +110,13 @@ class Controller
      */
     public function sleep(int $time): void
     {
-        $event = new \Cclilshy\PRipple\Dispatch\DataStandard\Event($this->request->getHash(), 'sleep', [
-            'time' => $time,
-        ]);
-        Fiber::suspend($event);
-    }
-
-    /**
-     * @param ...$args
-     * @return void
-     */
-    public function dump(...$args): void
-    {
-        return;
+        if (Http::config('fiber')) {
+            $event = new Event($this->request->getHash(), 'sleep', [
+                'time' => $time,
+            ]);
+            Fiber::suspend($event);
+        } else {
+            sleep($time);
+        }
     }
 }

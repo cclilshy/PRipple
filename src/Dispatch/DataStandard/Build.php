@@ -12,9 +12,7 @@ namespace Cclilshy\PRipple\Dispatch\DataStandard;
 // 消息包
 use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 
-/**
- *
- */
+
 class Build
 {
     public array                 $signatures = array();     // 签名
@@ -27,10 +25,10 @@ class Build
     /**
      * 创建一个消息包
      *
-     * @param string                                             $publisher         @发布者
-     * @param string|null                                        $targetHandlerName @指定人（暂留待定）
-     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Event|null $event             @事件包
-     * @param string|null                                        $message           @消息
+     * @param string      $publisher         @发布者
+     * @param string|null $targetHandlerName @指定人（暂留待定）
+     * @param Event|null  $event             @事件包
+     * @param string|null $message           @消息
      */
     public function __construct(string $publisher, string|null $targetHandlerName = null, Event|null $event = null, string|null $message = null)
     {
@@ -44,9 +42,9 @@ class Build
     /**
      * 通过协议切割获得包内容
      *
-     * @param string                                                          $agreement @ 协议类
-     * @param \Cclilshy\PRipple\Communication\Standard\CommunicationInterface $aisle     @ 通道实体
-     * @return \Cclilshy\PRipple\Dispatch\DataStandard\Build|false
+     * @param string                 $agreement @ 协议类
+     * @param CommunicationInterface $aisle     @ 通道实体
+     * @return Build|false
      */
     public static function getBuildByAgreement(string $agreement, CommunicationInterface $aisle): Build|false
     {
@@ -59,7 +57,7 @@ class Build
 
     /**
      * @param string $context
-     * @return \Cclilshy\PRipple\Dispatch\DataStandard\Build|false
+     * @return Build|false
      */
     public static function unSerialize(string $context): Build|false
     {

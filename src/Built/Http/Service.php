@@ -62,7 +62,7 @@ class Service extends ServiceBase
     }
 
     /**
-     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Event $event
+     * @param Event $event
      * @return void
      */
     public function onEvent(Event $event): void
@@ -71,7 +71,7 @@ class Service extends ServiceBase
     }
 
     /**
-     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Build $package
+     * @param Build $package
      * @return void
      */
     public function onPackage(Build $package): void
@@ -79,7 +79,7 @@ class Service extends ServiceBase
     }
 
     /**
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @param Client $client
      * @return void
      */
     public function onConnect(Client $client): void
@@ -88,7 +88,7 @@ class Service extends ServiceBase
     }
 
     /**
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @param Client $client
      * @return bool|null
      */
     public function handshake(Client $client): bool|null
@@ -105,8 +105,8 @@ class Service extends ServiceBase
     }
 
     /**
-     * @param string                                        $context
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @param string $context
+     * @param Client $client
      * @return void
      */
     public function onMessage(string $context, Client $client): void
@@ -134,7 +134,7 @@ class Service extends ServiceBase
     }
 
     /**
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @param Client $client
      * @return void
      */
     public function onClose(Client $client): void

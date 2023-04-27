@@ -19,17 +19,14 @@ use Cclilshy\PRipple\Built\Http\Request;
 // And Guide To The Destination According To The Routing Static Method Can Be Called Anywhere
 
 
-/**
- *
- */
 class Text
 {
     /**
      * Responsive templates inserted into the debug panel
      *
-     * @param string                               $content
-     * @param \Cclilshy\PRipple\Built\Http\Request $request
-     * @param \Cclilshy\PRipple\Statistics         $statistics
+     * @param string     $content
+     * @param Request    $request
+     * @param Statistics $statistics
      * @return string
      */
     public static function statistics(string $content, Request $request, Statistics $statistics): string
@@ -58,12 +55,12 @@ class Text
     /**
      * The error template takes over the request
      *
-     * @param int                                  $errno
-     * @param string                               $erst
-     * @param string                               $errFile
-     * @param int                                  $errLine
-     * @param \Cclilshy\PRipple\Built\Http\Request $request
-     * @param \Cclilshy\PRipple\Statistics         $statistics
+     * @param int        $errno
+     * @param string     $erst
+     * @param string     $errFile
+     * @param int        $errLine
+     * @param Request    $request
+     * @param Statistics $statistics
      * @return string|null
      */
     public static function htmlErrorPage(int $errno, string $erst, string $errFile, int $errLine, Request $request, Statistics $statistics): ?string

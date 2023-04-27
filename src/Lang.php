@@ -3,9 +3,7 @@ declare(strict_types=1);
 
 namespace Cclilshy\PRipple;
 
-/**
- *
- */
+
 class Lang
 {
     private static Lang  $object;

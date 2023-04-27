@@ -18,9 +18,7 @@ use Cclilshy\PRipple\Communication\Socket\Manager as SocketManager;
 
 // event scheduling
 
-/**
- *
- */
+
 class Dispatcher
 {
     public const AGREE               = CCL::class;
@@ -213,8 +211,8 @@ class Dispatcher
     /**
      * Handle built-in events
      *
-     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Event $event The event itself
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @param Event  $event The event itself
+     * @param Client $client
      * @return bool
      */
     private static function handleBuiltEvent(Event $event, Client $client): bool
@@ -250,8 +248,8 @@ class Dispatcher
     /**
      * Service socket claim registration
      *
-     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Event $event
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @param Event  $event
+     * @param Client $client
      * @return void
      */
     private static function handleServiceRegister(Event $event, Client $client): void
@@ -288,8 +286,8 @@ class Dispatcher
     /**
      * The service socket declaration is closed
      *
-     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Event $event
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @param Event  $event
+     * @param Client $client
      * @return void
      */
     private static function handleServiceOnclose(Event $event, Client $client): void
@@ -320,9 +318,9 @@ class Dispatcher
     /**
      * Send notifications to subscribers
      *
-     * @param string                                        $subscriber
-     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Build $package
-     * @param int                                           $type
+     * @param string $subscriber
+     * @param Build  $package
+     * @param int    $type
      * @return void
      */
     private static function notice(string $subscriber, Build $package, int $type): void
@@ -350,8 +348,8 @@ class Dispatcher
     /**
      * The service socket is disconnected
      *
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
-     * @param string                                        $message
+     * @param Client $client
+     * @param string $message
      * @return void
      */
     private static function handleServiceOnBlack(Client $client, string $message): void
@@ -414,7 +412,7 @@ class Dispatcher
                     }
                     $serviceInfo->release();
                 }
-                Log::print("[Dispatcher] is closed.");
+                //                Log::print("[Dispatcher] is closed.");
                 PRipple::stop();
                 exit;
             default:
@@ -439,7 +437,7 @@ class Dispatcher
     }
 
     /**
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @param Client $client
      * @return void
      */
     public static function updateStatus(Client $client): void

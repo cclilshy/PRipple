@@ -12,9 +12,7 @@ namespace Cclilshy\PRipple\Dispatch;
 use Cclilshy\PRipple\Log;
 use Cclilshy\PRipple\Dispatch\DataStandard\Event;
 
-/**
- *
- */
+
 class SubscribeManager
 {
     private array $subscribes = [];
@@ -102,7 +100,7 @@ class SubscribeManager
     }
 
     /**
-     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Event $event
+     * @param Event $event
      * @return void
      */
     public function recordHappen(Event $event): void

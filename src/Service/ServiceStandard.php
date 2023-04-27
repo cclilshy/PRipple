@@ -13,9 +13,7 @@ use Cclilshy\PRipple\Communication\Socket\Client;
 use Cclilshy\PRipple\Dispatch\DataStandard\Build;
 use Cclilshy\PRipple\Dispatch\DataStandard\Event;
 
-/**
- *
- */
+
 interface ServiceStandard
 {
     /**
@@ -35,7 +33,7 @@ interface ServiceStandard
     /**
      * Handle native message packets
      *
-     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Build $package
+     * @param Build $package
      * @return void
      */
     public function onPackage(Build $package): void;
@@ -43,7 +41,7 @@ interface ServiceStandard
     /**
      * Handle event type messages
      *
-     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Event $event
+     * @param Event $event
      * @return void
      */
     public function onEvent(Event $event): void;
@@ -51,7 +49,7 @@ interface ServiceStandard
     /**
      * Fired when a new connection is made
      *
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @param Client $client
      * @return void
      */
     public function onConnect(Client $client): void;
@@ -59,8 +57,8 @@ interface ServiceStandard
     /**
      * Process server packets
      *
-     * @param string                                        $context
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @param string $context
+     * @param Client $client
      * @return void
      */
     public function onMessage(string $context, Client $client): void;
@@ -68,7 +66,7 @@ interface ServiceStandard
     /**
      * Triggered when the connection is disconnected
      *
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @param Client $client
      * @return void
      */
     public function onClose(Client $client): void;
@@ -76,7 +74,7 @@ interface ServiceStandard
     /**
      * Triggers for requests that fail the handshake
      *
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @param Client $client
      * @return bool|null
      */
     public function handshake(Client $client): bool|null;

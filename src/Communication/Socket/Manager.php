@@ -12,9 +12,7 @@ namespace Cclilshy\PRipple\Communication\Socket;
 use Cclilshy\PRipple\Log;
 use Cclilshy\PRipple\Communication\Aisle\SocketAisle;
 
-/**
- *
- */
+
 class Manager
 {
     private mixed  $entranceSocket;
@@ -217,7 +215,7 @@ class Manager
     /**
      * 移除标记客户端有缓冲数据
      *
-     * @param \Cclilshy\PRipple\Communication\Aisle\SocketAisle $client
+     * @param SocketAisle $client
      * @return void
      */
     public function removeClientWithBufferedData(SocketAisle $client): void
@@ -261,7 +259,7 @@ class Manager
     /**
      * 标记客户端有缓冲数据
      *
-     * @param \Cclilshy\PRipple\Communication\Aisle\SocketAisle $client
+     * @param SocketAisle $client
      * @return void
      */
     public function addClientWithBufferedData(SocketAisle $client): void

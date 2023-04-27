@@ -13,9 +13,7 @@ namespace Cclilshy\PRipple\Communication\Aisle;
 use Cclilshy\PRipple\FileSystem\File;
 use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 
-/**
- *
- */
+
 class FileAisle implements CommunicationInterface
 {
     public const EXT = '.pipe';

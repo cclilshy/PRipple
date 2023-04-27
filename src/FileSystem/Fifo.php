@@ -10,9 +10,7 @@ declare(strict_types=1);
 
 namespace Cclilshy\PRipple\FileSystem;
 
-/**
- *
- */
+
 class Fifo
 {
     public const EXT = '.fifo';

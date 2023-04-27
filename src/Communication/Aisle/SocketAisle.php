@@ -17,9 +17,7 @@ use Cclilshy\PRipple\FileSystem\File;
 use Cclilshy\PRipple\Communication\Socket\Manager;
 use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 
-/**
- *
- */
+
 class SocketAisle implements CommunicationInterface
 {
     public const EXT = '.sock';

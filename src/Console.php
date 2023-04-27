@@ -13,9 +13,6 @@ namespace Cclilshy\PRipple;
 use Cclilshy\PRipple\Route\Route;
 
 
-/**
- *
- */
 class Console
 {
     public const RESERVED = ['help', 'test', 'list', 'run'];

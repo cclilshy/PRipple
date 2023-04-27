@@ -9,9 +9,7 @@ declare(strict_types=1);
 
 namespace Cclilshy\PRipple\Communication\Standard;
 
-/**
- *
- */
+
 interface CommunicationInterface
 {
     public const EXT = '.switch';

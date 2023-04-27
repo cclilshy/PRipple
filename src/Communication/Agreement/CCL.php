@@ -15,9 +15,7 @@ use Exception;
 use Cclilshy\PRipple\Communication\Standard\AgreementInterface;
 use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 
-/**
- *
- */
+
 class CCL implements AgreementInterface
 {
     /**
@@ -49,8 +47,8 @@ class CCL implements AgreementInterface
     }
 
     /**
-     * @param \Cclilshy\PRipple\Communication\Standard\CommunicationInterface $aisle
-     * @param string                                                          $context
+     * @param CommunicationInterface $aisle
+     * @param string                 $context
      * @return bool
      */
     private static function sendRawContext(CommunicationInterface $aisle, string $context): bool
@@ -61,9 +59,9 @@ class CCL implements AgreementInterface
     /**
      * 发送一条附加一个字节的整数的信息,最长4个字节
      *
-     * @param \Cclilshy\PRipple\Communication\Standard\CommunicationInterface $aisle
-     * @param string                                                          $context
-     * @param int                                                             $int
+     * @param CommunicationInterface $aisle
+     * @param string                 $context
+     * @param int                    $int
      * @return bool
      */
     public static function sendWithInt(CommunicationInterface $aisle, string $context, int $int): bool
@@ -77,9 +75,9 @@ class CCL implements AgreementInterface
     /**
      * 发送一条附带一条文本的信息，最长64个字节
      *
-     * @param \Cclilshy\PRipple\Communication\Standard\CommunicationInterface $aisle
-     * @param string                                                          $context
-     * @param string                                                          $param
+     * @param CommunicationInterface $aisle
+     * @param string                 $context
+     * @param string                 $param
      * @return bool
      */
     public static function sendWithString(CommunicationInterface $aisle, string $context, string $param): bool
@@ -106,7 +104,7 @@ class CCL implements AgreementInterface
     /**
      * 切断一条带整形参数的报文
      *
-     * @param \Cclilshy\PRipple\Communication\Standard\CommunicationInterface $aisle
+     * @param CommunicationInterface                                          $aisle
      * @param                                                                 $int
      * @return string|false
      * @throws \Exception
@@ -186,7 +184,7 @@ class CCL implements AgreementInterface
     /**
      * 不支持调整
      *
-     * @param \Cclilshy\PRipple\Communication\Standard\CommunicationInterface $aisle
+     * @param CommunicationInterface $aisle
      * @return string|false
      */
     public static function corrective(CommunicationInterface $aisle): string|false

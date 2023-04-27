@@ -5,9 +5,7 @@ namespace Cclilshy\PRipple;
 
 use Cclilshy\PRipple\Dispatch\Dispatcher;
 
-/**
- *
- */
+
 class Log
 {
     private static mixed $logFile;

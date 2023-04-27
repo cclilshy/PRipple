@@ -16,9 +16,7 @@ namespace Cclilshy\PRipple\Communication\Standard;
 
 use stdClass;
 
-/**
- *
- */
+
 interface AgreementInterface
 {
 
@@ -63,7 +61,7 @@ interface AgreementInterface
     /**
      * 抛弃脏数据，调整通道指针
      *
-     * @param \Cclilshy\PRipple\Communication\Standard\CommunicationInterface $aisle
+     * @param CommunicationInterface $aisle
      * @return string|false
      */
     public static function corrective(CommunicationInterface $aisle): string|false;

@@ -14,9 +14,7 @@ use stdClass;
 use Cclilshy\PRipple\Communication\Standard\AgreementInterface;
 use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 
-/**
- *
- */
+
 class WebSocket implements AgreementInterface
 {
     /**
@@ -133,7 +131,7 @@ class WebSocket implements AgreementInterface
     /**
      * 不支持调整
      *
-     * @param \Cclilshy\PRipple\Communication\Standard\CommunicationInterface $aisle
+     * @param CommunicationInterface $aisle
      * @return string|false
      */
     public static function corrective(CommunicationInterface $aisle): string|false

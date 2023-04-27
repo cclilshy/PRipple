@@ -20,7 +20,6 @@ class Index extends Controller
 
     public function index(): string
     {
-        return 'hello world';
         $this->assign('name', 'PRipple');
         return $this;
     }

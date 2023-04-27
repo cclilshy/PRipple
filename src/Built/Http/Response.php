@@ -12,10 +12,10 @@ namespace Cclilshy\PRipple\Built\Http;
 
 class Response
 {
-    public mixed $client;
-    public int   $statusCode = 400;
-    public array $header;
-    public float $version;
+    public mixed   $client;
+    public int     $statusCode  = 400;
+    public array   $header;
+    public float   $version;
     public string  $charset     = 'utf-8';
     public string  $contentType = 'text/html';
     public string  $body;
@@ -24,7 +24,7 @@ class Response
     public Request $request;
 
     /**
-     * @param \Cclilshy\PRipple\Built\Http\Request $request
+     * @param Request $request
      */
     public function __construct(Request $request)
     {
@@ -218,18 +218,18 @@ class Response
     }
 
     /**
-     * @return string
-     */
-    public function __toString(): string
-    {
-        return $this->getFullHttpContext();
-    }
-
-    /**
      * @return string[]
      */
     public function __sleep()
     {
         return ['name', 'statusCode', 'header', 'version', 'charset', 'contentType', 'body', 'hash'];
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return $this->getFullHttpContext();
     }
 }

@@ -8,9 +8,7 @@ use Cclilshy\PRipple\Dispatch\DataStandard\Event;
 use Cclilshy\PRipple\Dispatch\DataStandard\Build;
 use Cclilshy\PRipple\Communication\Socket\Client;
 
-/**
- *
- */
+
 abstract class WebSocket extends Service
 {
     /**
@@ -32,38 +30,38 @@ abstract class WebSocket extends Service
     abstract public function heartbeat(): void;
 
     /**
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @param Client $client
      * @return void
      */
     abstract public function onConnect(Client $client): void;
 
     /**
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @param Client $client
      * @return void
      */
     abstract public function onClose(Client $client): void;
 
     /**
-     * @param string                                        $context
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @param string $context
+     * @param Client $client
      * @return void
      */
     abstract public function onMessage(string $context, Client $client): void;
 
     /**
-     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Event $event
+     * @param Event $event
      * @return void
      */
     abstract public function onEvent(Event $event): void;
 
     /**
-     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Build $package
+     * @param Build $package
      * @return void
      */
     abstract public function onPackage(Build $package): void;
 
     /**
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @param Client $client
      * @return bool|null
      */
     public function handshake(Client $client): bool|null

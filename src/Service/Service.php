@@ -200,12 +200,15 @@ abstract class Service extends ServiceInfo implements ServiceStandard
     /**
      * publish a custom information package
      *
-     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Build $package
+     * @param Build $package
      * @return bool
      */
     public function publish(Build $package): bool
     {
-        return Dispatcher::AGREE::send($this->dispatcherServerAisle, (string)$package);
+        $this->pipe->lock();
+        $res = Dispatcher::AGREE::send($this->dispatcherServerAisle, (string)$package);
+        $this->pipe->unlock();
+        return $res;
     }
 
     /**
@@ -262,7 +265,7 @@ abstract class Service extends ServiceInfo implements ServiceStandard
     /**
      * built in event handling
      *
-     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Event $event
+     * @param Event $event
      * @return bool
      */
 

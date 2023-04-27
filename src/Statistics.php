@@ -10,9 +10,7 @@ declare(strict_types=1);
 
 namespace Cclilshy\PRipple;
 
-/**
- *
- */
+
 class Statistics
 {
     public array $loadFiles = [];       // loaded files

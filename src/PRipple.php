@@ -6,9 +6,7 @@ namespace Cclilshy\PRipple;
 use Cclilshy\PRipple\Service\ServiceInfo;
 use Cclilshy\PRipple\Service\ServiceStandard;
 
-/**
- *
- */
+
 class PRipple
 {
     private static array $services;
@@ -20,7 +18,7 @@ class PRipple
     }
 
     /**
-     * @param \Cclilshy\PRipple\Service\ServiceStandard $service
+     * @param ServiceStandard $service
      * @return void
      */
     public static function registerService(ServiceStandard $service): void
@@ -48,9 +46,9 @@ class PRipple
                 }
             }
             $serverInfo->info($info);
-            Log::print("pripple service start success");
+            Log::print("pripple service start success.");
         } else {
-            Log::print('pripple service is running');
+            Log::print('pripple service is running.');
         }
     }
 
@@ -63,7 +61,7 @@ class PRipple
                 }
             }
             $service->release();
-            Log::print('pripple service is stop success');
+            //            Log::print('pripple service is stop success');
         }
     }
 

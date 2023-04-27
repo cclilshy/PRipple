@@ -3,11 +3,9 @@ declare(strict_types=1);
 
 namespace Cclilshy\PRipple\Built\Http;
 
+use Cclilshy\PRipple\Config;
 use Cclilshy\PRipple\Route\Route;
 
-/**
- *
- */
 class Http
 {
     public const ROOT_PATH           = PRIPPLE_ROOT_PATH . '/app/Http';
@@ -16,6 +14,8 @@ class Http
     public const ROUTE_PATH          = Http::ROOT_PATH . '/route';
     public const BUILT_ROUTE_PATH    = __DIR__ . '/.built/route';
     public const BUILT_TEMPLATE_PATH = __DIR__ . '/.built/template';
+    private static array $templateCache = array();
+    private static array $config        = array();
 
     /**
      * @param string $name
@@ -23,10 +23,17 @@ class Http
      */
     public static function getBuiltTemplate(string $name): string
     {
-        if (file_exists(Http::BUILT_TEMPLATE_PATH . "/{$name}.tpl")) {
-            return file_get_contents(Http::BUILT_TEMPLATE_PATH . "/{$name}.tpl");
+        if ($template = Http::$templateCache[$name] ?? null) {
+            return $template;
+        } elseif (file_exists(Http::BUILT_TEMPLATE_PATH . "/{$name}.tpl")) {
+            $template = file_get_contents(Http::BUILT_TEMPLATE_PATH . "/{$name}.tpl");
+            if (Http::config('template_cache')) {
+                Http::$templateCache[$name] = $template;
+            }
+            return $template;
+        } else {
+            return '';
         }
-        return '';
     }
 
     /**
@@ -36,5 +43,11 @@ class Http
     {
         Route::loadPath(Http::BUILT_ROUTE_PATH);
         Route::loadPath(Http::ROUTE_PATH);
+        Http::$config = Config::get('HttpService') ?? [];
+    }
+
+    public static function config(string $key): mixed
+    {
+        return Http::$config[$key] ?? null;
     }
 }

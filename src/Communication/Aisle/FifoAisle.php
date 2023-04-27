@@ -13,9 +13,7 @@ namespace Cclilshy\PRipple\Communication\Aisle;
 use Cclilshy\PRipple\FileSystem\Fifo;
 use Cclilshy\PRipple\Communication\Standard\CommunicationInterface;
 
-/**
- *
- */
+
 class FifoAisle implements CommunicationInterface
 {
     public const EXT = '.pipe';

@@ -9,9 +9,7 @@ declare(strict_types=1);
 
 namespace Cclilshy\PRipple\Dispatch\DataStandard;
 
-/**
- *
- */
+
 class Event
 {
     protected string $publisher;

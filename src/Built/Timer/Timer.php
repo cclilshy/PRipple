@@ -10,9 +10,7 @@ use Cclilshy\PRipple\Dispatch\DataStandard\Event;
 use Cclilshy\PRipple\Communication\Socket\Client;
 use Cclilshy\PRipple\Dispatch\DataStandard\Build;
 
-/**
- *
- */
+
 class Timer extends Service
 {
     // Use SplPriorityQueue to hold the task queue
@@ -50,7 +48,7 @@ class Timer extends Service
     }
 
     /**
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @param Client $client
      * @return void
      */
     public function onConnect(Client $client): void
@@ -59,7 +57,7 @@ class Timer extends Service
     }
 
     /**
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @param Client $client
      * @return bool|null
      */
     public function handshake(Client $client): bool|null
@@ -68,7 +66,7 @@ class Timer extends Service
     }
 
     /**
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @param Client $client
      * @return void
      */
     public function onClose(Client $client): void
@@ -77,7 +75,7 @@ class Timer extends Service
     }
 
     /**
-     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Event $event
+     * @param Event $event
      * @return void
      */
     public function onEvent(Event $event): void
@@ -92,8 +90,8 @@ class Timer extends Service
     }
 
     /**
-     * @param string                                        $context
-     * @param \Cclilshy\PRipple\Communication\Socket\Client $client
+     * @param string $context
+     * @param Client $client
      * @return void
      */
     public function onMessage(string $context, Client $client): void
@@ -102,7 +100,7 @@ class Timer extends Service
     }
 
     /**
-     * @param \Cclilshy\PRipple\Dispatch\DataStandard\Build $package
+     * @param Build $package
      * @return void
      */
     public function onPackage(Build $package): void
