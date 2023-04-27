@@ -400,19 +400,18 @@ class Dispatcher
                 Dispatcher::AGREE::sendWithInt($client, $event->serialize(), Dispatcher::FORMAT_EVENT);
                 break;
             case 'termination':
-                if ($serviceInfo = ServiceInfo::load('dispatcher')) {
-                    foreach (Dispatcher::$socketHashMap as $socketHash => $socketType) {
-                        if (Dispatcher::MSF_HANDLER === $socketType) {
-                            if ($client = Dispatcher::$handlerSocketManager->getClientByName($socketHash)) {
-                                $event = new Event('Dispatcher', Dispatcher::PE_DISPATCHER_CLOSE, null);
-                                $build = new Build('Dispatcher', null, $event);
-                                Dispatcher::notice($client->getIdentity(), $build, Dispatcher::FORMAT_EVENT);
-                            }
+                // TODO: send close command `PE_DISPATCHER_CLOSE`
+                $serviceInfo = ServiceInfo::load('dispatcher');
+                foreach (Dispatcher::$socketHashMap as $socketHash => $socketType) {
+                    if (Dispatcher::MSF_HANDLER === $socketType) {
+                        if ($client = Dispatcher::$handlerSocketManager->getClientByName($socketHash)) {
+                            $event = new Event('Dispatcher', Dispatcher::PE_DISPATCHER_CLOSE, null);
+                            $build = new Build('Dispatcher', null, $event);
+                            Dispatcher::notice($client->getIdentity(), $build, Dispatcher::FORMAT_EVENT);
                         }
                     }
-                    $serviceInfo->release();
                 }
-                //                Log::print("[Dispatcher] is closed.");
+                $serviceInfo->release();
                 PRipple::stop();
                 exit;
             default:

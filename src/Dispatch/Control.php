@@ -96,14 +96,26 @@ class Control
                 break;
             case 'stop':
                 if ($serviceInfo = ServiceInfo::load('dispatcher')) {
+                    // TODO: try send message close
                     if ($this->connectDispatcher()) {
                         $event = new Event("control", 'termination', null);
                         $build = new Build('control', null, $event);
                         Dispatcher::AGREE::send($this->dispatcherSocket, $build->serialize());
                     } else {
+                        // TODO: release service info file
                         $serviceInfo->release();
                     }
                 }
+
+                // TODO: last try release every service info file
+                foreach (Route::getServices() as $serviceName => $service) {
+                    if ($instantiation = $service->instantiation()) {
+                        if ($instantiation->initLoad()) {
+                            $instantiation->release();
+                        }
+                    }
+                }
+                PRipple::stop();
                 Log::print("pripple is stop.");
                 break;
             case 'start':

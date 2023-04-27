@@ -107,4 +107,9 @@ class Timer extends Service
     {
 
     }
+
+    public function destroy(): void
+    {
+
+    }
 }

@@ -67,7 +67,9 @@ class ServiceInfo
      */
     public function release(): void
     {
-        $this->pipe->release();
+        if (isset($this->pipe)) {
+            $this->pipe->release();
+        }
     }
 
 

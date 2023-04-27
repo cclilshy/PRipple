@@ -191,4 +191,9 @@ class CCL implements AgreementInterface
     {
         return false;
     }
+
+    public static function parse(string $context): string
+    {
+
+    }
 }

@@ -37,7 +37,7 @@ class PRipple
                 switch ($pid = pcntl_fork()) {
                     case 0:
                         $service->launch();
-                        break;
+                        exit;
                     case -1:
                         break;
                     default:
@@ -54,6 +54,7 @@ class PRipple
 
     public static function stop(): void
     {
+        // TODO: The final step is to force a shutdown of servers that cannot automatically release resources
         if ($service = ServiceInfo::load('pripple')) {
             foreach ($service->info() as $serviceName => $pid) {
                 if (posix_kill($pid, SIGKILL)) {
@@ -61,8 +62,8 @@ class PRipple
                 }
             }
             $service->release();
-            //            Log::print('pripple service is stop success');
         }
+
     }
 
     public static function config($name): mixed

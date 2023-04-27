@@ -78,4 +78,6 @@ interface ServiceStandard
      * @return bool|null
      */
     public function handshake(Client $client): bool|null;
+
+    public function destroy(): void;
 }

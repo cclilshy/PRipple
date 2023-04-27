@@ -142,4 +142,9 @@ class Service extends ServiceBase
         $this->vestigial[] = $client->getKeyName();
         $this->httpRequestEvent->break($client);
     }
+
+    public function destroy(): void
+    {
+
+    }
 }

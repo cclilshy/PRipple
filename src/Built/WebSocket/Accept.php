@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cclilshy\PRipple\Built\WebSocket;
@@ -50,7 +51,7 @@ class Accept
     public static function verify(string $buffer): array|false|null
     {
         if (str_contains($buffer, "\r\n\r\n")) {
-            $verify = Accept::NEED_HEAD;
+            $verify = (array)Accept::NEED_HEAD;
             $lines  = explode("\r\n", $buffer);
             $header = array();
 

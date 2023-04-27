@@ -68,4 +68,9 @@ abstract class WebSocket extends Service
     {
         return Accept::accept($client);
     }
+
+    public function destroy(): void
+    {
+
+    }
 }

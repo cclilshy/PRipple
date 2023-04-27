@@ -61,6 +61,9 @@ abstract class Service extends ServiceInfo implements ServiceStandard
      */
     public function launch(): void
     {
+        if (!$this->initCreate()) {
+            die("server {$this->name} launch failed!\n");
+        }
         $this->registerErrorHandler();
         try {
             if (!$this->reConnectDispatcher()) {
@@ -157,7 +160,7 @@ abstract class Service extends ServiceInfo implements ServiceStandard
     /**
      * @return bool
      */
-    private function reConnectDispatcher(): bool
+    public function reConnectDispatcher(): bool
     {
         try {
             $this->dispatcherServer      = SocketUnix::connect(Dispatcher::$handleServiceUnixAddress);
@@ -205,10 +208,7 @@ abstract class Service extends ServiceInfo implements ServiceStandard
      */
     public function publish(Build $package): bool
     {
-        $this->pipe->lock();
-        $res = Dispatcher::AGREE::send($this->dispatcherServerAisle, (string)$package);
-        $this->pipe->unlock();
-        return $res;
+        return Dispatcher::AGREE::send($this->dispatcherServerAisle, (string)$package);
     }
 
     /**
@@ -275,9 +275,12 @@ abstract class Service extends ServiceInfo implements ServiceStandard
             case Service::PC_CLOSE:
                 $this->dispatcherServerAisle->release();
                 $this->noticeClose();
+                $this->release();
                 exit;
 
             case Dispatcher::PE_DISPATCHER_CLOSE:
+                $this->destroy();   // allow service release resource
+                $this->release();   // release service info file
                 exit;
             default:
                 return false;

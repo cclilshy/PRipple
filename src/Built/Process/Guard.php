@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Cclilshy\PRipple\Built\Process;
 
 use Cclilshy\PRipple\Service\Service;
+use Cclilshy\PRipple\Dispatch\Dispatcher;
 use Cclilshy\PRipple\Dispatch\DataStandard\Event;
 use Cclilshy\PRipple\Communication\Socket\Client;
 use Cclilshy\PRipple\Dispatch\DataStandard\Build;
@@ -37,7 +38,10 @@ class Guard extends Service
 
     public function onEvent(Event $event): void
     {
-
+        if ($event->getName() === $this->name . '_signal') {
+            $data = $event->getData();
+            posix_kill($data['pid'], $data['signNo']);
+        }
     }
 
     public function onMessage(string $context, Client $client): void
@@ -47,13 +51,15 @@ class Guard extends Service
 
     public function initialize(): void
     {
-        $this->publishEvent('guardOnline', [
-            'pid'  => posix_getpid(),
-            'ppid' => posix_getppid()
-        ]);
+        $this->subscribe('Process', $this->name . '_signal', Dispatcher::FORMAT_EVENT);
     }
 
     public function onPackage(Build $package): void
+    {
+
+    }
+
+    public function destroy(): void
     {
 
     }

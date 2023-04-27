@@ -77,7 +77,8 @@ class Service
     }
 
     /**
-     * Send data
+     * Send data,
+     * A certificate value in the 4-byte range is allowed
      *
      * @param string $context
      * @param int    $type
