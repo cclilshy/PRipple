@@ -360,7 +360,7 @@ class Dispatcher
         if ($service = Dispatcher::getServiceByName($client->getIdentity())) {
             if ($service->getState() !== Service::STATE_CLOSE) {
                 $service->setState(Service::STATE_EXPECT);
-                $msg = "[Dispatcher]" . 'Exit abnormally' . $client->getIdentity();
+                $msg = "[Dispatcher]" . 'Exit abnormally' . $client->getIdentity() . PHP_EOL;
                 Log::realTimeOutput($msg, true);
                 Log::pdebug($msg);
             }

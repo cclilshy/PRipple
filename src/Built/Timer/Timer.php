@@ -27,7 +27,7 @@ class Timer extends Service
      */
     public function initialize(): void
     {
-        $this->subscribe('HttpService', 'sleep', Dispatcher::FORMAT_EVENT);
+        $this->subscribe('HttpService', 'ControllerSleep', Dispatcher::FORMAT_EVENT);
     }
 
     /**
@@ -38,8 +38,8 @@ class Timer extends Service
         $now = time();
         while (!$this->taskQueue->isEmpty()) {
             $task = $this->taskQueue->top();
-            if ($task['time'] <= $now) {
-                $this->publishEvent($task['event']->getData()['name'], null);
+            if ($task['time'] <= $now && $event = $task['event']) {
+                $this->publishEvent($event->getName(), $event->getData());
                 $this->taskQueue->extract();
             } else {
                 break;
@@ -80,12 +80,14 @@ class Timer extends Service
      */
     public function onEvent(Event $event): void
     {
-        if ($event->getName() == 'sleep') {
+        if ($event->getName() == 'ControllerSleep') {
             $sleepData = $event->getData();
             $sleepTime = $sleepData['time'];
-
             // Add task to queue
-            $this->taskQueue->insert(['time' => time() + $sleepTime, 'event' => $event], -time() - $sleepTime);
+            $this->taskQueue->insert([
+                'time'  => time() + $sleepTime,
+                'event' => $event
+            ], -time() - $sleepTime);
         }
     }
 

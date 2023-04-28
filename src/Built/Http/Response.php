@@ -166,6 +166,14 @@ class Response
     /**
      * @return string
      */
+    public function __toString(): string
+    {
+        return $this->getFullHttpContext();
+    }
+
+    /**
+     * @return string
+     */
     public function getFullHttpContext(): string
     {
         return $this->getHttpHeaderContext() . $this->getHttpBodyContext();
@@ -223,13 +231,5 @@ class Response
     public function __sleep()
     {
         return ['name', 'statusCode', 'header', 'version', 'charset', 'contentType', 'body', 'hash'];
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString(): string
-    {
-        return $this->getFullHttpContext();
     }
 }

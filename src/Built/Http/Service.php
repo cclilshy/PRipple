@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace Cclilshy\PRipple\Built\Http;
 
+use Cclilshy\PRipple\Dispatch\Dispatcher;
 use Cclilshy\PRipple\Dispatch\DataStandard\Event;
 use Cclilshy\PRipple\Dispatch\DataStandard\Build;
 use Cclilshy\PRipple\Communication\Socket\Client;
@@ -23,7 +24,6 @@ use Cclilshy\PRipple\Built\Http\Event as HttpRequestEvent;
 class Service extends ServiceBase
 {
     private array $requests = array();
-
     // transfers
     private array $transfers = array();
     // Transmission queue, where upload requests are placed in a transmission queue
@@ -48,6 +48,9 @@ class Service extends ServiceBase
             SO_REUSEADDR => 1,
             TCP_NODELAY  => 1
         ]);
+        if ($this->config('fiber')) {
+            $this->subscribe('Timer', 'ControllerSleep', Dispatcher::FORMAT_EVENT);
+        }
     }
 
     /**
@@ -67,7 +70,7 @@ class Service extends ServiceBase
      */
     public function onEvent(Event $event): void
     {
-        $this->httpRequestEvent->extracted($event);
+        $this->httpRequestEvent->parseEvent($event);
     }
 
     /**
@@ -94,14 +97,6 @@ class Service extends ServiceBase
     public function handshake(Client $client): bool|null
     {
         return $client->handshake();
-        $client->read($context);
-        if (strpos($client->cache($context), "\r\n\r\n")) {
-            // TODO: Implement handshake() method.
-            $client->info = new Request($client->getName());
-            return $client->handshake();
-        } else {
-            $client->cache($context);
-        }
     }
 
     /**
@@ -127,7 +122,7 @@ class Service extends ServiceBase
         $request->push($context);
         if ($request->getStatusCode() === Request::COMPLETE) {
             $this->httpRequestEvent->access($request);
-        } elseif ($request->isUpload === true) {
+        } elseif ($request->isUpload === true && $this->config('fiber')) {
             $this->httpRequestEvent->access($request);
             $this->transfers[$clientName] = $request;
         }
@@ -140,7 +135,6 @@ class Service extends ServiceBase
     public function onClose(Client $client): void
     {
         $this->vestigial[] = $client->getKeyName();
-        $this->httpRequestEvent->break($client);
     }
 
     public function destroy(): void

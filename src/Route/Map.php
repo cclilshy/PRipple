@@ -36,13 +36,17 @@ class Map
     public function __construct(string $type, string $className, string $action, callable $callable = null)
     {
         $this->type = $type;
-        if ($type === 'Controller') {
-            $this->className = $className;
-            $this->action    = $action;
-        } elseif ($type === 'Closure') {
-            $this->callable = $callable;
-        } elseif ($type === 'Static') {
-            $this->className = $className;
+        switch ($this->type) {
+            case 'Controller':
+                $this->className = $className;
+                $this->action    = $action;
+                break;
+            case 'Closure':
+                $this->callable = $callable;
+                break;
+            case 'Static':
+                $this->className = $className;
+                break;
         }
     }
 
@@ -74,29 +78,34 @@ class Map
     }
 
     /**
-     * @param ...$vars
      * @return mixed
      */
-    public function run(...$vars): mixed
+    public function run(): mixed
     {
-        if ($this->type == 'Controller') {
-            return call_user_func([new $this->className($vars[0] ?? null), $this->action], ...$vars);
-        } elseif ($this->type === 'Static') {
-            $request    = $vars[0];
-            $response   = new Response($request);
-            $statistics = new Statistics();
-            $filePath   = $this->className . $request->path;
-            if (is_file($filePath) && pathinfo($filePath, PATHINFO_EXTENSION) !== 'php') {
-                return $response->setContentType(mime_content_type($filePath))->setBody(file_get_contents($filePath))->setStatusCode(200);
-            } else {
-                return $response->setBody(Text::htmlErrorPage(404, 'There is no such static file!', __FILE__, __LINE__, $request, $statistics))->setStatusCode(404);
-            }
-        } else {
-            return call_user_func_array($this->callable, ...$vars);
+        switch ($this->type) {
+            case 'Controller':
+                return call_user_func_array([new $this->className($vars[0] ?? null), $this->action], func_get_args());
+            case 'Static':
+                $request    = func_get_args()[0];
+                $response   = new Response($request);
+                $statistics = new Statistics();
+                $filePath   = $this->className . $request->path;
+                if (is_file($filePath) && pathinfo($filePath, PATHINFO_EXTENSION) !== 'php') {
+                    return $response->setContentType(mime_content_type($filePath))->setBody(file_get_contents($filePath))->setStatusCode(200);
+                } else {
+                    return $response->setBody(Text::htmlErrorPage(404, 'There is no such static file!', __FILE__, __LINE__, $request, $statistics))->setStatusCode(404);
+                }
+            default:
+                return call_user_func_array($this->callable, func_get_args());
         }
     }
 
-
+    /**
+     * 将控制器路由取出一个实例
+     *
+     * @param mixed|null $initParam
+     * @return object|false
+     */
     public function instantiation(mixed $initParam = null): object|false
     {
         if ($this->type !== 'Controller' || !isset($this->className)) {

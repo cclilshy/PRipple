@@ -88,7 +88,7 @@ class Controller
     public function json(array|string $data): string
     {
         if (is_array($data)) {
-            $data = json_encode($data);
+            $data = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         }
         $this->header('Content-Type', 'application/json');
         return $data;

@@ -66,10 +66,8 @@ class SocketAisle implements CommunicationInterface
         $this->address             = $address;
         $this->port                = $port ?? 0;
         $this->keyName             = spl_object_hash($socket);
-        $this->createTime          = time();
         $this->socket              = $socket;
         $this->name                = '';
-        $this->activeTime          = time();
         $this->sendBufferSize      = socket_get_option($socket, SOL_SOCKET, SO_SNDBUF);
         $this->receiveBufferSize   = socket_get_option($socket, SOL_SOCKET, SO_RCVBUF);
         $this->sendLowWaterSize    = socket_get_option($socket, SOL_SOCKET, SO_SNDLOWAT);
@@ -434,7 +432,6 @@ class SocketAisle implements CommunicationInterface
      */
     public function read(mixed &$data, int|null $length = null): bool
     {
-        $this->activeTime = time();
         if (!$length) {
             $length = $this->receiveBufferSize;
             $target = false;
@@ -444,30 +441,32 @@ class SocketAisle implements CommunicationInterface
         }
         $data          = '';
         $handledLength = 0;
-        do {
+        if (@!$recLength = socket_recv($this->socket, $_buffer, min($length, $this->receiveBufferSize), 0)) {
+            return false;
+        }
+        $length                 -= $recLength;
+        $data                   .= $_buffer;
+        $handledLength          += $recLength;
+        $this->receiveFlowCount += $recLength;
+        while ($target && $length > 0) {
             $_rs = [$this->socket];
             $_es = $_rs;
 
             if (!socket_select($_rs, $_, $_es, 0, 1000)) {
-                break;
+                return false;
             }
             if (!empty($_es)) {
-                break;
+                return false;
             }
-            $recLength = @socket_recv($this->socket, $_buffer, min($length, $this->receiveBufferSize), 0);
-            if ($recLength === false || $recLength === 0) {
-                break;
+            if (@!$recLength = socket_recv($this->socket, $_buffer, min($length, $this->receiveBufferSize), 0)) {
+                return false;
             }
             $length                 -= $recLength;
             $data                   .= $_buffer;
             $handledLength          += $recLength;
             $this->receiveFlowCount += $recLength;
-        } while ($length > 0 && $target);
-        if ($target) {
-            return $length === 0;
-        } else {
-            return $handledLength > 0;
         }
+        return $handledLength > 0;
     }
 
     /**
@@ -551,9 +550,8 @@ class SocketAisle implements CommunicationInterface
      */
     public function send(string $context): int|false
     {
-        $this->activeTime = time();
-        $handledLength    = 0;
-        $tasks            = str_split($context, $this->sendBufferSize);    // 切片
+        $handledLength = 0;
+        $tasks         = str_split($context, $this->sendBufferSize);    // 切片
         do {
             if ($task = array_shift($tasks)) {
                 $this->sendBuffer .= $task;

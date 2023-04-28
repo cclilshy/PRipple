@@ -193,10 +193,7 @@ class Manager
     public function removeClient(mixed $clientSocket): void
     {
         $name = Manager::getNameBySocket($clientSocket);
-        if ($clientSocket = $this->clientSockets[$name] ?? null) {
-            //            socket_close($this->clientSockets[$name]);
-            unset($this->clientSockets[$name]);
-        }
+        unset($this->clientSockets[$name]);
 
         /**
          * @var SocketAisle $clientAisle
@@ -204,8 +201,7 @@ class Manager
         if ($clientAisle = $this->clients[$name] ?? null) {
             $clientAisle->release();
             $this->removeClientWithBufferedData($clientAisle);
-            $identity = $clientAisle->getIdentity();
-            if (isset($this->identityHashMap[$identity])) {
+            if ($identity = $clientAisle->getIdentity()) {
                 unset($this->identityHashMap[$identity]);
             }
             unset($this->clients[$name]);

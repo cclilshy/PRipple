@@ -20,14 +20,13 @@ class Index extends Controller
 
     public function index(): string
     {
-        $this->assign('name', 'PRipple');
-        return $this;
+        return 'hello world';
     }
 
     public function upload(): string
     {
         if ($this->request->isUpload) {
-            return json_encode($this->request->uploadBaseInfo ?? []);
+            return $this->json($this->request->uploadInfo);
         } else {
             return $this;
         }

@@ -36,6 +36,11 @@ class Http
         }
     }
 
+    public static function config(string $key): mixed
+    {
+        return Http::$config[$key] ?? null;
+    }
+
     /**
      * @return void
      */
@@ -44,10 +49,5 @@ class Http
         Route::loadPath(Http::BUILT_ROUTE_PATH);
         Route::loadPath(Http::ROUTE_PATH);
         Http::$config = Config::get('HttpService') ?? [];
-    }
-
-    public static function config(string $key): mixed
-    {
-        return Http::$config[$key] ?? null;
     }
 }

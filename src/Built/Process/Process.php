@@ -34,6 +34,73 @@ class Process extends Service
         parent::__construct("Process");
     }
 
+    public static function fork(callable $function): int
+    {
+        if (Process::$guardProcess === null) {
+            Process::init();
+            Process::$guardProcess = Process::createGuardProcess();
+        }
+        switch ($pid = pcntl_fork()) {
+            case 0:
+                // In order to send events between multiple processes without conflict,
+                // a locking mechanism is used
+                // Therefore, it is necessary to clone a pipe with a different resource address
+                Process::$guardProcess = null;
+                $event                 = new Event('Process', 'processSignal', [
+                    'type' => 'new',
+                    'pid'  => posix_getpid(),
+                    'ppid' => posix_getppid()
+                ]);
+                Process::$socketAisle->write($event->serialize());
+                call_user_func($function);
+                $event = new Event('Process', 'processSignal', [
+                    'type' => 'exit',
+                    'pid'  => posix_getpid(),
+                ]);
+                Process::$socketAisle->write($event->serialize());
+                exit;
+            case -1:
+            default:
+                return $pid;
+        }
+    }
+
+    public static function init(): void
+    {
+        try {
+            Process::$socketAisle = SocketAisle::create(SocketUnix::connect(Process::SOCK_ADDRESS));
+        } catch (\Exception $e) {
+            Log::print($e->getMessage() . PHP_EOL);
+        }
+    }
+
+    public static function createGuardProcess(): Guard
+    {
+        Process::$guardProcess = new Guard('guard_' . posix_getpid());
+        $pid                   = pcntl_fork();
+        if ($pid === 0) {
+            Process::$guardProcess->launch();
+            exit;
+        } else {
+            $event = new Event('Process', 'guardOnline', [
+                'pid'  => $pid,
+                'ppid' => posix_getpid()
+            ]);
+            Process::$socketAisle->write($event->serialize());
+        }
+        return Process::$guardProcess;
+    }
+
+    public static function signal(int $signNo, int $processId): void
+    {
+        $event = new Event('Process', 'processSignal', [
+            'type'   => 'signal',
+            'signNo' => $signNo,
+            'pid'    => $processId
+        ]);
+        Process::$socketAisle->write($event->serialize());
+    }
+
     public function handshake(Client $client): bool|null
     {
         return $client->handshake();
@@ -52,6 +119,16 @@ class Process extends Service
     public function heartbeat(): void
     {
 
+    }
+
+    public function onMessage(string $context, Client $client): void
+    {
+        if ($event = Event::unSerialize($client->cache($context))) {
+            $this->onEvent($event, $client);
+            $client->cleanCache();
+        } else {
+            echo 'sss';
+        }
     }
 
     public function onEvent(Event $event): void
@@ -92,16 +169,6 @@ class Process extends Service
         }
     }
 
-    public function onMessage(string $context, Client $client): void
-    {
-        if ($event = Event::unSerialize($client->cache($context))) {
-            $this->onEvent($event, $client);
-            $client->cleanCache();
-        } else {
-            echo 'sss';
-        }
-    }
-
     public function initialize(): void
     {
         if (file_exists(Process::SOCK_ADDRESS)) {
@@ -113,73 +180,6 @@ class Process extends Service
     public function onPackage(Build $package): void
     {
 
-    }
-
-    public static function init(): void
-    {
-        try {
-            Process::$socketAisle = SocketAisle::create(SocketUnix::connect(Process::SOCK_ADDRESS));
-        } catch (\Exception $e) {
-            Log::print($e->getMessage() . PHP_EOL);
-        }
-    }
-
-    public static function fork(callable $function): int
-    {
-        if (Process::$guardProcess === null) {
-            Process::init();
-            Process::$guardProcess = Process::createGuardProcess();
-        }
-        switch ($pid = pcntl_fork()) {
-            case 0:
-                // In order to send events between multiple processes without conflict,
-                // a locking mechanism is used
-                // Therefore, it is necessary to clone a pipe with a different resource address
-                Process::$guardProcess = null;
-                $event                 = new Event('Process', 'processSignal', [
-                    'type' => 'new',
-                    'pid'  => posix_getpid(),
-                    'ppid' => posix_getppid()
-                ]);
-                Process::$socketAisle->write($event->serialize());
-                call_user_func($function);
-                $event = new Event('Process', 'processSignal', [
-                    'type' => 'exit',
-                    'pid'  => posix_getpid(),
-                ]);
-                Process::$socketAisle->write($event->serialize());
-                exit;
-            case -1:
-            default:
-                return $pid;
-        }
-    }
-
-    public static function createGuardProcess(): Guard
-    {
-        Process::$guardProcess = new Guard('guard_' . posix_getpid());
-        $pid                   = pcntl_fork();
-        if ($pid === 0) {
-            Process::$guardProcess->launch();
-            exit;
-        } else {
-            $event = new Event('Process', 'guardOnline', [
-                'pid'  => $pid,
-                'ppid' => posix_getpid()
-            ]);
-            Process::$socketAisle->write($event->serialize());
-        }
-        return Process::$guardProcess;
-    }
-
-    public static function signal(int $signNo, int $processId): void
-    {
-        $event = new Event('Process', 'processSignal', [
-            'type'   => 'signal',
-            'signNo' => $signNo,
-            'pid'    => $processId
-        ]);
-        Process::$socketAisle->write($event->serialize());
     }
 
     public function destroy(): void

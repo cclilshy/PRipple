@@ -1,0 +1,54 @@
+<?php
+declare(strict_types=1);
+
+namespace {{$namespace}};
+
+use Cclilshy\PRipple\Service\Service;
+use Cclilshy\PRipple\Communication\Socket\Client;
+use Cclilshy\PRipple\Dispatch\DataStandard\Event;
+use Cclilshy\PRipple\Dispatch\DataStandard\Build;
+
+class {{$className}} extends Service
+{
+    public function __construct(string|null $name = null)
+    {
+        parent::__construct('{{$className}}');
+    }
+
+    public function initialize(): void
+    {
+    }
+
+    public function heartbeat(): void
+    {
+    }
+
+
+    public function handshake(Client $client): bool|null
+    {
+    }
+
+    public function onConnect(Client $client): void
+    {
+    }
+
+    public function onPackage(Build $package): void
+    {
+    }
+    
+    public function onEvent(Event $event): void
+    {
+    }
+
+    public function onMessage(string $context, Client $client): void
+    {
+    }
+
+    public function onClose(Client $client): void
+    {
+    }
+
+    public function destroy(): void
+    {
+    }
+}

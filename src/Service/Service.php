@@ -32,13 +32,14 @@ abstract class Service extends ServiceInfo implements ServiceStandard
     public string      $publish;
     public mixed       $dispatcherServer;
     public array       $socketTypeMap;
-
-    public string $socketType;
-    public string $serverAddress;
-    public int    $serverPort;
-    public array  $socketOptions;
-    public int    $selectBlockLine;
-    public bool   $isServer = false;
+    public string      $socketType;
+    public string      $serverAddress;
+    public int         $serverPort;
+    public array       $socketOptions;
+    public int         $selectBlockLine;
+    public bool        $isServer = false;
+    private int        $memoryLimit;
+    private int        $memoryHighWaterLevel;
 
     /**
      * service configuration
@@ -52,6 +53,8 @@ abstract class Service extends ServiceInfo implements ServiceStandard
             $this->publish = str_replace('\\', '_', $this->publish);
         }
         parent::__construct($this->publish);
+        $this->memoryLimit          = strToBytes(ini_get('memory_limit'));
+        $this->memoryHighWaterLevel = intval($this->memoryLimit * 0.8);
     }
 
     /**
@@ -78,7 +81,7 @@ abstract class Service extends ServiceInfo implements ServiceStandard
         }
 
         while (true) {
-            if (memory_get_usage() > strToBytes(ini_get('memory_limit')) * 0.8) {
+            if (memory_get_usage() > $this->memoryHighWaterLevel) {
                 $this->heartbeat();
                 gc_collect_cycles();
             }
@@ -120,16 +123,13 @@ abstract class Service extends ServiceInfo implements ServiceStandard
                         default:
                             // TODO:Client messages
                             if ($client = $this->serverSocketManager->getClientBySocket($readSocket)) {
-                                if (true === $client->verify) {
-                                    if ($context = $client->getPlaintext()) {
-                                        $this->onMessage($context, $client);
-                                    } else {
-                                        $this->onClose($client);
-                                        $this->serverSocketManager->removeClient($readSocket);
-                                    }
+                                if ($client->read($context)) {
+                                    $this->onMessage($context, $client);
                                 } else {
-                                    $this->handshake($client);
+                                    $this->onClose($client);
+                                    $this->serverSocketManager->removeClient($client);
                                 }
+
                             }
                     }
                 }
