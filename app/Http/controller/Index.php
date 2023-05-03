@@ -1,9 +1,8 @@
 <?php
 /*
- * @Author: cclilshy jingnigg@gmail.com
- * @Date: 2023-03-30 16:29:26
- * @LastEditors: cclilshy jingnigg@gmail.com
- * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
+ * @ Work name: PRipple
+ * @ Author: cclilshy jingnigg@gmail.com
+ * @ Copyright (c) 2023. by user email: jingnigg@gmail.com, All Rights Reserved.
  */
 
 namespace app\Http\controller;

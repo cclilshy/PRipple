@@ -1,4 +1,10 @@
 <?php
+/*
+ * @ Work name: PRipple
+ * @ Author: cclilshy jingnigg@gmail.com
+ * @ Copyright (c) 2023. by user email: jingnigg@gmail.com, All Rights Reserved.
+ */
+
 declare(strict_types=1);
 /*
  * @Author: cclilshy jingnigg@gmail.com
@@ -230,7 +236,7 @@ class Request
         $this->body = '';
         while ($streamLine = array_shift($lines)) {
             if ($this->uploadInfo['status'] === 'prepare') {
-                // TODO:: parse base upload file info
+                // TODO: Parse the basic information of the uploaded file
                 if (!str_starts_with($streamLine, '--' . $this->uploadInfo['boundary'])) {
                     return false;
                 }
@@ -252,7 +258,7 @@ class Request
                 $this->uploadInfo['files'][]         = $theFileInfo;
                 $this->uploadInfo['endLine']         = '--' . $this->uploadInfo['boundary'] . '--';
             } elseif ($this->uploadInfo['status'] === 'transfer') {
-                // TODO: is transfer
+                // TODO: transfer process
                 if (str_contains($streamLine, $this->uploadInfo['endLine'])) {
                     if ($this->uploadInfo['endLine'] === $streamLine) {
                         // TODO: is the file context end

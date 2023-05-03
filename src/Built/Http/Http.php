@@ -1,4 +1,10 @@
 <?php
+/*
+ * @ Work name: PRipple
+ * @ Author: cclilshy jingnigg@gmail.com
+ * @ Copyright (c) 2023. by user email: jingnigg@gmail.com, All Rights Reserved.
+ */
+
 declare(strict_types=1);
 
 namespace Cclilshy\PRipple\Built\Http;
@@ -25,8 +31,8 @@ class Http
     {
         if ($template = Http::$templateCache[$name] ?? null) {
             return $template;
-        } elseif (file_exists(Http::BUILT_TEMPLATE_PATH . "/{$name}.tpl")) {
-            $template = file_get_contents(Http::BUILT_TEMPLATE_PATH . "/{$name}.tpl");
+        } elseif (file_exists(Http::BUILT_TEMPLATE_PATH . "/{$name}.php")) {
+            $template = file_get_contents(Http::BUILT_TEMPLATE_PATH . "/{$name}.php");
             if (Http::config('template_cache')) {
                 Http::$templateCache[$name] = $template;
             }

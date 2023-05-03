@@ -1,3 +1,9 @@
+/*
+ * @ Work name: PRipple
+ * @ Author: cclilshy jingnigg@gmail.com
+ * @ Copyright (c) 2023. by user email: jingnigg@gmail.com, All Rights Reserved.
+ */
+
 /*!
     Highlight.js v11.7.0 (git: 82688fad18)
     (c) 2006-2022 undefined and other contributors

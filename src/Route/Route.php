@@ -1,4 +1,10 @@
 <?php
+/*
+ * @ Work name: PRipple
+ * @ Author: cclilshy jingnigg@gmail.com
+ * @ Copyright (c) 2023. by user email: jingnigg@gmail.com, All Rights Reserved.
+ */
+
 declare(strict_types=1);
 /*
  * @Author: cclilshy cclilshy@163.com
@@ -19,7 +25,7 @@ namespace Cclilshy\PRipple\Route;
  * @method static delete(string $string, string $string1)
  * @method static options(string $string, string $string1)
  * @method static cron(string $string, string $string1)
- * @method static static (string $path)
+ * @method static static (string $path, string $string1)
  * @method static service(string $string, string $string1)
  */
 class Route
