@@ -1,5 +1,5 @@
 # PRipple
-> > A pure event-driven PHP high-concurrency asynchronous framework developed in subscription-publishing mode
+> A pure event-driven PHP high-concurrency asynchronous framework developed in subscription-publishing mode
 
 ## Environmental requirements
 - OS Linux- PHP 8.2+
