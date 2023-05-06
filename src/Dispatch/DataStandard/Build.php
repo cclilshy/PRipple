@@ -35,7 +35,7 @@ class Build
         $this->publisher         = $publisher;
         $this->message           = $message;
         $this->event             = $event;
-        $this->uuid              = md5(microtime(true) . mt_rand(1, 9999));
+        $this->uuid              = getRandHash();
         $this->targetHandlerName = $targetHandlerName;
     }     // 签名列表
 

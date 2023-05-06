@@ -51,7 +51,7 @@ class Request
     {
         $this->statistics = new Statistics();
         $this->name       = $name;
-        $this->hash       = md5(mt_rand(1111, 9999) . microtime(true));
+        $this->hash       = getRandHash();
         $this->statusCode = Request::INCOMPLETE;
         $this->response   = new Response($this);
     }
@@ -64,6 +64,7 @@ class Request
     {
         return new self($name);
     }
+
 
     /**
      * @return bool
@@ -108,12 +109,45 @@ class Request
         return $this;
     }
 
+    public function requestDataHandler(): bool
+    {
+        if ($this->method === 'GET') {
+            return $this->signStatusCode(Request::COMPLETE);
+        } elseif (str_starts_with($this->header('Content-Type'), 'multipart/form-data')) {
+            $result = $this->initUpload();
+        } else {
+            $result = $this->signStatusCode(Request::INVALID);
+        }
+        if ($this->bodyLength === intval($this->header('Content-Length'))) {
+            return $this->signStatusCode(Request::COMPLETE);
+        }
+        return $result;
+    }
+
     /**
-     *Initialize the request and return whether the initialization is successful
+     * Push request body
      *
      * @param string $context
-     * @return bool
+     * @return void
      */
+    public function push(string $context): void
+    {
+        if (!isset($this->method)) {
+            $this->parseRequestHead($context);
+        } elseif ($this->method === 'POST') {
+            $this->bodyLength += strlen($context);
+            if ($this->bodyLength === intval($this->header('Content-Length'))) {
+                $this->signStatusCode(Request::COMPLETE);
+            }
+            if ($this->isUpload) {
+                $this->uploadHandler->push($context);
+                return;
+            }
+            $this->body .= $context;
+        }
+    }
+
+
     public function parseRequestHead(string $context): bool
     {
         $context = $this->buffer($context);
@@ -129,48 +163,16 @@ class Request
             $this->setPath($base[1]);
             $this->version = $base[2];
             while ($line = strtok("\r\n")) {
-                $lineParam                         = explode(':', $line, 2);
-                $this->header[trim($lineParam[0])] = trim($lineParam[1]);
+                $lineParam = explode(':', $line, 2);
+                if (count($lineParam) == 2) {
+                    $this->header[trim($lineParam[0])] = trim($lineParam[1]);
+                }
             }
-            if ($this->method === 'GET') {
-                return $this->signStatusCode(Request::COMPLETE);
-            }
-            if ($this->bodyLength === intval($this->header('Content-Length'))) {
-                $this->signStatusCode(Request::COMPLETE);
-            }
-            if (str_starts_with($this->header('Content-Type'), 'multipart/form-data')) {
-                return $this->initUpload();
-            } else {
-                return $this->signStatusCode(Request::INVALID);
-            }
+            return $this->requestDataHandler();
         } else {
             $this->buffer($context);
             return false;
         }
-    }
-
-    /**
-     * Push request body
-     *
-     * @param string $context
-     * @return bool
-     */
-    public function push(string $context): bool
-    {
-        if (!isset($this->method)) {
-            return $this->parseRequestHead($context);
-        } elseif ($this->method === 'POST') {
-            $this->bodyLength += strlen($context);
-            if ($this->bodyLength === intval($this->header('Content-Length'))) {
-                $this->signStatusCode(Request::COMPLETE);
-            }
-            if ($this->isUpload) {
-                return $this->uploadHandler->push($context);
-            }
-            $this->body .= $context;
-            return true;
-        }
-        return true;
     }
 
     /**
@@ -219,8 +221,9 @@ class Request
         }
         if (isset($this->uploadInfo['boundary'])) {
             $this->isUpload      = true;
-            $this->uploadHandler = new UploadHandler($this->uploadInfo['boundary']);
-            return $this->uploadHandler->push($this->body);
+            $this->uploadHandler = new UploadHandler($this->uploadInfo['boundary'], $this);
+            $this->uploadHandler->push($this->body);
+            return true;
         }
         return $this->signStatusCode(Request::INVALID);
     }

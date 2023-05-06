@@ -31,7 +31,7 @@ class Event
     public function __construct(string $publisher, string $name, mixed $data, ?int $timestamp = null)
     {
         $this->publisher  = $publisher;
-        $this->identifier = md5(microtime(true) . mt_rand(1, 9999));
+        $this->identifier = getRandHash();
         $this->name       = $name;
         $this->data       = $data;
         $this->timestamp  = $timestamp ?? time();

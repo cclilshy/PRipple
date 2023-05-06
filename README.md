@@ -3,7 +3,7 @@
 
 ## Environmental requirements
 - OS Linux- PHP 8.2+
-- PHP-Extension `posix` `pcntl` `sockets`
+- PHP-Extension `posix` `pcntl` `sockets` `fileinfo`
 
 ## Install
 ```bash

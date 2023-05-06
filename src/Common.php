@@ -21,3 +21,8 @@ function strToBytes(string $str): int
     }
     return $num;
 }
+
+function getRandHash(): string
+{
+    return md5(microtime(true) . mt_rand(1111, 9999));
+}

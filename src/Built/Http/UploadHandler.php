@@ -6,23 +6,26 @@
  */
 
 namespace Cclilshy\PRipple\Built\Http;
+
 class UploadHandler
 {
-    // -1: This packet is illegal,
-    // 0: Waiting for analysis,
-    // 1: Transmitting
-    public string    $currentTransferFilePath;
-    protected int    $status;
-    protected mixed  $currentTransferFile;
-    protected array  $files     = array();
-    protected array  $lineStack = array();
-    protected string $buffer    = '';
-    protected string $boundary;
+    const STATUS_ILLEGAL            = -1;
+    const STATUS_WAITING_FOR_HEADER = 0;
+    const STATUS_TRANSMITTING       = 1;
 
-    public function __construct(string $boundary)
+    public array      $files  = array();
+    protected string  $currentTransferFilePath;
+    protected int     $status;
+    protected mixed   $currentTransferFile;
+    protected string  $buffer = '';
+    protected string  $boundary;
+    protected Request $request;
+
+    public function __construct(string $boundary, Request $request)
     {
         $this->boundary = $boundary;
-        $this->status   = 0;
+        $this->status   = UploadHandler::STATUS_WAITING_FOR_HEADER;
+        $this->request  = $request;
     }
 
     public function __sleep()
@@ -30,104 +33,99 @@ class UploadHandler
         return ['files'];
     }
 
-    public function push(string $context): bool
+    public function push(string $context): void
     {
         // buffer store data
         $this->buffer .= $context;
+        while ($this->status !== UploadHandler::STATUS_ILLEGAL) {
+            if ($this->status === UploadHandler::STATUS_WAITING_FOR_HEADER) {
+                if (!$this->parseFileInfo()) {
+                    break;
+                }
+            }
 
-        // Judging the transmission status
-        switch ($this->status) {
-            case 0:
-                //TODO: Attempt to parse file information
-                if (str_contains($this->buffer, "\r\n\r\n")) {
-                    $this->bufferPushOntoStack();
-                    if ($this->parseFileInfo()) {
-                        return $this->lineStackConsume();
-                    }
+            if ($this->status === UploadHandler::STATUS_TRANSMITTING) {
+                if (!$this->processTransmitting()) {
+                    break;
                 }
-                return true;
-            case 1:
-                //TODO: Brainless transfer process
-                $this->bufferPushOntoStack();
-                $result = $this->lineStackConsume();
-                if ($this->status === 0 && $this->parseFileInfo()) {
-                    //TODO: Single file transfer completed, recursively process subsequent files
-                    $this->lineStackConsume();
-                }
-                return $result;
-            case -1:
-            default:
-                return false;
+            }
         }
     }
 
-    private function bufferPushOntoStack(): void
+    private function processTransmitting(): bool
     {
-        $array = explode("\r\n", $this->buffer);
-        foreach ($array as $item) {
-            $this->lineStack[] = $item;
+        $boundaryPosition = strpos($this->buffer, "\r\n--" . $this->boundary);
+        if ($boundaryPosition !== false) {
+            $remainingData        = substr($this->buffer, $boundaryPosition + 2);
+            $nextBoundaryPosition = strpos($remainingData, "\r\n--" . $this->boundary);
+            if ($nextBoundaryPosition === false && !str_starts_with($remainingData, '--')) {
+                // 不完整的boundary，暂时保存在缓冲区中，等待下次push时处理
+                return false;
+            }
+
+            $content      = substr($this->buffer, 0, $boundaryPosition);
+            $this->buffer = $remainingData;
+            fwrite($this->currentTransferFile, $content);
+            fclose($this->currentTransferFile);
+
+            $this->status = UploadHandler::STATUS_WAITING_FOR_HEADER;
+            return true;
+        } else {
+            $content      = $this->buffer;
+            $this->buffer = '';
+
+            fwrite($this->currentTransferFile, $content);
+            return false;
         }
-        $this->buffer = '';
     }
 
     private function parseFileInfo(): bool
     {
-        $line = array_shift($this->lineStack);
-        if (empty($line) || !str_starts_with($line, '--' . $this->boundary)) {
+        $headerEndPosition = strpos($this->buffer, "\r\n\r\n");
+        if ($headerEndPosition === false) {
             return false;
         }
-        // TODO: Parse the basic information of the uploaded file
-        $theFileInfo        = array();
-        $this->status       = 1;
-        $dispositionAndName = explode(';', array_shift($this->lineStack));
-        $disposition        = explode(':', $dispositionAndName[0])[1];
-        $name               = explode('=', $dispositionAndName[1])[1];
-        $fileName           = explode('=', $dispositionAndName[2])[1];
-        $contentType        = explode(':', array_shift($this->lineStack))[1] ?? '';
-        array_shift($this->lineStack);
-        $this->createNewFile();
-        $theFileInfo['disposition'] = trim($disposition);
-        $theFileInfo['name']        = trim($name, '" ');
-        $theFileInfo['fileName']    = trim($fileName, '" ');
-        $theFileInfo['contentType'] = trim($contentType);
-        $theFileInfo['path']        = $this->currentTransferFilePath;
-        $this->files[]              = $theFileInfo;
-        return true;
-    }
 
-    /**
-     * @return void
-     */
-    private function createNewFile(): void
-    {
-        $this->currentTransferFilePath = PRIPPLE_CACHE_PATH . FS . md5(microtime(true) . rand(1, 9));
-        $this->currentTransferFile     = fopen($this->currentTransferFilePath, 'wb+');
-    }
+        $header       = substr($this->buffer, 0, $headerEndPosition);
+        $this->buffer = substr($this->buffer, $headerEndPosition + 4);
 
-    private function lineStackConsume(): bool
-    {
-        $i         = 0;
-        $lastIndex = count($this->lineStack) - 1;
-        $first     = true;
-        while ($this->status === 1 && ($line = array_shift($this->lineStack)) !== null) {
-            $i++;
-            if (!empty($line) && str_contains('--' . $this->boundary . '--', $line)) {
-                //TODO: PROBABLY END OF FILE
-                $this->status = 0;
-                fclose($this->currentTransferFile);
-            } elseif (empty($line)) {
-                //TODO: BLANK LINE
-                fwrite($this->currentTransferFile, "\r\n");
-            } else {
-                //TODO: non-null persistent data
-                fwrite($this->currentTransferFile, $line);
-                if ($first) {
-                    $first = false;
-                } elseif ($lastIndex !== $i) {
-                    fwrite($this->currentTransferFile, "\r\n");
-                }
+        $lines = explode("\r\n", $header);
+
+        $boundaryLine = array_shift($lines);
+        if ($boundaryLine !== '--' . $this->boundary) {
+            $this->request->signStatusCode(Request::INVALID);
+            $this->status = UploadHandler::STATUS_ILLEGAL;
+            return false;
+        }
+
+        $fileInfo = array();
+        foreach ($lines as $line) {
+            if (preg_match('/^Content-Disposition: form-data; name="([^"]+)"; filename="([^"]+)"$/i', $line, $matches)) {
+                $fileInfo['name']     = $matches[1];
+                $fileInfo['fileName'] = $matches[2];
+            } elseif (preg_match('/^Content-Type: (.+)$/i', $line, $matches)) {
+                $fileInfo['contentType'] = $matches[1];
             }
         }
+
+        if (empty($fileInfo['name']) || empty($fileInfo['fileName'])) {
+            $this->request->signStatusCode(Request::INVALID);
+            $this->status = UploadHandler::STATUS_ILLEGAL;
+            return false;
+        }
+
+        $this->createNewFile($fileInfo);
+        $this->status = UploadHandler::STATUS_TRANSMITTING;
         return true;
+    }
+
+
+    private function createNewFile(array $fileInfo): void
+    {
+        $this->currentTransferFilePath = PRIPPLE_CACHE_PATH . FS . getRandHash();
+        $this->currentTransferFile     = fopen($this->currentTransferFilePath, 'wb+');
+
+        $fileInfo['path'] = $this->currentTransferFilePath;
+        $this->files[]    = $fileInfo;
     }
 }

@@ -6,13 +6,6 @@
  */
 
 declare(strict_types=1);
-/*
- * @Author: cclilshy cclilshy@163.com
- * @Date: 2022-12-04 00:42:32
- * @LastEditors: cclilshy jingnigg@gmail.com
- * @Description: PRipple
- * Copyright (c) 2022 by cclilshy email: cclilshy@163.com, All Rights Reserved.
- */
 
 namespace Cclilshy\PRipple;
 
