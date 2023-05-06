@@ -6,13 +6,6 @@
  */
 
 declare(strict_types=1);
-/*
- * @Author: cclilshy jingnigg@gmail.com
- * @Date: 2023-03-16 22:33:59
- * @LastEditors: cclilshy jingnigg@gmail.com
- * @Description: PRipple
- * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
- */
 
 namespace Cclilshy\PRipple\Communication\Aisle;
 

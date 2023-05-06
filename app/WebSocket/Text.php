@@ -22,64 +22,40 @@ class Text extends WebSocketBase
         parent::__construct('WebSocket');
     }
 
-    /**
-     * @return void
-     */
+    /**     * @return void */
     public function initialize(): void
     {
         $this->createServer(Communication::INET, '0.0.0.0', 6789, [SO_REUSEADDR => 1]);
     }
 
-    /**
-     * @return void
-     */
+    /**     * @return void */
     public function heartbeat(): void
     {
-
     }
 
-    /**
-     * @param Client $client
-     * @return void
-     */
+    /**     * @param Client $client * @return void */
     public function onConnect(Client $client): void
     {
     }
 
-    /**
-     * @param Client $client
-     * @return void
-     */
+    /**     * @param Client $client * @return void */
     public function onClose(Client $client): void
     {
     }
 
-    /**
-     * @param string $context
-     * @param Client $client
-     * @return void
-     */
+    /**     * @param string $context * @param Client $client     * @return void */
     public function onMessage(string $context, Client $client): void
     {
         $client->sendWithAgree("recv you say : {$context}");
     }
 
-    /**
-     * @param Event $event
-     * @return void
-     */
+    /**     * @param Event $event * @return void */
     public function onEvent(Event $event): void
     {
-
     }
 
-    /**
-     * @param Build $package
-     * @return void
-     */
+    /**     * @param Build $package * @return void */
     public function onPackage(Build $package): void
     {
-
     }
-
 }

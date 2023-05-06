@@ -6,29 +6,27 @@
  */
 
 declare(strict_types=1);
-/*
- * @Author: cclilshy jingnigg@gmail.com
- * @Date: 2023-03-27 13:07:08
- * @LastEditors: cclilshy jingnigg@gmail.com
- * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
- */
-
 namespace Cclilshy\PRipple\Dispatch\DataStandard;
 
 
 /**
- * 消息包中创建签名
- * 发布的消息包部分属性仅允许在创建时定义如：发布者，发布时的消息，发布时的事件
- * 因此后续拿到该包的处理器允许对包进行签名以储存数据（实例一个本对象）
+ * In the message package,
+ * some attributes of the message package
+ * that create a signature release are only allowed to be defined at the time of creation,
+ * such as: the publisher,
+ * the message at the time of publishing, and the event at the time of publishing. Therefore,
+ * the subsequent processors that get the package are allowed to sign the package to store data (example a native object)
  */
 class Sign
 {
-    // 签名者
+    // signer
     public string $name;
-    // 签名指定数据
+    // signature specified data
     public mixed $info;
-    // 该签名的计数器（同一个包被一个人对象签名两次只记录计数器不覆盖数据）
-    // 暂时不知道有什么用
+    // The counter of the signature
+    // (the same package is signed twice by a person object only records the counter and does not overwrite the data)
+
+    // I don't know what's the use
     public int $count;
 
     /**
@@ -43,8 +41,8 @@ class Sign
     }
 
     /**
-     * @param string $name @ 签名者
-     * @param mixed  $info @ 储存数据
+     * @param string $name @ signer
+     * @param mixed  $info @ saveData
      * @return static
      */
     public static function sign(string $name, mixed $info): self
@@ -53,7 +51,7 @@ class Sign
     }
 
     /**
-     * 对原有的签名对象计数+1
+     * Count +1 to the original signature object
      *
      * @return void
      */

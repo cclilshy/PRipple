@@ -6,7 +6,6 @@
  */
 
 declare(strict_types=1);
-
 namespace Cclilshy\PRipple\Communication\Socket;
 
 use Exception;
@@ -15,27 +14,27 @@ use Exception;
 class SocketUnix
 {
     /**
-     * 创建一个自定义缓冲区大小的UNIX套接字
+     * Create a UNIX socket with a custom buffer size
      *
-     * @param string    $sockFile   套接字文件地址
+     * @param string    $sockFile   SOCKET FILE ADDRESS
      * @param bool|null $block
-     * @param int|null  $bufferSize 默认缓冲区大小为8M
-     * @return mixed
+     * @param int|null  $bufferSize The default buffer size is 8M
+     * @return \Socket
      * @throws \Exception
      */
-    public static function create(string $sockFile, bool|null $block = true, int|null $bufferSize = 1024 * 1024): mixed
+    public static function create(string $sockFile, bool|null $block = true, int|null $bufferSize = 1024 * 1024): \Socket
     {
         if (file_exists($sockFile)) {
-            throw new Exception('无法创建Unix套接字,可能进程被占用');
+            throw new Exception('Unable to create Unix socket, probably process is occupied');
         }
         $sock = socket_create(AF_UNIX, SOCK_STREAM, 0);
         if (!$sock) {
-            throw new Exception('无法创建Unix套接字,可能进程被占用');
+            throw new Exception('Unable to create Unix socket, probably process is occupied');
         }
         socket_set_option($sock, SOL_SOCKET, SO_SNDBUF, $bufferSize);
         socket_set_option($sock, SOL_SOCKET, SO_RCVBUF, $bufferSize);
         if (!socket_bind($sock, $sockFile)) {
-            throw new Exception('无法绑定套接字,请查看目录权限:' . $sockFile);
+            throw new Exception('Unable to bind socket, please check directory permissions ' . $sockFile);
         }
         if ($block === false) {
             socket_set_nonblock($sock);
@@ -47,10 +46,10 @@ class SocketUnix
     /**
      * @param string   $sockFile
      * @param int|null $bufferSize
-     * @return mixed
+     * @return \Socket|false
      * @throws \Exception
      */
-    public static function connect(string $sockFile, int|null $bufferSize = 1024 * 1024): mixed
+    public static function connect(string $sockFile, int|null $bufferSize = 1024 * 1024): \Socket|false
     {
         $sock = socket_create(AF_UNIX, SOCK_STREAM, 0);
         socket_set_option($sock, SOL_SOCKET, SO_SNDBUF, $bufferSize);
@@ -59,7 +58,7 @@ class SocketUnix
         if ($_) {
             return $sock;
         } else {
-            throw new Exception("无法连接Unix套接字,可能服务器未启动");
+            throw new Exception("Unable to connect Unix socket, probably the server is not started");
         }
     }
 }

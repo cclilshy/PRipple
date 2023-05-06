@@ -25,7 +25,14 @@ class Index extends Controller
     public function upload(): string
     {
         if ($this->request->isUpload) {
-            return $this->json($this->request->uploadInfo);
+            $fileSize = filesize($this->request->uploadHandler->currentTransferFilePath);
+            $data     = [
+                'filePath' => $this->request->uploadHandler->currentTransferFilePath,
+                'fileSize' => $fileSize,
+                'md5'      => md5_file($this->request->uploadHandler->currentTransferFilePath)
+            ];
+            copy($this->request->uploadHandler->currentTransferFilePath,'/Users/cclilshy/Dev/cloudtay/res.txt');
+            return json_encode($data);
         } else {
             return $this;
         }

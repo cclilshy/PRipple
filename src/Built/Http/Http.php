@@ -6,7 +6,6 @@
  */
 
 declare(strict_types=1);
-
 namespace Cclilshy\PRipple\Built\Http;
 
 use Cclilshy\PRipple\Config;

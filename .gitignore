@@ -1,7 +1,1 @@
-vendor
-runtime
-.DS_Store
-.idea
-.vscode
-composer.lock
-debug.php
+vendorruntime.DS_Store.idea.vscodecomposer.lockdebug.php
