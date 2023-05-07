@@ -9,7 +9,8 @@
 ## 安装
 
 ```bash
-git clone https://github.com/cclilshy/PRipplecd PRipple
+git clone https://github.com/cclilshy/PRipple
+cd PRipple
 composer install
 ```
 
@@ -249,7 +250,9 @@ class HttpService extends ServiceBase
 <?php
 namespace app\Http\controller;
 
-use Cclilshy\PRipple\Built\Http\Request;use Cclilshy\PRipple\Built\Http\Service;use Cclilshy\PRipple\Built\Http\Controller;
+use Cclilshy\PRipple\Built\Http\Request;
+use Cclilshy\PRipple\Built\Http\Service;
+use Cclilshy\PRipple\Built\Http\Controller;
 
 class Index extends Controller
 {
