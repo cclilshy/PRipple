@@ -69,6 +69,7 @@ class UploadHandler
             fclose($this->currentTransferFile);
 
             $this->status = UploadHandler::STATUS_WAITING_FOR_HEADER;
+            Service::$service->publishEvent('CompleteUploadFile', array_merge(current($this->files), ['hash' => $this->request->getHash()]));
             return true;
         } else {
             $content      = $this->buffer;
@@ -116,11 +117,12 @@ class UploadHandler
 
         $this->createNewFile($fileInfo);
         $this->status = UploadHandler::STATUS_TRANSMITTING;
+        Service::$service->publishEvent('NewUploadFile', array_merge($fileInfo, ['hash' => $this->request->getHash()]));
         return true;
     }
 
 
-    private function createNewFile(array $fileInfo): void
+    private function createNewFile(array &$fileInfo): void
     {
         $this->currentTransferFilePath = PRIPPLE_CACHE_PATH . FS . getRandHash();
         $this->currentTransferFile     = fopen($this->currentTransferFilePath, 'wb+');

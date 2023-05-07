@@ -31,6 +31,7 @@ class Event
     /**
      * @param Request $request
      * @return void
+     * @throws \Throwable
      */
     public function access(Request $request): void
     {
@@ -105,6 +106,16 @@ class Event
                         'time' => $data['time'],
                         'hash' => $requestHash,
                     ]);
+                }
+                break;
+            case 'wait':
+                break;
+            case 'NewUploadFile':
+            case 'CompleteUploadFile':
+            case 'RequestComplete':
+                if ($fiber = $this->fibers[$event->getData()['hash']] ?? null) {
+                    $event = $fiber->resume($event);
+                    $this->parseEvent($event);
                 }
                 break;
             default:

@@ -23,7 +23,8 @@ use Cclilshy\PRipple\Built\Http\Event as HttpRequestEvent;
  */
 class Service extends ServiceBase
 {
-    private array $requests = array();
+    public static Service $service;
+    private array         $requests = array();
     // transfers
     private array $transfers = array();
     // Transmission queue, where upload requests are placed in a transmission queue
@@ -36,6 +37,7 @@ class Service extends ServiceBase
     {
         parent::__construct('HttpService');
         $this->httpRequestEvent = new HttpRequestEvent($this);
+        Service::$service       = $this;
     }
 
     /**
@@ -50,6 +52,9 @@ class Service extends ServiceBase
         ]);
         if ($this->config('fiber')) {
             $this->subscribe('Timer', 'ControllerSleep', Dispatcher::FORMAT_EVENT);
+            $this->subscribe('HttpService', 'NewUploadFile', Dispatcher::FORMAT_EVENT);
+            $this->subscribe('HttpService', 'CompleteUploadFile', Dispatcher::FORMAT_EVENT);
+            $this->subscribe('HttpService', 'RequestComplete', Dispatcher::FORMAT_EVENT);
         }
     }
 
@@ -103,6 +108,7 @@ class Service extends ServiceBase
      * @param string $context
      * @param Client $client
      * @return void
+     * @throws \Throwable
      */
     public function onMessage(string $context, Client $client): void
     {
@@ -110,6 +116,7 @@ class Service extends ServiceBase
         if ($transfer = $this->transfers[$clientName] ?? null) {
             if (!$transfer->push($context) || $transfer->getStatusCode() === Request::COMPLETE) {
                 unset($this->transfers[$clientName]);
+                $this->publishEvent('RequestComplete', ['hash' => $transfer->getHash()]);
             }
             return;
         } elseif (!isset($this->requests[$clientName]) || $this->requests[$clientName]->getStatusCode() === Request::COMPLETE) {
@@ -120,11 +127,11 @@ class Service extends ServiceBase
             $request = $this->requests[$clientName];
         }
         $request->push($context);
-        if ($request->getStatusCode() === Request::COMPLETE) {
-            $this->httpRequestEvent->access($request);
-        } elseif ($request->isUpload === true && $this->config('fiber')) {
+        if ($this->config('fiber')) {
             $this->httpRequestEvent->access($request);
             $this->transfers[$clientName] = $request;
+        } elseif ($request->getStatusCode() === Request::COMPLETE) {
+            $this->httpRequestEvent->access($request);
         }
     }
 

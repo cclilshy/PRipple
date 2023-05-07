@@ -106,16 +106,32 @@ class Controller
     /**
      * @param int $time
      * @return void
+     * @throws \Throwable
      */
     public function sleep(int $time): void
     {
         if (Http::config('fiber')) {
-            $event = new Event($this->request->getHash(), 'sleep', [
-                'time' => $time,
-            ]);
-            Fiber::suspend($event);
+            $this->returnEvent('sleep', ['time' => $time]);
         } else {
             sleep($time);
+        }
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function returnEvent(string $name, mixed $data): mixed
+    {
+        $event = new Event($this->request->getHash(), $name, $data);
+        return Fiber::suspend($event);
+    }
+
+    public function wait(): mixed
+    {
+        try {
+            return $this->returnEvent('wait', []);
+        } catch (\Throwable $e) {
+            return false;
         }
     }
 }

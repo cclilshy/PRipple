@@ -19,13 +19,25 @@ class Index extends Controller
 
     public function index(): string
     {
+        $this->assign('name','PRipple');
         return $this;
     }
 
     public function upload(): string
     {
         if ($this->request->isUpload) {
-            return json_encode($this->request->uploadHandler->files);
+            $data = [];
+            while ($event = $this->wait()) {
+                switch ($event->getName()) {
+                    case 'CompleteUploadFile':
+                        break;
+                    case 'NewUploadFile':
+                        $data = $event->getData();
+                        break;
+                    case 'RequestComplete':
+                        return json_encode($data);
+                }
+            }
         } else {
             return $this;
         }

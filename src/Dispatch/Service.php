@@ -13,7 +13,6 @@ use Cclilshy\PRipple\FileSystem\File;
 use Cclilshy\PRipple\Communication\Socket\Client;
 use Cclilshy\PRipple\Communication\Aisle\FileAisle;
 
-
 class Service
 {
     public const STATE_CLOSE  = 'STATE_CLOSE';
